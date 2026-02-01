@@ -56,11 +56,12 @@ export default function Onboarding() {
       >
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-orange-500 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold">Grab Talent</span>
+          <div className="inline-flex items-center mb-4">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697f3da7f123570707b055b1/9b7629a4f_IMG_7722.jpg" 
+              alt="Grab Talent" 
+              className="h-14 w-auto"
+            />
           </div>
           <h1 className="text-2xl font-bold">Let's get you set up</h1>
         </div>
