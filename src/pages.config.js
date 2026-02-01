@@ -50,12 +50,32 @@
 import Home from './pages/Home';
 import Onboarding from './pages/Onboarding';
 import Dashboard from './pages/Dashboard';
+import Discover from './pages/Discover';
+import MaybeList from './pages/MaybeList';
+import TalentProfile from './pages/TalentProfile';
+import TalentSetup from './pages/TalentSetup';
+import BookTalent from './pages/BookTalent';
+import Bookings from './pages/Bookings';
+import Messages from './pages/Messages';
+import Settings from './pages/Settings';
+import Verification from './pages/Verification';
+import WriteReview from './pages/WriteReview';
 
 
 export const PAGES = {
     "Home": Home,
     "Onboarding": Onboarding,
     "Dashboard": Dashboard,
+    "Discover": Discover,
+    "MaybeList": MaybeList,
+    "TalentProfile": TalentProfile,
+    "TalentSetup": TalentSetup,
+    "BookTalent": BookTalent,
+    "Bookings": Bookings,
+    "Messages": Messages,
+    "Settings": Settings,
+    "Verification": Verification,
+    "WriteReview": WriteReview,
 }
 
 export const pagesConfig = {
