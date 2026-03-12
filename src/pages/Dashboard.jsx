@@ -88,36 +88,41 @@ export default function Dashboard() {
 
           {/* Role switcher for 'both' users */}
           {isBoth && (
-            <div className="flex items-center bg-slate-900 rounded-xl p-1 border border-slate-800">
-              <button
-                onClick={() => setActiveView('seeker')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeView === 'seeker'
-                    ? 'bg-purple-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Search className="w-4 h-4" />
-                Seeker
-              </button>
-              <button
-                onClick={() => setActiveView('talent')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeView === 'talent'
-                    ? 'bg-orange-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Star className="w-4 h-4" />
-                Talent
-              </button>
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-center bg-slate-800 rounded-2xl p-1.5 border-2 border-slate-700 shadow-lg">
+                <button
+                  onClick={() => setActiveView('seeker')}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    activeView === 'seeker'
+                      ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md scale-105'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                  }`}
+                >
+                  <Search className="w-4 h-4" />
+                  Grabbing Talent
+                </button>
+                <button
+                  onClick={() => setActiveView('talent')}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    activeView === 'talent'
+                      ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-md scale-105'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                  }`}
+                >
+                  <Star className="w-4 h-4" />
+                  I'm a Talent
+                </button>
+              </div>
+              <p className="text-xs text-slate-500">
+                {activeView === 'seeker' ? '👉 Switch to Talent view' : '👉 Switch to Grabbing Talent view'}
+              </p>
             </div>
           )}
 
           {!isBoth && (
             <div className="flex items-center gap-2">
               <span className={`text-xs px-3 py-1 rounded-full font-medium ${isTalent && !isSeeker ? 'bg-orange-500/20 text-orange-400' : 'bg-purple-500/20 text-purple-400'}`}>
-                {isTalent && !isSeeker ? '🎭 Talent' : '🔍 Seeker'}
+                {isTalent && !isSeeker ? '🎭 Talent' : '🔍 Grabbing Talent'}
               </span>
             </div>
           )}
