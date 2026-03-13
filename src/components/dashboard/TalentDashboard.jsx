@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Star, Calendar, MessageSquare, Eye, TrendingUp,
-  CheckCircle2, ChevronRight, Settings, Shield
+  CheckCircle2, ChevronRight, Settings, Shield, Pencil
 } from 'lucide-react';
+import TalentCalendar from './TalentCalendar';
 
 export default function TalentDashboard({ user, talentProfile, recentBookings }) {
   const pendingBookings = recentBookings.filter(b => b.status === 'pending');
-  const upcomingBookings = recentBookings.filter(b => ['accepted', 'confirmed'].includes(b.status));
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
@@ -22,21 +22,22 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
           <div>
             <p className="text-orange-300 font-medium mb-2">Welcome back, {user?.full_name?.split(' ')[0]} 🎭</p>
             <h1 className="text-3xl font-bold mb-3">Your Talent Dashboard</h1>
-            <p className="text-slate-400 max-w-md">Manage your bookings, update your profile, and grow your career.</p>
+            <p className="text-slate-400 max-w-md">Manage bookings, showcase your talent, and get paid instantly when you arrive.</p>
           </div>
-          {!talentProfile && (
+          {!talentProfile ? (
             <Link to={createPageUrl('TalentSetup')}>
               <Button className="bg-orange-600 hover:bg-orange-500 h-12 px-6 text-base shrink-0">
                 <Star className="w-5 h-5 mr-2" />
                 Create Profile
               </Button>
             </Link>
-          )}
-          {talentProfile && pendingBookings.length > 0 && (
-            <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-2xl px-5 py-4 shrink-0 text-center">
-              <p className="text-2xl font-bold text-yellow-400">{pendingBookings.length}</p>
-              <p className="text-yellow-300 text-sm">Pending {pendingBookings.length === 1 ? 'Request' : 'Requests'}</p>
-            </div>
+          ) : (
+            pendingBookings.length > 0 && (
+              <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-2xl px-5 py-4 shrink-0 text-center">
+                <p className="text-2xl font-bold text-yellow-400">{pendingBookings.length}</p>
+                <p className="text-yellow-300 text-sm">Pending {pendingBookings.length === 1 ? 'Request' : 'Requests'}</p>
+              </div>
+            )
           )}
         </div>
       </div>
@@ -47,18 +48,18 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
           <div>
             <h2 className="font-semibold text-lg mb-4">Manage</h2>
             <div className="grid sm:grid-cols-3 gap-4">
-              <Link to={createPageUrl('TalentProfile') + `?id=${talentProfile?.id || ''}`}>
+              <Link to={`/TalentSetup?edit=true`}>
+                <motion.div whileHover={{ scale: 1.02 }} className="p-5 rounded-2xl bg-gradient-to-br from-orange-900/50 to-orange-800/30 border border-orange-500/30 cursor-pointer h-full">
+                  <Pencil className="w-8 h-8 text-orange-400 mb-3" />
+                  <h3 className="font-semibold mb-1">Edit Profile</h3>
+                  <p className="text-sm text-slate-400">Bio, photos, videos</p>
+                </motion.div>
+              </Link>
+              <Link to={talentProfile ? `/TalentProfile?id=${talentProfile.id}` : '#'}>
                 <motion.div whileHover={{ scale: 1.02 }} className="p-5 rounded-2xl bg-gradient-to-br from-emerald-900/50 to-emerald-800/30 border border-emerald-500/30 cursor-pointer h-full">
                   <Eye className="w-8 h-8 text-emerald-400 mb-3" />
                   <h3 className="font-semibold mb-1">My Profile</h3>
-                  <p className="text-sm text-slate-400">View & edit</p>
-                </motion.div>
-              </Link>
-              <Link to={createPageUrl('Bookings')}>
-                <motion.div whileHover={{ scale: 1.02 }} className="p-5 rounded-2xl bg-gradient-to-br from-orange-900/50 to-orange-800/30 border border-orange-500/30 cursor-pointer h-full">
-                  <Calendar className="w-8 h-8 text-orange-400 mb-3" />
-                  <h3 className="font-semibold mb-1">Bookings</h3>
-                  <p className="text-sm text-slate-400">{pendingBookings.length} pending</p>
+                  <p className="text-sm text-slate-400">How others see you</p>
                 </motion.div>
               </Link>
               <Link to={createPageUrl('Messages')}>
@@ -87,7 +88,7 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
                         <p className="text-sm text-slate-400">By {booking.seeker_name} • {booking.event_date}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="font-semibold text-purple-400">£{booking.total_price?.toFixed(0)}</p>
+                        <p className="font-semibold text-green-400">£{booking.talent_payout?.toFixed(0)}</p>
                         <p className="text-xs text-slate-500">{booking.duration_hours}h</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-600" />
@@ -98,10 +99,13 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
             </div>
           )}
 
-          {/* Upcoming Bookings */}
+          {/* Calendar */}
+          <TalentCalendar bookings={recentBookings} />
+
+          {/* Recent Bookings List */}
           <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold">Recent Bookings</h2>
+              <h2 className="text-lg font-semibold">All Recent Bookings</h2>
               <Link to={createPageUrl('Bookings')}>
                 <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
                   View all <ChevronRight className="w-4 h-4 ml-1" />
@@ -144,7 +148,7 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
             <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-orange-400" />
-                Profile Stats
+                My Stats
               </h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -152,15 +156,16 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                     <span className="font-semibold">{talentProfile.average_rating?.toFixed(1) || 'N/A'}</span>
+                    <span className="text-slate-500 text-xs">({talentProfile.total_reviews || 0})</span>
                   </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Reviews</span>
-                  <span className="font-semibold">{talentProfile.total_reviews || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Total Bookings</span>
                   <span className="font-semibold">{talentProfile.total_bookings || 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Rate</span>
+                  <span className="font-semibold text-green-400">£{talentProfile.hourly_rate}/hr</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Verified</span>
@@ -180,18 +185,33 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
             </div>
           )}
 
+          {/* Payment Info */}
+          <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              💰 How Payments Work
+            </h3>
+            <div className="space-y-3 text-sm text-slate-400">
+              <div className="flex gap-2"><span className="text-green-400 font-bold shrink-0">1.</span><span>Client books & pays upfront — funds held securely by the app.</span></div>
+              <div className="flex gap-2"><span className="text-green-400 font-bold shrink-0">2.</span><span>You arrive at the event.</span></div>
+              <div className="flex gap-2"><span className="text-green-400 font-bold shrink-0">3.</span><span>Client confirms your arrival — payment releases to you <strong className="text-white">instantly</strong>.</span></div>
+              <div className="mt-3 pt-3 border-t border-slate-700 text-xs text-slate-500">
+                Platform fee: <span className="text-white">11%</span> — you keep <span className="text-green-400 font-semibold">89%</span>
+              </div>
+            </div>
+          </div>
+
           {/* Quick Links */}
           <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
             <h3 className="font-semibold mb-4">Quick Links</h3>
             <div className="space-y-1">
               {[
-                { to: `TalentSetup?edit=true`, icon: Star, label: 'Edit Profile' },
-                { to: 'Verification', icon: Shield, label: 'Verification' },
-                { to: 'Bookings', icon: Calendar, label: 'All Bookings' },
-                { to: 'Messages', icon: MessageSquare, label: 'Messages' },
-                { to: 'Settings', icon: Settings, label: 'Settings' },
+                { to: '/TalentSetup?edit=true', icon: Pencil, label: 'Edit Profile' },
+                { to: '/Verification', icon: Shield, label: 'Verification' },
+                { to: '/Bookings', icon: Calendar, label: 'All Bookings' },
+                { to: '/Messages', icon: MessageSquare, label: 'Messages' },
+                { to: '/Settings', icon: Settings, label: 'Settings' },
               ].map(({ to, icon: Icon, label }) => (
-                <Link key={to} to={`/${to}`}>
+                <Link key={to} to={to}>
                   <Button variant="ghost" className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800">
                     <Icon className="w-4 h-4 mr-3" />{label}
                   </Button>

@@ -11,22 +11,23 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import Logo from '@/components/Logo';
+import PaymentRelease from '@/components/booking/PaymentRelease';
 
 const STATUS_CONFIG = {
-  pending: { label: 'Pending', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: AlertCircle },
-  accepted: { label: 'Accepted', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: CheckCircle2 },
-  confirmed: { label: 'Confirmed', color: 'bg-green-500/20 text-green-400 border-green-500/30', icon: CheckCircle2 },
+  pending:   { label: 'Pending',   color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: AlertCircle },
+  accepted:  { label: 'Accepted',  color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',       icon: CheckCircle2 },
+  confirmed: { label: 'Confirmed', color: 'bg-green-500/20 text-green-400 border-green-500/30',    icon: CheckCircle2 },
   completed: { label: 'Completed', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30', icon: CheckCircle2 },
-  declined: { label: 'Declined', color: 'bg-red-500/20 text-red-400 border-red-500/30', icon: XCircle },
-  cancelled: { label: 'Cancelled', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', icon: XCircle },
-  no_show: { label: 'No Show', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30', icon: XCircle },
+  declined:  { label: 'Declined',  color: 'bg-red-500/20 text-red-400 border-red-500/30',          icon: XCircle },
+  cancelled: { label: 'Cancelled', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30',    icon: XCircle },
+  no_show:   { label: 'No Show',   color: 'bg-orange-500/20 text-orange-400 border-orange-500/30', icon: XCircle },
 };
 
 export default function BookingDetails() {
   const urlParams = new URLSearchParams(window.location.search);
   const bookingId = urlParams.get('id');
 
-  const [user, setUser] = useState(null);
+  const [user, setUser]       = useState(null);
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -50,6 +51,14 @@ export default function BookingDetails() {
     setUpdating(false);
   };
 
+  const handlePaymentRelease = async () => {
+    await base44.entities.Booking.update(booking.id, {
+      payment_status: 'released',
+      status: 'completed'
+    });
+    setBooking(prev => ({ ...prev, payment_status: 'released', status: 'completed' }));
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center">
       <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
@@ -70,6 +79,11 @@ export default function BookingDetails() {
   const isSeeker = booking.seeker_id === user?.id;
   const isTalent = booking.talent_user_id === user?.id;
   const otherUserId = isSeeker ? booking.talent_user_id : booking.seeker_id;
+
+  // Show payment release when: seeker + booking is confirmed + payment not yet released
+  const showPaymentRelease = isSeeker &&
+    booking.status === 'confirmed' &&
+    booking.payment_status !== 'released';
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -104,9 +118,7 @@ export default function BookingDetails() {
               <User className="w-6 h-6 text-slate-400" />
             </div>
             <div>
-              <p className="font-semibold">
-                {isSeeker ? booking.talent_stage_name : booking.seeker_name}
-              </p>
+              <p className="font-semibold">{isSeeker ? booking.talent_stage_name : booking.seeker_name}</p>
               <p className="text-sm text-purple-400 capitalize">
                 {isSeeker ? booking.talent_category?.replace(/_/g, ' ') : 'Event Organiser'}
               </p>
@@ -151,14 +163,17 @@ export default function BookingDetails() {
 
         {/* Pricing */}
         <div className="p-5 bg-slate-900 rounded-2xl border border-slate-800">
-          <h2 className="font-semibold mb-4">Price Breakdown</h2>
+          <h2 className="font-semibold mb-4 flex items-center gap-2">
+            <Banknote className="w-5 h-5 text-green-400" />
+            Price Breakdown
+          </h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between text-slate-300">
-              <span>{booking.duration_hours}h × £{booking.talent_payout / booking.duration_hours || 0}</span>
+              <span>{booking.duration_hours}h performance</span>
               <span>£{booking.base_price?.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-slate-400">
-              <span>Service fee (11%)</span>
+              <span>Platform fee (11%)</span>
               <span>£{booking.commission_amount?.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-semibold text-lg border-t border-slate-700 pt-2 mt-2">
@@ -167,17 +182,33 @@ export default function BookingDetails() {
             </div>
             {isTalent && (
               <div className="flex justify-between text-green-400 text-sm pt-1">
-                <span>Your payout</span>
-                <span>£{booking.talent_payout?.toFixed(2)}</span>
+                <span>Your payout (89%)</span>
+                <span className="font-semibold">£{booking.talent_payout?.toFixed(2)}</span>
               </div>
             )}
           </div>
-          <div className="mt-3">
-            <Badge className={booking.payment_status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}>
-              Payment: {booking.payment_status}
+          <div className="mt-3 flex items-center gap-2">
+            <Badge className={
+              booking.payment_status === 'released' ? 'bg-green-500/20 text-green-400' :
+              booking.payment_status === 'paid' ? 'bg-blue-500/20 text-blue-400' :
+              'bg-yellow-500/20 text-yellow-400'
+            }>
+              💰 Payment: {booking.payment_status === 'released' ? 'Released to talent' : booking.payment_status === 'paid' ? 'Held in escrow' : booking.payment_status}
             </Badge>
           </div>
         </div>
+
+        {/* === PAYMENT RELEASE (seeker confirms arrival) === */}
+        {showPaymentRelease && (
+          <PaymentRelease booking={booking} onRelease={handlePaymentRelease} />
+        )}
+        {isSeeker && booking.payment_status === 'released' && (
+          <div className="p-4 bg-green-500/10 rounded-2xl border border-green-500/20 text-center">
+            <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" />
+            <p className="text-green-400 font-semibold">Payment released to {booking.talent_stage_name}</p>
+            <p className="text-slate-500 text-sm mt-1">£{booking.talent_payout?.toFixed(2)} sent instantly</p>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="space-y-3">
@@ -194,29 +225,31 @@ export default function BookingDetails() {
               </Button>
             </div>
           )}
-          {isTalent && booking.status === 'confirmed' && (
-            <Button onClick={() => handleStatusUpdate('completed')} disabled={updating} className="w-full bg-purple-600 hover:bg-purple-500">
-              Mark as Completed
-            </Button>
-          )}
 
-          {/* Seeker actions */}
+          {/* Seeker confirms booking after talent accepts */}
           {isSeeker && booking.status === 'accepted' && (
-            <div className="flex gap-3">
-              <Button onClick={() => handleStatusUpdate('confirmed')} disabled={updating} className="flex-1 bg-purple-600 hover:bg-purple-500">
-                Confirm & Pay
-              </Button>
-              <Button onClick={() => handleStatusUpdate('cancelled')} disabled={updating} variant="outline" className="flex-1 border-slate-700">
-                Cancel
-              </Button>
+            <div className="p-5 bg-purple-500/10 rounded-2xl border border-purple-500/20 space-y-3">
+              <p className="text-purple-300 font-medium">🎉 {booking.talent_stage_name} has accepted your booking!</p>
+              <p className="text-slate-400 text-sm">Confirm to lock in the booking. Payment will be held securely until they arrive at the event.</p>
+              <div className="flex gap-3">
+                <Button onClick={() => handleStatusUpdate('confirmed')} disabled={updating} className="flex-1 bg-purple-600 hover:bg-purple-500">
+                  {updating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
+                  Confirm & Hold Payment
+                </Button>
+                <Button onClick={() => handleStatusUpdate('cancelled')} disabled={updating} variant="outline" className="border-slate-700 text-slate-400">
+                  Cancel
+                </Button>
+              </div>
             </div>
           )}
+
           {isSeeker && booking.status === 'pending' && (
             <Button onClick={() => handleStatusUpdate('cancelled')} disabled={updating} variant="outline" className="w-full border-slate-700 text-slate-400">
               Cancel Request
             </Button>
           )}
-          {isSeeker && booking.status === 'completed' && (
+
+          {isSeeker && booking.status === 'completed' && booking.payment_status === 'released' && (
             <Link to={createPageUrl('WriteReview') + `?booking_id=${booking.id}`}>
               <Button className="w-full bg-yellow-600 hover:bg-yellow-500">
                 <Star className="w-4 h-4 mr-2" />
@@ -225,7 +258,7 @@ export default function BookingDetails() {
             </Link>
           )}
 
-          {/* Message button for both */}
+          {/* Message button */}
           {['accepted', 'confirmed', 'completed'].includes(booking.status) && (
             <Link to={createPageUrl('Messages') + `?to=${otherUserId}`}>
               <Button variant="outline" className="w-full border-slate-700">
@@ -235,7 +268,6 @@ export default function BookingDetails() {
             </Link>
           )}
 
-          {/* View talent profile */}
           {isSeeker && (
             <Link to={createPageUrl('TalentProfile') + `?id=${booking.talent_profile_id}`}>
               <Button variant="ghost" className="w-full text-slate-400 hover:text-white">
