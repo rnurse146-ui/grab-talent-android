@@ -70,8 +70,8 @@ export default function Dashboard() {
   }
 
   const isTalent = user?.user_type === 'talent' || user?.user_type === 'both';
-  const isSeeker = user?.user_type === 'seeker' || user?.user_type === 'both';
-  const isBoth = user?.user_type === 'both';
+  const isSeeker = user?.user_type === 'seeker' || user?.user_type === 'both' || !user?.user_type;
+  const isBoth = user?.user_type === 'both' || (isTalent && isSeeker);
 
   // Filter bookings by role
   const seekerBookings = recentBookings.filter(b => b.seeker_id === user?.id);
