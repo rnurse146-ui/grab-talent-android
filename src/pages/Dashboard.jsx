@@ -28,12 +28,12 @@ export default function Dashboard() {
     }
 
     const isTalent = currentUser.user_type === 'talent' || currentUser.user_type === 'both';
-    const isSeeker = currentUser.user_type === 'seeker' || currentUser.user_type === 'both';
+    const isSeeker = currentUser.user_type === 'seeker' || currentUser.user_type === 'both' || !currentUser.user_type;
 
     // Set default view
     if (currentUser.user_type === 'both') {
       setActiveView('seeker');
-    } else if (isTalent) {
+    } else if (isTalent && !isSeeker) {
       setActiveView('talent');
     } else {
       setActiveView('seeker');
