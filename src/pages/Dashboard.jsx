@@ -70,8 +70,7 @@ export default function Dashboard() {
   }
 
   const isTalent = user?.user_type === 'talent' || user?.user_type === 'both';
-  const isSeeker = user?.user_type === 'seeker' || user?.user_type === 'both' || !user?.user_type;
-  const isBoth = user?.user_type === 'both' || (isTalent && isSeeker);
+  const isSeeker = true; // all users can browse as seeker
 
   // Filter bookings by role
   const seekerBookings = recentBookings.filter(b => b.seeker_id === user?.id);
@@ -86,58 +85,43 @@ export default function Dashboard() {
             <Logo className="h-8 w-auto" />
           </Link>
 
-          {/* Role switcher for 'both' users */}
-          {isBoth && (
-            <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center bg-slate-800 rounded-2xl p-1.5 border-2 border-slate-700 shadow-lg">
-                <button
-                  onClick={() => setActiveView('seeker')}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    activeView === 'seeker'
-                      ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md scale-105'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                  }`}
-                >
-                  <Search className="w-4 h-4" />
-                  Grabbing Talent
-                </button>
-                <button
-                  onClick={() => setActiveView('talent')}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    activeView === 'talent'
-                      ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-md scale-105'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                  }`}
-                >
-                  <Star className="w-4 h-4" />
-                  I'm a Talent
-                </button>
-              </div>
-              <p className="text-xs text-slate-500">
-                {activeView === 'seeker' ? '👉 Switch to Talent view' : '👉 Switch to Grabbing Talent view'}
-              </p>
-            </div>
-          )}
-
-          {!isBoth && (
-            <div className="flex items-center gap-2">
-              <span className={`text-xs px-3 py-1 rounded-full font-medium ${isTalent && !isSeeker ? 'bg-orange-500/20 text-orange-400' : 'bg-purple-500/20 text-purple-400'}`}>
-                {isTalent && !isSeeker ? '🎭 Talent' : '🔍 Grabbing Talent'}
-              </span>
-            </div>
-          )}
+          {/* Role switcher — always visible */}
+          <div className="flex items-center bg-slate-800 rounded-2xl p-1.5 border-2 border-slate-700 shadow-lg">
+            <button
+              onClick={() => setActiveView('seeker')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                activeView === 'seeker'
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md scale-105'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700'
+              }`}
+            >
+              <Search className="w-4 h-4" />
+              Grabbing Talent
+            </button>
+            <button
+              onClick={() => setActiveView('talent')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                activeView === 'talent'
+                  ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-md scale-105'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700'
+              }`}
+            >
+              <Star className="w-4 h-4" />
+              I'm a Talent
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Dashboard Content */}
-      {activeView === 'seeker' && isSeeker && (
+      {activeView === 'seeker' && (
         <SeekerDashboard
           user={user}
           recentBookings={seekerBookings}
           maybeList={maybeList}
         />
       )}
-      {activeView === 'talent' && isTalent && (
+      {activeView === 'talent' && (
         <TalentDashboard
           user={user}
           talentProfile={talentProfile}
