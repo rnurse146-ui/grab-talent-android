@@ -53,7 +53,11 @@ export default function Discover() {
   const [filters, setFilters] = useState({
     category: 'all',
     maxPrice: '',
-    city: ''
+    minPrice: '',
+    city: '',
+    minRating: '',
+    verifiedOnly: false,
+    equipment: []
   });
 
   useEffect(() => {
@@ -82,13 +86,15 @@ export default function Discover() {
     const allTalents = await base44.entities.TalentProfile.filter(query, '-average_rating', 50);
     
     let filtered = allTalents.filter(t => !alreadySwiped.has(t.id));
-    
-    if (filters.maxPrice) {
-      filtered = filtered.filter(t => t.hourly_rate <= parseFloat(filters.maxPrice));
-    }
-    if (filters.city) {
-      filtered = filtered.filter(t => 
-        t.location_city?.toLowerCase().includes(filters.city.toLowerCase())
+
+    if (filters.minPrice) filtered = filtered.filter(t => t.hourly_rate >= parseFloat(filters.minPrice));
+    if (filters.maxPrice) filtered = filtered.filter(t => t.hourly_rate <= parseFloat(filters.maxPrice));
+    if (filters.city) filtered = filtered.filter(t => t.location_city?.toLowerCase().includes(filters.city.toLowerCase()));
+    if (filters.minRating) filtered = filtered.filter(t => (t.average_rating || 0) >= parseFloat(filters.minRating));
+    if (filters.verifiedOnly) filtered = filtered.filter(t => t.is_verified === true);
+    if (filters.equipment.length > 0) {
+      filtered = filtered.filter(t =>
+        filters.equipment.every(eq => (t.equipment_provided || []).includes(eq))
       );
     }
     
@@ -151,8 +157,9 @@ export default function Discover() {
       <AnimatePresence>
         {showFilters && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="border-b border-slate-800 overflow-hidden">
-            <div className="p-4 space-y-4">
-              <div className="grid sm:grid-cols-3 gap-4">
+            <div className="p-5 space-y-5">
+              {/* Row 1: Category + City */}
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block">Category</label>
                   <Select value={filters.category} onValueChange={(v) => setFilters({...filters, category: v})}>
@@ -163,15 +170,99 @@ export default function Discover() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400 mb-1 block">Max Price (£/hr)</label>
-                  <Input type="number" value={filters.maxPrice} onChange={(e) => setFilters({...filters, maxPrice: e.target.value})} placeholder="Any" className="bg-slate-900 border-slate-700" />
-                </div>
-                <div>
                   <label className="text-xs text-slate-400 mb-1 block">City</label>
                   <Input value={filters.city} onChange={(e) => setFilters({...filters, city: e.target.value})} placeholder="Any location" className="bg-slate-900 border-slate-700" />
                 </div>
               </div>
-              <Button onClick={applyFilters} className="w-full bg-purple-600 hover:bg-purple-500">Apply Filters</Button>
+
+              {/* Row 2: Price range + Rating */}
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">Min Price (£/hr)</label>
+                  <Input type="number" value={filters.minPrice} onChange={(e) => setFilters({...filters, minPrice: e.target.value})} placeholder="0" className="bg-slate-900 border-slate-700" />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">Max Price (£/hr)</label>
+                  <Input type="number" value={filters.maxPrice} onChange={(e) => setFilters({...filters, maxPrice: e.target.value})} placeholder="Any" className="bg-slate-900 border-slate-700" />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">Min Rating ⭐</label>
+                  <Select value={filters.minRating} onValueChange={(v) => setFilters({...filters, minRating: v})}>
+                    <SelectTrigger className="bg-slate-900 border-slate-700"><SelectValue placeholder="Any" /></SelectTrigger>
+                    <SelectContent className="bg-slate-900 border-slate-700">
+                      <SelectItem value={null}>Any</SelectItem>
+                      <SelectItem value="3">3+ ⭐</SelectItem>
+                      <SelectItem value="4">4+ ⭐</SelectItem>
+                      <SelectItem value="4.5">4.5+ ⭐</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Verified toggle */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setFilters({...filters, verifiedOnly: !filters.verifiedOnly})}
+                  className={`w-11 h-6 rounded-full transition-colors ${
+                    filters.verifiedOnly ? 'bg-green-500' : 'bg-slate-700'
+                  } relative`}
+                >
+                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                    filters.verifiedOnly ? 'translate-x-5' : 'translate-x-0.5'
+                  }`} />
+                </button>
+                <label className="text-sm text-slate-300">Verified performers only</label>
+              </div>
+
+              {/* Equipment */}
+              <div>
+                <label className="text-xs text-slate-400 mb-2 block">Performer must provide equipment</label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: 'sound_system', label: '🔊 Sound System' },
+                    { value: 'lighting', label: '💡 Lighting' },
+                    { value: 'microphones', label: '🎤 Microphones' },
+                    { value: 'back_lights', label: '🔦 Back Lights' },
+                    { value: 'fog_machine', label: '🌫️ Fog Machine' },
+                    { value: 'stage', label: '🎪 Stage' },
+                  ].map(eq => {
+                    const active = filters.equipment.includes(eq.value);
+                    return (
+                      <button
+                        key={eq.value}
+                        onClick={() => setFilters(prev => ({
+                          ...prev,
+                          equipment: active
+                            ? prev.equipment.filter(e => e !== eq.value)
+                            : [...prev.equipment, eq.value]
+                        }))}
+                        className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-all ${
+                          active
+                            ? 'bg-purple-600 border-purple-500 text-white'
+                            : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
+                        }`}
+                      >
+                        {eq.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button onClick={applyFilters} className="flex-1 bg-purple-600 hover:bg-purple-500">Apply Filters</Button>
+                <Button
+                  onClick={() => {
+                    setFilters({ category: 'all', maxPrice: '', minPrice: '', city: '', minRating: '', verifiedOnly: false, equipment: [] });
+                    setShowFilters(false);
+                    loadTalents(swipedIds);
+                  }}
+                  variant="outline"
+                  className="border-slate-700 text-slate-400"
+                >
+                  Reset
+                </Button>
+              </div>
             </div>
           </motion.div>
         )}
