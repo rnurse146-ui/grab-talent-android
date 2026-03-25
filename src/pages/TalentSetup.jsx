@@ -48,7 +48,7 @@ export default function TalentSetup() {
   const [existingProfile, setExistingProfile] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState({ stage_name: '', talent_category: '', bio: '', hourly_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [] });
+  const [formData, setFormData] = useState({ stage_name: '', talent_category: '', bio: '', hourly_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [] });
   const [specialtyInput, setSpecialtyInput] = useState('');
 
   useEffect(() => { loadUser(); }, []);
@@ -60,7 +60,7 @@ export default function TalentSetup() {
     if (profiles.length > 0) {
       const profile = profiles[0];
       setExistingProfile(profile);
-      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', media_gallery: profile.media_gallery || [] });
+      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [] });
       setProfilePhoto(profile.profile_photo);
     } else if (currentUser.preferred_city) {
       setFormData(prev => ({ ...prev, location_city: currentUser.preferred_city }));
@@ -142,6 +142,42 @@ export default function TalentSetup() {
                 <div><Label className="text-slate-400">Specialties</Label>
                   <div className="flex gap-2 mt-2"><Input value={specialtyInput} onChange={(e) => setSpecialtyInput(e.target.value)} placeholder="e.g. Wedding DJ" className="bg-slate-900 border-slate-800" onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSpecialty())} /><Button onClick={addSpecialty} variant="outline" className="border-slate-700">Add</Button></div>
                   {formData.specialties.length > 0 && (<div className="flex flex-wrap gap-2 mt-3">{formData.specialties.map((s, i) => (<span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm">{s}<button onClick={() => removeSpecialty(i)} className="hover:text-white"><X className="w-3 h-3" /></button></span>))}</div>)}
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Equipment You Provide</Label>
+                  <p className="text-xs text-slate-500 mt-1 mb-3">Let bookers know what you bring to the event</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: 'sound_system', label: '🔊 Sound System' },
+                      { value: 'lighting', label: '💡 Lighting' },
+                      { value: 'microphones', label: '🎤 Microphones' },
+                      { value: 'back_lights', label: '🔦 Back Lights' },
+                      { value: 'fog_machine', label: '🌫️ Fog Machine' },
+                      { value: 'stage', label: '🎪 Stage' },
+                    ].map(eq => {
+                      const active = formData.equipment_provided.includes(eq.value);
+                      return (
+                        <button
+                          key={eq.value}
+                          type="button"
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            equipment_provided: active
+                              ? prev.equipment_provided.filter(e => e !== eq.value)
+                              : [...prev.equipment_provided, eq.value]
+                          }))}
+                          className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all ${
+                            active
+                              ? 'bg-orange-600 border-orange-500 text-white'
+                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600'
+                          }`}
+                        >
+                          {eq.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(1)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={() => setStep(3)} className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
