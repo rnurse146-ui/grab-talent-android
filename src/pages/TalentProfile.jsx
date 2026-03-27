@@ -6,6 +6,7 @@ import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, MapPin, Banknote, CheckCircle2, Clock, Calendar, ChevronLeft, MessageSquare, Image, Loader2, Award } from 'lucide-react';
+import AvailabilityMiniCalendar from '@/components/talent/AvailabilityMiniCalendar';
 import Logo from '@/components/Logo';
 
 export default function TalentProfile() {
@@ -94,6 +95,11 @@ export default function TalentProfile() {
         </div>
 
         {profile.bio && (<div className="mb-10"><h2 className="text-xl font-semibold mb-4">About</h2><p className="text-slate-300 whitespace-pre-line">{profile.bio}</p></div>)}
+
+        <div className="mb-10">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2"><Calendar className="w-5 h-5 text-purple-400" />Availability</h2>
+          <AvailabilityMiniCalendar talentProfileId={profile.id} />
+        </div>
 
         {profile.media_gallery?.length > 0 && (
           <div className="mb-10">

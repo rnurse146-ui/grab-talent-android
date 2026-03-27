@@ -1,0 +1,34 @@
+{
+  "name": "TalentAvailability",
+  "type": "object",
+  "properties": {
+    "talent_profile_id": {
+      "type": "string",
+      "description": "Reference to TalentProfile"
+    },
+    "talent_user_id": {
+      "type": "string",
+      "description": "User ID of the talent"
+    },
+    "blocked_dates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "date"
+      },
+      "description": "Array of ISO date strings that are blocked/unavailable"
+    },
+    "booking_dates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "date"
+      },
+      "description": "Auto-populated dates from confirmed bookings"
+    }
+  },
+  "required": [
+    "talent_profile_id",
+    "talent_user_id"
+  ]
+}
