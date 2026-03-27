@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { base44 } from '@/api/base44Client';
 import {
   Star, Calendar, MessageSquare, Eye, TrendingUp,
   CheckCircle2, ChevronRight, Settings, Shield, Pencil
@@ -12,6 +13,17 @@ import TalentCalendar from './TalentCalendar';
 
 export default function TalentDashboard({ user, talentProfile, recentBookings }) {
   const pendingBookings = recentBookings.filter(b => b.status === 'pending');
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    base44.entities.Message.filter({ receiver_id: user.id, is_read: false }).then(msgs => setUnreadCount(msgs.length));
+    const unsub = base44.entities.Message.subscribe((event) => {
+      if (event.type === 'create' && event.data?.receiver_id === user.id) setUnreadCount(prev => prev + 1);
+      if (event.type === 'update' && event.data?.is_read && event.data?.receiver_id === user.id) setUnreadCount(prev => Math.max(0, prev - 1));
+    });
+    return () => unsub();
+  }, [user]);
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
@@ -208,12 +220,14 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
                 { to: '/TalentSetup?edit=true', icon: Pencil, label: 'Edit Profile' },
                 { to: '/Verification', icon: Shield, label: 'Verification' },
                 { to: '/Bookings', icon: Calendar, label: 'All Bookings' },
-                { to: '/Messages', icon: MessageSquare, label: 'Messages' },
+                { to: '/Messages', icon: MessageSquare, label: 'Messages', badge: unreadCount },
                 { to: '/Settings', icon: Settings, label: 'Settings' },
-              ].map(({ to, icon: Icon, label }) => (
+              ].map(({ to, icon: Icon, label, badge }) => (
                 <Link key={to} to={to}>
                   <Button variant="ghost" className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800">
-                    <Icon className="w-4 h-4 mr-3" />{label}
+                    <Icon className="w-4 h-4 mr-3" />
+                    <span className="flex-1 text-left">{label}</span>
+                    {badge > 0 && <span className="ml-auto bg-purple-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{badge}</span>}
                   </Button>
                 </Link>
               ))}
