@@ -100,7 +100,6 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
                         <p className="text-sm text-slate-400">By {booking.seeker_name} • {booking.event_date}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="font-semibold text-green-400">£{booking.talent_payout?.toFixed(0)}</p>
                         <p className="text-xs text-slate-500">{booking.duration_hours}h</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-600" />
@@ -197,20 +196,6 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
             </div>
           )}
 
-          {/* Payment Info */}
-          <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              💰 How Payments Work
-            </h3>
-            <div className="space-y-3 text-sm text-slate-400">
-              <div className="flex gap-2"><span className="text-green-400 font-bold shrink-0">1.</span><span>Client books & pays upfront — funds held securely by the app.</span></div>
-              <div className="flex gap-2"><span className="text-green-400 font-bold shrink-0">2.</span><span>You arrive at the event.</span></div>
-              <div className="flex gap-2"><span className="text-green-400 font-bold shrink-0">3.</span><span>Client confirms your arrival — payment releases to you <strong className="text-white">instantly</strong>.</span></div>
-              <div className="mt-3 pt-3 border-t border-slate-700 text-xs text-slate-500">
-                Platform fee: <span className="text-white">11%</span> — you keep <span className="text-green-400 font-semibold">89%</span>
-              </div>
-            </div>
-          </div>
 
           {/* Quick Links */}
           <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">

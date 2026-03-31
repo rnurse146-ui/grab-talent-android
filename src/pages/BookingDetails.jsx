@@ -161,54 +161,8 @@ export default function BookingDetails() {
           )}
         </div>
 
-        {/* Pricing */}
-        <div className="p-5 bg-slate-900 rounded-2xl border border-slate-800">
-          <h2 className="font-semibold mb-4 flex items-center gap-2">
-            <Banknote className="w-5 h-5 text-green-400" />
-            Price Breakdown
-          </h2>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-slate-300">
-              <span>{booking.duration_hours}h performance</span>
-              <span>£{booking.base_price?.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-slate-400">
-              <span>Platform fee (11%)</span>
-              <span>£{booking.commission_amount?.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between font-semibold text-lg border-t border-slate-700 pt-2 mt-2">
-              <span>Total</span>
-              <span className="text-purple-400">£{booking.total_price?.toFixed(2)}</span>
-            </div>
-            {isTalent && (
-              <div className="flex justify-between text-green-400 text-sm pt-1">
-                <span>Your payout (89%)</span>
-                <span className="font-semibold">£{booking.talent_payout?.toFixed(2)}</span>
-              </div>
-            )}
-          </div>
-          <div className="mt-3 flex items-center gap-2">
-            <Badge className={
-              booking.payment_status === 'released' ? 'bg-green-500/20 text-green-400' :
-              booking.payment_status === 'paid' ? 'bg-blue-500/20 text-blue-400' :
-              'bg-yellow-500/20 text-yellow-400'
-            }>
-              💰 Payment: {booking.payment_status === 'released' ? 'Released to talent' : booking.payment_status === 'paid' ? 'Held in escrow' : booking.payment_status}
-            </Badge>
-          </div>
-        </div>
 
-        {/* === PAYMENT RELEASE (seeker confirms arrival) === */}
-        {showPaymentRelease && (
-          <PaymentRelease booking={booking} onRelease={handlePaymentRelease} />
-        )}
-        {isSeeker && booking.payment_status === 'released' && (
-          <div className="p-4 bg-green-500/10 rounded-2xl border border-green-500/20 text-center">
-            <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" />
-            <p className="text-green-400 font-semibold">Payment released to {booking.talent_stage_name}</p>
-            <p className="text-slate-500 text-sm mt-1">£{booking.talent_payout?.toFixed(2)} sent instantly</p>
-          </div>
-        )}
+
 
         {/* Actions */}
         <div className="space-y-3">
@@ -230,11 +184,11 @@ export default function BookingDetails() {
           {isSeeker && booking.status === 'accepted' && (
             <div className="p-5 bg-purple-500/10 rounded-2xl border border-purple-500/20 space-y-3">
               <p className="text-purple-300 font-medium">🎉 {booking.talent_stage_name} has accepted your booking!</p>
-              <p className="text-slate-400 text-sm">Confirm to lock in the booking. Payment will be held securely until they arrive at the event.</p>
+              <p className="text-slate-400 text-sm">Confirm to lock in the booking.</p>
               <div className="flex gap-3">
                 <Button onClick={() => handleStatusUpdate('confirmed')} disabled={updating} className="flex-1 bg-purple-600 hover:bg-purple-500">
                   {updating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
-                  Confirm & Hold Payment
+                  Confirm Booking
                 </Button>
                 <Button onClick={() => handleStatusUpdate('cancelled')} disabled={updating} variant="outline" className="border-slate-700 text-slate-400">
                   Cancel
@@ -249,7 +203,7 @@ export default function BookingDetails() {
             </Button>
           )}
 
-          {isSeeker && booking.status === 'completed' && booking.payment_status === 'released' && (
+          {isSeeker && booking.status === 'completed' && (
             <Link to={createPageUrl('WriteReview') + `?booking_id=${booking.id}`}>
               <Button className="w-full bg-yellow-600 hover:bg-yellow-500">
                 <Star className="w-4 h-4 mr-2" />

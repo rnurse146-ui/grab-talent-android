@@ -147,16 +147,6 @@ export default function BookTalent() {
 
           <div><Label className="text-slate-400">Special Requirements (optional)</Label><Textarea value={formData.special_requirements} onChange={(e) => setFormData({...formData, special_requirements: e.target.value})} placeholder="Any special requests..." className="bg-slate-900 border-slate-800 mt-2 h-24" /></div>
 
-          {pricing && (
-            <div className="p-5 bg-slate-900 rounded-2xl border border-slate-800">
-              <h3 className="font-semibold mb-4">Price Breakdown</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-slate-400">{pricing.hours} hours × £{talent.hourly_rate}</span><span>£{pricing.basePrice.toFixed(2)}</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Service fee (11%)</span><span>£{pricing.commission.toFixed(2)}</span></div>
-                <div className="border-t border-slate-700 pt-2 mt-2 flex justify-between font-semibold text-lg"><span>Total</span><span className="text-purple-400">£{pricing.total.toFixed(2)}</span></div>
-              </div>
-            </div>
-          )}
 
           <Button type="submit" disabled={submitting || !formData.event_date} className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-500 text-lg">
             {submitting ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Sending...</> : 'Send Booking Request'}

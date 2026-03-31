@@ -97,7 +97,7 @@ export default function Bookings() {
                     <div className="flex items-center gap-2 text-slate-400"><Calendar className="w-4 h-4" />{booking.event_date ? format(new Date(booking.event_date), 'PPP') : 'TBD'}</div>
                     <div className="flex items-center gap-2 text-slate-400"><Clock className="w-4 h-4" />{booking.start_time} - {booking.end_time} ({booking.duration_hours}h)</div>
                     <div className="flex items-center gap-2 text-slate-400"><MapPin className="w-4 h-4" />{booking.venue_name}, {booking.venue_city}</div>
-                    <div className="flex items-center gap-2 text-slate-400"><Banknote className="w-4 h-4" />£{booking.total_price?.toFixed(2)}</div>
+
                   </div>
 
                   {!isMyBooking && booking.status === 'pending' && (
@@ -108,7 +108,7 @@ export default function Bookings() {
                   )}
                   {isMyBooking && booking.status === 'accepted' && (
                     <div className="flex gap-2 pt-3 border-t border-slate-800">
-                      <Button onClick={() => handleStatusUpdate(booking.id, 'confirmed')} className="bg-purple-600 hover:bg-purple-500" size="sm">Confirm & Pay</Button>
+                      <Button onClick={() => handleStatusUpdate(booking.id, 'confirmed')} className="bg-purple-600 hover:bg-purple-500" size="sm">Confirm Booking</Button>
                       <Button onClick={() => handleStatusUpdate(booking.id, 'cancelled')} variant="outline" className="border-slate-700" size="sm">Cancel</Button>
                     </div>
                   )}
