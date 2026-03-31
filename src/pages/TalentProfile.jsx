@@ -50,8 +50,22 @@ export default function TalentProfile() {
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row gap-8 mb-10">
           <div className="md:w-1/3">
-            <div className="aspect-square rounded-3xl overflow-hidden bg-slate-800">
-              {profile.profile_photo ? (<img src={profile.profile_photo} alt={profile.stage_name} className="w-full h-full object-cover" />) : (<div className="w-full h-full bg-gradient-to-br from-purple-900 to-orange-900 flex items-center justify-center"><span className="text-6xl">🎭</span></div>)}
+            <div className="rounded-3xl overflow-hidden bg-slate-800">
+              {profile.profile_video ? (
+                profile.profile_video.match(/\.(mp4|mov|webm)/i) ? (
+                  <video src={profile.profile_video} controls autoPlay muted loop playsInline className="w-full aspect-square object-cover" poster={profile.profile_photo || undefined} />
+                ) : (
+                  <div className="aspect-square flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-purple-900 to-orange-900 p-6">
+                    {profile.profile_photo && <img src={profile.profile_photo} alt={profile.stage_name} className="w-24 h-24 rounded-full object-cover border-4 border-white/20" />}
+                    <audio src={profile.profile_video} controls className="w-full" />
+                    <p className="text-sm text-slate-300 text-center">🎵 Music Sample</p>
+                  </div>
+                )
+              ) : profile.profile_photo ? (
+                <img src={profile.profile_photo} alt={profile.stage_name} className="w-full aspect-square object-cover" />
+              ) : (
+                <div className="aspect-square bg-gradient-to-br from-purple-900 to-orange-900 flex items-center justify-center"><span className="text-6xl">🎭</span></div>
+              )}
             </div>
           </div>
           <div className="md:w-2/3">

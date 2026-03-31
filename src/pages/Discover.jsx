@@ -303,7 +303,9 @@ export default function Discover() {
               >
                 <div className="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl">
                   <div className="relative aspect-[3/4]">
-                    {currentTalent.profile_photo ? (
+                    {currentTalent.profile_video && currentTalent.profile_video.match(/\.(mp4|mov|webm)/i) ? (
+                      <video src={currentTalent.profile_video} autoPlay muted loop playsInline className="w-full h-full object-cover" poster={currentTalent.profile_photo || undefined} />
+                    ) : currentTalent.profile_photo ? (
                       <img src={currentTalent.profile_photo} alt={currentTalent.stage_name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-purple-900 to-orange-900 flex items-center justify-center">

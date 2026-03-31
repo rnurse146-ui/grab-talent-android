@@ -1,0 +1,143 @@
+{
+  "name": "TalentProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the User entity"
+    },
+    "stage_name": {
+      "type": "string",
+      "description": "Performer's stage/professional name"
+    },
+    "talent_category": {
+      "type": "string",
+      "enum": [
+        "dj",
+        "dancer",
+        "band",
+        "guitarist",
+        "singer",
+        "pianist",
+        "harpist",
+        "saxophonist",
+        "flute_player",
+        "drummer",
+        "violinist",
+        "cello_player",
+        "rapper",
+        "magician",
+        "circus_performer",
+        "vr_artist",
+        "fortune_teller",
+        "juggler",
+        "caricature_artist",
+        "comedian",
+        "pyrotechnics",
+        "live_painter",
+        "photographer",
+        "lighting_specialist"
+      ],
+      "description": "Type of talent"
+    },
+    "bio": {
+      "type": "string",
+      "description": "About the talent"
+    },
+    "hourly_rate": {
+      "type": "number",
+      "description": "Price per hour in GBP"
+    },
+    "minimum_hours": {
+      "type": "number",
+      "description": "Minimum booking hours"
+    },
+    "profile_photo": {
+      "type": "string",
+      "description": "Main profile photo URL"
+    },
+    "profile_video": {
+      "type": "string",
+      "description": "Short intro video or music sample URL (shown as hero media)"
+    },
+    "media_gallery": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of photo/video URLs (up to 25)"
+    },
+    "location_city": {
+      "type": "string",
+      "description": "City where talent is based"
+    },
+    "location_radius": {
+      "type": "number",
+      "description": "How far willing to travel in miles"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "ID verification status"
+    },
+    "verification_id_url": {
+      "type": "string",
+      "description": "Uploaded ID for verification"
+    },
+    "verification_selfie_url": {
+      "type": "string",
+      "description": "Verification selfie URL"
+    },
+    "average_rating": {
+      "type": "number",
+      "description": "Average rating from reviews"
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of reviews"
+    },
+    "total_bookings": {
+      "type": "number",
+      "default": 0,
+      "description": "Total completed bookings"
+    },
+    "is_available": {
+      "type": "boolean",
+      "default": true,
+      "description": "Currently accepting bookings"
+    },
+    "experience_years": {
+      "type": "number",
+      "description": "Years of experience"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Special skills or styles"
+    },
+    "equipment_provided": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "sound_system",
+          "lighting",
+          "microphones",
+          "back_lights",
+          "fog_machine",
+          "stage"
+        ]
+      },
+      "description": "Equipment the performer brings to the event"
+    }
+  },
+  "required": [
+    "stage_name",
+    "talent_category",
+    "hourly_rate",
+    "location_city"
+  ]
+}

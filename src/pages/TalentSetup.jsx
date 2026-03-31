@@ -47,6 +47,7 @@ export default function TalentSetup() {
   const [user, setUser] = useState(null);
   const [existingProfile, setExistingProfile] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState(null);
+  const [profileVideo, setProfileVideo] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({ stage_name: '', talent_category: '', bio: '', hourly_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [] });
   const [specialtyInput, setSpecialtyInput] = useState('');
@@ -60,7 +61,8 @@ export default function TalentSetup() {
     if (profiles.length > 0) {
       const profile = profiles[0];
       setExistingProfile(profile);
-      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [] });
+      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', profile_video: profile.profile_video || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [] });
+      setProfileVideo(profile.profile_video || null);
       setProfilePhoto(profile.profile_photo);
     } else if (currentUser.preferred_city) {
       setFormData(prev => ({ ...prev, location_city: currentUser.preferred_city }));
@@ -75,6 +77,16 @@ export default function TalentSetup() {
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setProfilePhoto(file_url);
     setFormData(prev => ({ ...prev, profile_photo: file_url }));
+    setUploading(false);
+  };
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setProfileVideo(file_url);
+    setFormData(prev => ({ ...prev, profile_video: file_url }));
     setUploading(false);
   };
 
@@ -206,6 +218,31 @@ export default function TalentSetup() {
                   <label className="cursor-pointer"><input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" /><div className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium">{uploading ? 'Uploading...' : 'Upload'}</div></label>
                 </div>
               </div>
+
+              <div>
+                <Label className="text-slate-400">Intro Video / Music Sample <span className="text-slate-500 text-xs font-normal">(shown first on your profile)</span></Label>
+                <p className="text-xs text-slate-500 mt-1 mb-3">Upload a short video clip or audio file. Supports MP4, MOV, MP3, WAV.</p>
+                <div className="flex items-center gap-4">
+                  {profileVideo ? (
+                    <div className="flex-1">
+                      {profileVideo.match(/\.(mp4|mov|webm)/i) ? (
+                        <video src={profileVideo} controls className="w-full rounded-xl max-h-40 bg-slate-900" />
+                      ) : (
+                        <audio src={profileVideo} controls className="w-full" />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 rounded-2xl bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center shrink-0">
+                      <Music className="w-8 h-8 text-slate-600" />
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <label className="cursor-pointer"><input type="file" accept="video/*,audio/*" onChange={handleVideoUpload} className="hidden" /><div className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium">{uploading ? 'Uploading...' : profileVideo ? 'Replace' : 'Upload'}</div></label>
+                    {profileVideo && <button type="button" onClick={() => { setProfileVideo(null); setFormData(prev => ({ ...prev, profile_video: '' })); }} className="px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg text-sm">Remove</button>}
+                  </div>
+                </div>
+              </div>
+
               <div><Label className="text-slate-400">Gallery (up to 25)</Label>
                 <div className="mt-3 grid grid-cols-4 gap-3">
                   {formData.media_gallery.map((url, i) => (<div key={i} className="relative aspect-square rounded-lg overflow-hidden group"><img src={url} alt="" className="w-full h-full object-cover" /><button onClick={() => removeFromGallery(i)} className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100"><X className="w-4 h-4" /></button></div>))}
