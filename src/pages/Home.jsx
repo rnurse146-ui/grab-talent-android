@@ -73,7 +73,7 @@ export default function Home() {
                 transition={{ delay: 0.25 }}
                 className="text-white/70 text-lg text-center"
               >
-                Book world-class performers or get discovered as talent.
+                Welcome to Grab Talent — find local talent at your fingertips.
               </motion.p>
             </div>
 
