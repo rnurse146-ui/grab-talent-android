@@ -28,26 +28,26 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
       {/* Hero Banner */}
-      <div className="relative rounded-3xl overflow-hidden mb-8 bg-gradient-to-br from-orange-900 via-orange-800/60 to-slate-900 border border-orange-500/20 p-8">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl" />
+      <div className="relative rounded-3xl overflow-hidden mb-8 bg-zinc-900 border border-zinc-700 p-8">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
-            <p className="text-orange-300 font-medium mb-2">Welcome back, {user?.full_name?.split(' ')[0]} 🎭</p>
+            <p className="text-zinc-400 font-medium mb-2">Welcome back, {user?.full_name?.split(' ')[0]} 🎭</p>
             <h1 className="text-3xl font-bold mb-3">Your Talent Dashboard</h1>
-            <p className="text-slate-400 max-w-md">Manage bookings, showcase your talent, and get paid instantly when you arrive.</p>
+            <p className="text-zinc-500 max-w-md">Manage bookings, showcase your talent, and grow your audience.</p>
           </div>
           {!talentProfile ? (
             <Link to={createPageUrl('TalentSetup')}>
-              <Button className="bg-orange-600 hover:bg-orange-500 h-12 px-6 text-base shrink-0">
+              <Button className="bg-white text-black hover:bg-zinc-100 h-12 px-6 text-base font-semibold shrink-0">
                 <Star className="w-5 h-5 mr-2" />
                 Create Profile
               </Button>
             </Link>
           ) : (
             pendingBookings.length > 0 && (
-              <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-2xl px-5 py-4 shrink-0 text-center">
-                <p className="text-2xl font-bold text-yellow-400">{pendingBookings.length}</p>
-                <p className="text-yellow-300 text-sm">Pending {pendingBookings.length === 1 ? 'Request' : 'Requests'}</p>
+              <div className="bg-zinc-800 border border-zinc-600 rounded-2xl px-5 py-4 shrink-0 text-center">
+                <p className="text-2xl font-bold text-white">{pendingBookings.length}</p>
+                <p className="text-zinc-400 text-sm">Pending {pendingBookings.length === 1 ? 'Request' : 'Requests'}</p>
               </div>
             )
           )}
@@ -61,24 +61,24 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
             <h2 className="font-semibold text-lg mb-4">Manage</h2>
             <div className="grid sm:grid-cols-3 gap-4">
               <Link to={`/TalentSetup?edit=true`}>
-                <motion.div whileHover={{ scale: 1.02 }} className="p-5 rounded-2xl bg-gradient-to-br from-orange-900/50 to-orange-800/30 border border-orange-500/30 cursor-pointer h-full">
-                  <Pencil className="w-8 h-8 text-orange-400 mb-3" />
+                <motion.div whileHover={{ scale: 1.02 }} className="p-5 rounded-2xl bg-zinc-900 border border-zinc-700 hover:border-zinc-500 cursor-pointer h-full transition-colors">
+                  <Pencil className="w-8 h-8 text-white mb-3" />
                   <h3 className="font-semibold mb-1">Edit Profile</h3>
-                  <p className="text-sm text-slate-400">Bio, photos, videos</p>
+                  <p className="text-sm text-zinc-500">Bio, photos, videos</p>
                 </motion.div>
               </Link>
               <Link to={talentProfile ? `/TalentProfile?id=${talentProfile.id}` : '#'}>
-                <motion.div whileHover={{ scale: 1.02 }} className="p-5 rounded-2xl bg-gradient-to-br from-emerald-900/50 to-emerald-800/30 border border-emerald-500/30 cursor-pointer h-full">
-                  <Eye className="w-8 h-8 text-emerald-400 mb-3" />
+                <motion.div whileHover={{ scale: 1.02 }} className="p-5 rounded-2xl bg-zinc-900 border border-zinc-700 hover:border-zinc-500 cursor-pointer h-full transition-colors">
+                  <Eye className="w-8 h-8 text-white mb-3" />
                   <h3 className="font-semibold mb-1">My Profile</h3>
-                  <p className="text-sm text-slate-400">How others see you</p>
+                  <p className="text-sm text-zinc-500">How others see you</p>
                 </motion.div>
               </Link>
               <Link to={createPageUrl('Messages')}>
-                <motion.div whileHover={{ scale: 1.02 }} className="p-5 rounded-2xl bg-gradient-to-br from-blue-900/50 to-blue-800/30 border border-blue-500/30 cursor-pointer h-full">
-                  <MessageSquare className="w-8 h-8 text-blue-400 mb-3" />
+                <motion.div whileHover={{ scale: 1.02 }} className="p-5 rounded-2xl bg-zinc-900 border border-zinc-700 hover:border-zinc-500 cursor-pointer h-full transition-colors">
+                  <MessageSquare className="w-8 h-8 text-white mb-3" />
                   <h3 className="font-semibold mb-1">Messages</h3>
-                  <p className="text-sm text-slate-400">Chat with clients</p>
+                  <p className="text-sm text-zinc-500">Chat with clients</p>
                 </motion.div>
               </Link>
             </div>
@@ -86,23 +86,23 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
 
           {/* Pending Requests */}
           {pendingBookings.length > 0 && (
-            <div className="bg-yellow-500/10 rounded-2xl border border-yellow-500/20 p-6">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-yellow-400">
+            <div className="bg-zinc-900 rounded-2xl border border-zinc-700 p-6">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
                 <Calendar className="w-5 h-5" />
                 Pending Requests ({pendingBookings.length})
               </h2>
               <div className="space-y-3">
                 {pendingBookings.map((booking) => (
                   <Link key={booking.id} to={createPageUrl('BookingDetails') + `?id=${booking.id}`}>
-                    <motion.div whileHover={{ backgroundColor: 'rgba(255,255,255,0.04)' }} className="flex items-center gap-4 p-4 rounded-xl border border-yellow-500/20 bg-slate-900/50 cursor-pointer">
+                    <motion.div whileHover={{ backgroundColor: 'rgba(255,255,255,0.04)' }} className="flex items-center gap-4 p-4 rounded-xl border border-zinc-800 bg-zinc-950/50 cursor-pointer">
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium truncate">{booking.event_name || 'Event'}</h4>
-                        <p className="text-sm text-slate-400">By {booking.seeker_name} • {booking.event_date}</p>
+                        <p className="text-sm text-zinc-500">By {booking.seeker_name} • {booking.event_date}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-xs text-slate-500">{booking.duration_hours}h</p>
+                        <p className="text-xs text-zinc-500">{booking.duration_hours}h</p>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-600" />
+                      <ChevronRight className="w-4 h-4 text-zinc-600" />
                     </motion.div>
                   </Link>
                 ))}
@@ -114,35 +114,35 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
           <TalentCalendar bookings={recentBookings} />
 
           {/* Recent Bookings List */}
-          <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
+          <div className="bg-zinc-900 rounded-2xl border border-zinc-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold">All Recent Bookings</h2>
               <Link to={createPageUrl('Bookings')}>
-                <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
+                <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white">
                   View all <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
             </div>
             {recentBookings.length === 0 ? (
               <div className="text-center py-10">
-                <Calendar className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400">No bookings yet</p>
-                <p className="text-sm text-slate-500 mt-1">Complete your profile to start getting booked</p>
+                <Calendar className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
+                <p className="text-zinc-500">No bookings yet</p>
+                <p className="text-sm text-zinc-600 mt-1">Complete your profile to start getting booked</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {recentBookings.map((booking) => (
                   <Link key={booking.id} to={createPageUrl('BookingDetails') + `?id=${booking.id}`}>
-                    <motion.div whileHover={{ backgroundColor: 'rgba(255,255,255,0.04)' }} className="flex items-center gap-4 p-4 rounded-xl border border-slate-800 cursor-pointer">
+                    <motion.div whileHover={{ backgroundColor: 'rgba(255,255,255,0.04)' }} className="flex items-center gap-4 p-4 rounded-xl border border-zinc-800 cursor-pointer">
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium truncate">{booking.event_name || 'Event'}</h4>
-                        <p className="text-sm text-slate-400">{booking.seeker_name} • {booking.event_date}</p>
+                        <p className="text-sm text-zinc-500">{booking.seeker_name} • {booking.event_date}</p>
                       </div>
                       <Badge className={
-                        booking.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
-                        booking.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                        booking.status === 'completed' ? 'bg-blue-500/20 text-blue-400' :
-                        'bg-slate-500/20 text-slate-400'
+                        booking.status === 'confirmed' ? 'bg-white/20 text-white' :
+                        booking.status === 'pending' ? 'bg-zinc-700 text-zinc-300' :
+                        booking.status === 'completed' ? 'bg-white/10 text-zinc-300' :
+                        'bg-zinc-800 text-zinc-500'
                       }>{booking.status}</Badge>
                     </motion.div>
                   </Link>
@@ -156,37 +156,37 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
         <div className="space-y-6">
           {/* Profile Stats */}
           {talentProfile && (
-            <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
+            <div className="bg-zinc-900 rounded-2xl border border-zinc-700 p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-orange-400" />
+                <TrendingUp className="w-4 h-4 text-zinc-400" />
                 My Stats
               </h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Rating</span>
+                  <span className="text-zinc-500">Rating</span>
                   <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    <Star className="w-4 h-4 text-white fill-white" />
                     <span className="font-semibold">{talentProfile.average_rating?.toFixed(1) || 'N/A'}</span>
-                    <span className="text-slate-500 text-xs">({talentProfile.total_reviews || 0})</span>
+                    <span className="text-zinc-600 text-xs">({talentProfile.total_reviews || 0})</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Total Bookings</span>
+                  <span className="text-zinc-500">Total Bookings</span>
                   <span className="font-semibold">{talentProfile.total_bookings || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Rate</span>
-                  <span className="font-semibold text-green-400">£{talentProfile.hourly_rate}/hr</span>
+                  <span className="text-zinc-500">Rate</span>
+                  <span className="font-semibold text-white">£{talentProfile.hourly_rate}/hr</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Verified</span>
+                  <span className="text-zinc-500">Verified</span>
                   {talentProfile.is_verified ? (
-                    <Badge className="bg-green-500/20 text-green-400">
+                    <Badge className="bg-white/20 text-white">
                       <CheckCircle2 className="w-3 h-3 mr-1" /> Yes
                     </Badge>
                   ) : (
                     <Link to={createPageUrl('Verification')}>
-                      <Badge className="bg-yellow-500/20 text-yellow-400 cursor-pointer hover:bg-yellow-500/30">
+                      <Badge className="bg-zinc-700 text-zinc-300 cursor-pointer hover:bg-zinc-600">
                         Get Verified
                       </Badge>
                     </Link>
@@ -198,7 +198,7 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
 
 
           {/* Quick Links */}
-          <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
+          <div className="bg-zinc-900 rounded-2xl border border-zinc-700 p-6">
             <h3 className="font-semibold mb-4">Quick Links</h3>
             <div className="space-y-1">
               {[
@@ -210,10 +210,10 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
                 { to: '/Settings', icon: Settings, label: 'Settings' },
               ].map(({ to, icon: Icon, label, badge }) => (
                 <Link key={to} to={to}>
-                  <Button variant="ghost" className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800">
+                  <Button variant="ghost" className="w-full justify-start text-zinc-400 hover:text-white hover:bg-zinc-800">
                     <Icon className="w-4 h-4 mr-3" />
                     <span className="flex-1 text-left">{label}</span>
-                    {badge > 0 && <span className="ml-auto bg-purple-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{badge}</span>}
+                    {badge > 0 && <span className="ml-auto bg-white text-black text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{badge}</span>}
                   </Button>
                 </Link>
               ))}

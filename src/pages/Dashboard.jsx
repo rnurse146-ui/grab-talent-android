@@ -79,20 +79,20 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       {/* Top Nav */}
-      <div className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div className="border-b border-slate-800 bg-black/90 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col items-center gap-4">
           <Link to={createPageUrl('Dashboard')}>
-            <Logo className="h-8 w-auto" />
+            <Logo className="h-16 w-auto" variant="light" />
           </Link>
 
-          {/* Role switcher — always visible */}
-          <div className="flex items-center bg-slate-800 rounded-2xl p-1.5 border-2 border-slate-700 shadow-lg">
+          {/* Role switcher */}
+          <div className="flex items-center bg-zinc-900 rounded-2xl p-1.5 border border-zinc-700 shadow-lg">
             <button
               onClick={() => setActiveView('seeker')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 activeView === 'seeker'
-                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md scale-105'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                  ? 'bg-white text-black shadow-md scale-105'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
               }`}
             >
               <Search className="w-4 h-4" />
@@ -100,10 +100,10 @@ export default function Dashboard() {
             </button>
             <button
               onClick={() => setActiveView('talent')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 activeView === 'talent'
-                  ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-md scale-105'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                  ? 'bg-white text-black shadow-md scale-105'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
               }`}
             >
               <Star className="w-4 h-4" />
