@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, ChevronLeft, Clock, MapPin, Loader2, CheckCircle2, XCircle, AlertCircle, Banknote } from 'lucide-react';
 import { format } from 'date-fns';
-import Logo from '@/components/Logo';
+import PageHeader from '@/components/PageHeader';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-yellow-500/20 text-yellow-400', icon: AlertCircle },
@@ -49,18 +49,14 @@ export default function Bookings() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-        <Link to={createPageUrl('Dashboard')}><Button variant="ghost" size="sm" className="text-slate-400"><ChevronLeft className="w-4 h-4 mr-1" />Back</Button></Link>
-        <Logo className="h-8 w-auto" />
-        <div className="w-16" />
-      </div>
+    <div className="min-h-screen bg-black text-white">
+      <PageHeader backTo={createPageUrl('Dashboard')} />
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold mb-6">My Bookings</h1>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="bg-slate-900 border border-slate-800">
+          <TabsList className="bg-zinc-900 border border-zinc-800">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
             <TabsTrigger value="past">Past</TabsTrigger>
@@ -71,10 +67,10 @@ export default function Bookings() {
           <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-purple-500" /></div>
         ) : filteredBookings.length === 0 ? (
           <div className="text-center py-20">
-            <Calendar className="w-16 h-16 text-slate-700 mx-auto mb-4" />
+            <Calendar className="w-16 h-16 text-zinc-700 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">No bookings yet</h2>
-            <p className="text-slate-400 mb-6">{isTalent ? "Booking requests will appear here" : "Book some talent to get started"}</p>
-            {!isTalent && (<Link to={createPageUrl('Discover')}><Button className="bg-purple-600 hover:bg-purple-500">Discover Talent</Button></Link>)}
+            <p className="text-zinc-400 mb-6">{isTalent ? "Booking requests will appear here" : "Book some talent to get started"}</p>
+            {!isTalent && (<Link to={createPageUrl('Discover')}><Button className="bg-white text-black hover:bg-zinc-100">Discover Talent</Button></Link>)}
           </div>
         ) : (
           <div className="space-y-4">
@@ -84,7 +80,7 @@ export default function Bookings() {
               const isMyBooking = booking.seeker_id === user?.id;
 
               return (
-                <div key={booking.id} className="p-5 bg-slate-900 rounded-2xl border border-slate-800">
+                <div key={booking.id} className="p-5 bg-zinc-900 rounded-2xl border border-zinc-800">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                     <div>
                       <h3 className="font-semibold text-lg">{booking.event_name || 'Event'}</h3>
@@ -94,32 +90,32 @@ export default function Bookings() {
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-3 text-sm mb-4">
-                    <div className="flex items-center gap-2 text-slate-400"><Calendar className="w-4 h-4" />{booking.event_date ? format(new Date(booking.event_date), 'PPP') : 'TBD'}</div>
-                    <div className="flex items-center gap-2 text-slate-400"><Clock className="w-4 h-4" />{booking.start_time} - {booking.end_time} ({booking.duration_hours}h)</div>
-                    <div className="flex items-center gap-2 text-slate-400"><MapPin className="w-4 h-4" />{booking.venue_name}, {booking.venue_city}</div>
+                    <div className="flex items-center gap-2 text-zinc-400"><Calendar className="w-4 h-4" />{booking.event_date ? format(new Date(booking.event_date), 'PPP') : 'TBD'}</div>
+                    <div className="flex items-center gap-2 text-zinc-400"><Clock className="w-4 h-4" />{booking.start_time} - {booking.end_time} ({booking.duration_hours}h)</div>
+                    <div className="flex items-center gap-2 text-zinc-400"><MapPin className="w-4 h-4" />{booking.venue_name}, {booking.venue_city}</div>
 
                   </div>
 
                   {!isMyBooking && booking.status === 'pending' && (
-                    <div className="flex gap-2 pt-3 border-t border-slate-800">
-                      <Button onClick={() => handleStatusUpdate(booking.id, 'accepted')} className="bg-green-600 hover:bg-green-500" size="sm">Accept</Button>
+                    <div className="flex gap-2 pt-3 border-t border-zinc-800">
+                      <Button onClick={() => handleStatusUpdate(booking.id, 'accepted')} className="bg-white text-black hover:bg-zinc-100" size="sm">Accept</Button>
                       <Button onClick={() => handleStatusUpdate(booking.id, 'declined')} variant="outline" className="border-red-500/50 text-red-400 hover:bg-red-500/20" size="sm">Decline</Button>
                     </div>
                   )}
                   {isMyBooking && booking.status === 'accepted' && (
-                    <div className="flex gap-2 pt-3 border-t border-slate-800">
-                      <Button onClick={() => handleStatusUpdate(booking.id, 'confirmed')} className="bg-purple-600 hover:bg-purple-500" size="sm">Confirm Booking</Button>
-                      <Button onClick={() => handleStatusUpdate(booking.id, 'cancelled')} variant="outline" className="border-slate-700" size="sm">Cancel</Button>
+                    <div className="flex gap-2 pt-3 border-t border-zinc-800">
+                      <Button onClick={() => handleStatusUpdate(booking.id, 'confirmed')} className="bg-white text-black hover:bg-zinc-100" size="sm">Confirm Booking</Button>
+                      <Button onClick={() => handleStatusUpdate(booking.id, 'cancelled')} variant="outline" className="border-zinc-700" size="sm">Cancel</Button>
                     </div>
                   )}
                   {booking.status === 'confirmed' && (
-                    <div className="flex gap-2 pt-3 border-t border-slate-800">
-                      <Link to={createPageUrl('Messages') + `?to=${isMyBooking ? booking.talent_user_id : booking.seeker_id}`}><Button variant="outline" className="border-slate-700" size="sm">Message</Button></Link>
-                      {!isMyBooking && (<Button onClick={() => handleStatusUpdate(booking.id, 'completed')} className="bg-purple-600 hover:bg-purple-500" size="sm">Mark Complete</Button>)}
+                    <div className="flex gap-2 pt-3 border-t border-zinc-800">
+                      <Link to={createPageUrl('Messages') + `?to=${isMyBooking ? booking.talent_user_id : booking.seeker_id}`}><Button variant="outline" className="border-zinc-700" size="sm">Message</Button></Link>
+                      {!isMyBooking && (<Button onClick={() => handleStatusUpdate(booking.id, 'completed')} className="bg-white text-black hover:bg-zinc-100" size="sm">Mark Complete</Button>)}
                     </div>
                   )}
                   {isMyBooking && booking.status === 'completed' && (
-                    <div className="pt-3 border-t border-slate-800"><Link to={createPageUrl('WriteReview') + `?booking_id=${booking.id}`}><Button variant="outline" className="border-slate-700" size="sm">Leave Review</Button></Link></div>
+                    <div className="pt-3 border-t border-zinc-800"><Link to={createPageUrl('WriteReview') + `?booking_id=${booking.id}`}><Button variant="outline" className="border-zinc-700" size="sm">Leave Review</Button></Link></div>
                   )}
                 </div>
               );

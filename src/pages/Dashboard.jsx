@@ -7,6 +7,7 @@ import Logo from '@/components/Logo';
 import { Link } from 'react-router-dom';
 import SeekerDashboard from '@/components/dashboard/SeekerDashboard';
 import TalentDashboard from '@/components/dashboard/TalentDashboard';
+import HelpChat from '@/components/HelpChat';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -128,6 +129,7 @@ export default function Dashboard() {
           recentBookings={talentBookings}
         />
       )}
+      <HelpChat />
     </div>
   );
 }

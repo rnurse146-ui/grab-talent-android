@@ -10,8 +10,7 @@ import {
   MessageSquare, Star, User, Phone
 } from 'lucide-react';
 import { format } from 'date-fns';
-import Logo from '@/components/Logo';
-import PaymentRelease from '@/components/booking/PaymentRelease';
+import PageHeader from '@/components/PageHeader';
 
 const STATUS_CONFIG = {
   pending:   { label: 'Pending',   color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: AlertCircle },
@@ -60,13 +59,13 @@ export default function BookingDetails() {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-      <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-white" />
     </div>
   );
 
   if (!booking) return (
-    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-4">Booking not found</h1>
         <Link to={createPageUrl('Bookings')}><Button>View Bookings</Button></Link>
@@ -86,16 +85,8 @@ export default function BookingDetails() {
     booking.payment_status !== 'released';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-        <Link to={createPageUrl('Bookings')}>
-          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
-            <ChevronLeft className="w-4 h-4 mr-1" />Back
-          </Button>
-        </Link>
-        <Logo className="h-8 w-auto" />
-        <div className="w-16" />
-      </div>
+    <div className="min-h-screen bg-black text-white">
+      <PageHeader backTo={createPageUrl('Bookings')} />
 
       <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
         {/* Header */}
@@ -111,7 +102,7 @@ export default function BookingDetails() {
         </div>
 
         {/* Talent / Seeker Info */}
-        <div className="p-5 bg-slate-900 rounded-2xl border border-slate-800">
+        <div className="p-5 bg-zinc-900 rounded-2xl border border-zinc-800">
           <h2 className="text-sm font-medium text-slate-400 mb-3">{isSeeker ? 'Talent' : 'Booked By'}</h2>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600/30 to-orange-600/30 flex items-center justify-center">
@@ -127,7 +118,7 @@ export default function BookingDetails() {
         </div>
 
         {/* Event Details */}
-        <div className="p-5 bg-slate-900 rounded-2xl border border-slate-800 space-y-4">
+        <div className="p-5 bg-zinc-900 rounded-2xl border border-zinc-800 space-y-4">
           <h2 className="font-semibold">Event Details</h2>
           <div className="grid gap-3">
             <div className="flex items-center gap-3 text-slate-300">
@@ -169,7 +160,7 @@ export default function BookingDetails() {
           {/* Talent actions */}
           {isTalent && booking.status === 'pending' && (
             <div className="flex gap-3">
-              <Button onClick={() => handleStatusUpdate('accepted')} disabled={updating} className="flex-1 bg-green-600 hover:bg-green-500">
+              <Button onClick={() => handleStatusUpdate('accepted')} disabled={updating} className="flex-1 bg-white text-black hover:bg-zinc-100">
                 {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
                 Accept Booking
               </Button>
@@ -180,17 +171,16 @@ export default function BookingDetails() {
             </div>
           )}
 
-          {/* Seeker confirms booking after talent accepts */}
           {isSeeker && booking.status === 'accepted' && (
-            <div className="p-5 bg-purple-500/10 rounded-2xl border border-purple-500/20 space-y-3">
-              <p className="text-purple-300 font-medium">🎉 {booking.talent_stage_name} has accepted your booking!</p>
-              <p className="text-slate-400 text-sm">Confirm to lock in the booking.</p>
+            <div className="p-5 bg-zinc-900 rounded-2xl border border-zinc-700 space-y-3">
+              <p className="text-white font-medium">🎉 {booking.talent_stage_name} has accepted your booking!</p>
+              <p className="text-zinc-400 text-sm">Confirm to lock in the booking.</p>
               <div className="flex gap-3">
-                <Button onClick={() => handleStatusUpdate('confirmed')} disabled={updating} className="flex-1 bg-purple-600 hover:bg-purple-500">
+                <Button onClick={() => handleStatusUpdate('confirmed')} disabled={updating} className="flex-1 bg-white text-black hover:bg-zinc-100">
                   {updating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
                   Confirm Booking
                 </Button>
-                <Button onClick={() => handleStatusUpdate('cancelled')} disabled={updating} variant="outline" className="border-slate-700 text-slate-400">
+                <Button onClick={() => handleStatusUpdate('cancelled')} disabled={updating} variant="outline" className="border-zinc-700 text-zinc-400">
                   Cancel
                 </Button>
               </div>
@@ -198,24 +188,23 @@ export default function BookingDetails() {
           )}
 
           {isSeeker && booking.status === 'pending' && (
-            <Button onClick={() => handleStatusUpdate('cancelled')} disabled={updating} variant="outline" className="w-full border-slate-700 text-slate-400">
+            <Button onClick={() => handleStatusUpdate('cancelled')} disabled={updating} variant="outline" className="w-full border-zinc-700 text-zinc-400">
               Cancel Request
             </Button>
           )}
 
           {isSeeker && booking.status === 'completed' && (
             <Link to={createPageUrl('WriteReview') + `?booking_id=${booking.id}`}>
-              <Button className="w-full bg-yellow-600 hover:bg-yellow-500">
+              <Button className="w-full bg-white text-black hover:bg-zinc-100">
                 <Star className="w-4 h-4 mr-2" />
                 Leave a Review
               </Button>
             </Link>
           )}
 
-          {/* Message button */}
           {['accepted', 'confirmed', 'completed'].includes(booking.status) && (
             <Link to={createPageUrl('Messages') + `?to=${otherUserId}`}>
-              <Button variant="outline" className="w-full border-slate-700">
+              <Button variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:text-white">
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Message {isSeeker ? booking.talent_stage_name : booking.seeker_name}
               </Button>
@@ -224,7 +213,7 @@ export default function BookingDetails() {
 
           {isSeeker && (
             <Link to={createPageUrl('TalentProfile') + `?id=${booking.talent_profile_id}`}>
-              <Button variant="ghost" className="w-full text-slate-400 hover:text-white">
+              <Button variant="ghost" className="w-full text-zinc-400 hover:text-white">
                 View Talent Profile
               </Button>
             </Link>

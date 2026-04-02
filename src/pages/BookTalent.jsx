@@ -10,7 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, Banknote, Loader2, CheckCircle2, Star } from 'lucide-react';
 import { format } from 'date-fns';
-import Logo from '@/components/Logo';
+import PageHeader from '@/components/PageHeader';
 
 const EVENT_TYPES = [
   { value: 'wedding', label: 'Wedding' },
@@ -80,18 +80,18 @@ export default function BookTalent() {
     setSubmitting(false);
   };
 
-  if (loading) return (<div className="min-h-screen bg-slate-950 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-purple-500" /></div>);
-  if (!talent) return (<div className="min-h-screen bg-slate-950 text-white flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold mb-4">Talent not found</h1><Link to={createPageUrl('Discover')}><Button>Find Talent</Button></Link></div></div>);
+  if (loading) return (<div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>);
+  if (!talent) return (<div className="min-h-screen bg-black text-white flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold mb-4">Talent not found</h1><Link to={createPageUrl('Discover')}><Button>Find Talent</Button></Link></div></div>);
 
   if (success) return (
-    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
       <div className="text-center max-w-md">
         <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6"><CheckCircle2 className="w-10 h-10 text-green-500" /></div>
         <h1 className="text-2xl font-bold mb-2">Booking Request Sent!</h1>
-        <p className="text-slate-400 mb-6">Your booking request has been sent to {talent.stage_name}. They'll review and respond soon.</p>
+        <p className="text-zinc-400 mb-6">Your booking request has been sent to {talent.stage_name}. They'll review and respond soon.</p>
         <div className="flex gap-3 justify-center">
-          <Link to={createPageUrl('Bookings')}><Button className="bg-purple-600 hover:bg-purple-500">View Bookings</Button></Link>
-          <Link to={createPageUrl('Dashboard')}><Button variant="outline" className="border-slate-700">Dashboard</Button></Link>
+          <Link to={createPageUrl('Bookings')}><Button className="bg-white text-black hover:bg-zinc-100">View Bookings</Button></Link>
+          <Link to={createPageUrl('Dashboard')}><Button variant="outline" className="border-zinc-700">Dashboard</Button></Link>
         </div>
       </div>
     </div>
@@ -100,22 +100,18 @@ export default function BookTalent() {
   const pricing = calculatePricing();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-        <Link to={createPageUrl('TalentProfile') + `?id=${talentId}`}><Button variant="ghost" size="sm" className="text-slate-400"><ChevronLeft className="w-4 h-4 mr-1" />Back</Button></Link>
-        <Logo className="h-8 w-auto" />
-        <div className="w-16" />
-      </div>
+    <div className="min-h-screen bg-black text-white">
+      <PageHeader backTo={createPageUrl('TalentProfile') + `?id=${talentId}`} />
 
       <div className="max-w-2xl mx-auto px-6 py-8">
-        <div className="flex items-center gap-4 mb-8 p-4 bg-slate-900 rounded-2xl border border-slate-800">
+        <div className="flex items-center gap-4 mb-8 p-4 bg-zinc-900 rounded-2xl border border-zinc-800">
           <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-800">
             {talent.profile_photo ? (<img src={talent.profile_photo} alt="" className="w-full h-full object-cover" />) : (<div className="w-full h-full flex items-center justify-center text-2xl">🎭</div>)}
           </div>
           <div>
             <h2 className="font-semibold text-lg">{talent.stage_name}</h2>
-            <p className="text-purple-400 text-sm capitalize">{talent.talent_category?.replace(/_/g, ' ')}</p>
-            <div className="flex items-center gap-3 text-sm text-slate-400 mt-1">
+            <p className="text-zinc-400 text-sm capitalize">{talent.talent_category?.replace(/_/g, ' ')}</p>
+            <div className="flex items-center gap-3 text-sm text-zinc-400 mt-1">
               <span>£{talent.hourly_rate}/hr</span><span>•</span><span>Min {talent.minimum_hours}h</span>
               {talent.average_rating && (<><span>•</span><span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />{talent.average_rating.toFixed(1)}</span></>)}
             </div>
@@ -126,29 +122,28 @@ export default function BookTalent() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid sm:grid-cols-2 gap-4">
-            <div><Label className="text-slate-400">Event Name</Label><Input value={formData.event_name} onChange={(e) => setFormData({...formData, event_name: e.target.value})} placeholder="e.g. Sarah's Wedding" className="bg-slate-900 border-slate-800 mt-2" required /></div>
-            <div><Label className="text-slate-400">Event Type</Label><Select value={formData.event_type} onValueChange={(v) => setFormData({...formData, event_type: v})} required><SelectTrigger className="bg-slate-900 border-slate-800 mt-2"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent className="bg-slate-900 border-slate-800">{EVENT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label className="text-zinc-400">Event Name</Label><Input value={formData.event_name} onChange={(e) => setFormData({...formData, event_name: e.target.value})} placeholder="e.g. Sarah's Wedding" className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
+            <div><Label className="text-zinc-400">Event Type</Label><Select value={formData.event_type} onValueChange={(v) => setFormData({...formData, event_type: v})} required><SelectTrigger className="bg-slate-900 border-slate-800 mt-2"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent className="bg-slate-900 border-slate-800">{EVENT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent></Select></div>
           </div>
 
-          <div><Label className="text-slate-400">Event Date</Label><div className="mt-2"><Calendar mode="single" selected={formData.event_date} onSelect={(date) => setFormData({...formData, event_date: date})} disabled={(date) => date < new Date()} className="rounded-xl border border-slate-800 bg-slate-900 p-3" /></div></div>
+          <div><Label className="text-zinc-400">Event Date</Label><div className="mt-2"><Calendar mode="single" selected={formData.event_date} onSelect={(date) => setFormData({...formData, event_date: date})} disabled={(date) => date < new Date()} className="rounded-xl border border-zinc-800 bg-zinc-900 p-3" /></div></div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <div><Label className="text-slate-400">Start Time</Label><Input type="time" value={formData.start_time} onChange={(e) => setFormData({...formData, start_time: e.target.value})} className="bg-slate-900 border-slate-800 mt-2" required /></div>
-            <div><Label className="text-slate-400">End Time</Label><Input type="time" value={formData.end_time} onChange={(e) => setFormData({...formData, end_time: e.target.value})} className="bg-slate-900 border-slate-800 mt-2" required /></div>
+            <div><Label className="text-zinc-400">Start Time</Label><Input type="time" value={formData.start_time} onChange={(e) => setFormData({...formData, start_time: e.target.value})} className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
+            <div><Label className="text-zinc-400">End Time</Label><Input type="time" value={formData.end_time} onChange={(e) => setFormData({...formData, end_time: e.target.value})} className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
           </div>
 
-          <div><Label className="text-slate-400">Venue Name</Label><Input value={formData.venue_name} onChange={(e) => setFormData({...formData, venue_name: e.target.value})} placeholder="e.g. The Grand Hotel" className="bg-slate-900 border-slate-800 mt-2" required /></div>
-          <div><Label className="text-slate-400">Venue Address</Label><Input value={formData.venue_address} onChange={(e) => setFormData({...formData, venue_address: e.target.value})} placeholder="Full address" className="bg-slate-900 border-slate-800 mt-2" required /></div>
+          <div><Label className="text-zinc-400">Venue Name</Label><Input value={formData.venue_name} onChange={(e) => setFormData({...formData, venue_name: e.target.value})} placeholder="e.g. The Grand Hotel" className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
+          <div><Label className="text-zinc-400">Venue Address</Label><Input value={formData.venue_address} onChange={(e) => setFormData({...formData, venue_address: e.target.value})} placeholder="Full address" className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <div><Label className="text-slate-400">City</Label><Input value={formData.venue_city} onChange={(e) => setFormData({...formData, venue_city: e.target.value})} placeholder="e.g. London" className="bg-slate-900 border-slate-800 mt-2" required /></div>
-            <div><Label className="text-slate-400">Your Phone</Label><Input value={formData.seeker_phone} onChange={(e) => setFormData({...formData, seeker_phone: e.target.value})} placeholder="+44 7XXX" className="bg-slate-900 border-slate-800 mt-2" /></div>
+            <div><Label className="text-zinc-400">City</Label><Input value={formData.venue_city} onChange={(e) => setFormData({...formData, venue_city: e.target.value})} placeholder="e.g. London" className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
+            <div><Label className="text-zinc-400">Your Phone</Label><Input value={formData.seeker_phone} onChange={(e) => setFormData({...formData, seeker_phone: e.target.value})} placeholder="+44 7XXX" className="bg-zinc-900 border-zinc-800 mt-2" /></div>
           </div>
 
-          <div><Label className="text-slate-400">Special Requirements (optional)</Label><Textarea value={formData.special_requirements} onChange={(e) => setFormData({...formData, special_requirements: e.target.value})} placeholder="Any special requests..." className="bg-slate-900 border-slate-800 mt-2 h-24" /></div>
+          <div><Label className="text-zinc-400">Special Requirements (optional)</Label><Textarea value={formData.special_requirements} onChange={(e) => setFormData({...formData, special_requirements: e.target.value})} placeholder="Any special requests..." className="bg-zinc-900 border-zinc-800 mt-2 h-24" /></div>
 
-
-          <Button type="submit" disabled={submitting || !formData.event_date} className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-500 text-lg">
+          <Button type="submit" disabled={submitting || !formData.event_date} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
             {submitting ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Sending...</> : 'Send Booking Request'}
           </Button>
         </form>

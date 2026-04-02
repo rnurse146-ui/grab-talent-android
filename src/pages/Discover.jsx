@@ -50,6 +50,8 @@ export default function Discover() {
   const [swipedIds, setSwipedIds] = useState(new Set());
   const [showFilters, setShowFilters] = useState(false);
   
+  const [lastPass, setLastPass] = useState(null); // { talent, historyId, maybeId }
+
   const [filters, setFilters] = useState({
     category: 'all',
     maxPrice: '',
@@ -103,20 +105,29 @@ export default function Discover() {
     setLoading(false);
   };
 
+  const handleUndo = async () => {
+    if (!lastPass) return;
+    await base44.entities.SwipeHistory.delete(lastPass.historyId);
+    if (lastPass.maybeId) await base44.entities.MaybeList.delete(lastPass.maybeId);
+    setSwipedIds(prev => { const next = new Set(prev); next.delete(lastPass.talent.id); return next; });
+    setCurrentIndex(prev => prev - 1);
+    setLastPass(null);
+  };
+
   const handleSwipe = async (direction) => {
     if (!talents[currentIndex]) return;
-    
     const talent = talents[currentIndex];
     setSwiping(direction);
-    
-    await base44.entities.SwipeHistory.create({
+
+    const historyRecord = await base44.entities.SwipeHistory.create({
       seeker_id: user.id,
       talent_profile_id: talent.id,
       action: direction === 'right' ? 'maybe' : 'pass'
     });
-    
+
+    let maybeId = null;
     if (direction === 'right') {
-      await base44.entities.MaybeList.create({
+      const maybeRecord = await base44.entities.MaybeList.create({
         seeker_id: user.id,
         talent_profile_id: talent.id,
         talent_stage_name: talent.stage_name,
@@ -126,10 +137,12 @@ export default function Discover() {
         talent_rating: talent.average_rating,
         talent_city: talent.location_city
       });
+      maybeId = maybeRecord.id;
     }
-    
+
+    setLastPass({ talent, historyId: historyRecord.id, maybeId });
     setSwipedIds(prev => new Set([...prev, talent.id]));
-    
+
     setTimeout(() => {
       setSwiping(null);
       setCurrentIndex(prev => prev + 1);
@@ -144,19 +157,19 @@ export default function Discover() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+    <div className="min-h-screen bg-black text-white">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-black sticky top-0 z-10">
         <Link to={createPageUrl('Dashboard')}>
-          <Logo className="h-8 w-auto" />
+          <Logo className="h-12 w-auto" variant="light" />
         </Link>
-        <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="border-slate-700 bg-transparent">
+        <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="border-zinc-700 bg-transparent">
           <Filter className="w-4 h-4 mr-2" />Filters
         </Button>
       </div>
 
       <AnimatePresence>
         {showFilters && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="border-b border-slate-800 overflow-hidden">
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="border-b border-zinc-800 overflow-hidden">
             <div className="p-5 space-y-5">
               {/* Row 1: Category + City */}
               <div className="grid sm:grid-cols-2 gap-4">
@@ -336,19 +349,31 @@ export default function Discover() {
             </AnimatePresence>
 
             <div className="flex items-center gap-6 mt-8">
-              <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center hover:border-red-500 hover:bg-red-500/20 transition-colors">
+              <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-red-500 hover:bg-red-500/20 transition-colors">
                 <X className="w-8 h-8 text-red-400" />
               </motion.button>
               <Link to={createPageUrl('TalentProfile') + `?id=${currentTalent.id}`}>
-                <motion.button whileTap={{ scale: 0.9 }} className="w-12 h-12 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center hover:border-purple-500 transition-colors">
-                  <ChevronRight className="w-6 h-6 text-purple-400" />
+                <motion.button whileTap={{ scale: 0.9 }} className="w-12 h-12 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-white transition-colors">
+                  <ChevronRight className="w-6 h-6 text-white" />
                 </motion.button>
               </Link>
-              <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('right')} className="w-16 h-16 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center hover:border-green-500 hover:bg-green-500/20 transition-colors">
+              <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('right')} className="w-16 h-16 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-green-500 hover:bg-green-500/20 transition-colors">
                 <Heart className="w-8 h-8 text-green-400" />
               </motion.button>
             </div>
-            <p className="text-slate-500 text-sm mt-4">{currentIndex + 1} of {talents.length} talents</p>
+            {/* Undo button */}
+            {lastPass && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={handleUndo}
+                className="mt-4 flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-700 text-zinc-300 hover:border-white hover:text-white text-sm transition-colors"
+              >
+                ↩ Undo last swipe
+              </motion.button>
+            )}
+            {!lastPass && <div className="h-10 mt-4" />}
+            <p className="text-zinc-500 text-sm mt-2">{currentIndex + 1} of {talents.length} talents</p>
           </>
         )}
       </div>

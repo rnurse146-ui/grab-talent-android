@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, MapPin, Banknote, CheckCircle2, Clock, Calendar, ChevronLeft, MessageSquare, Image, Loader2, Award } from 'lucide-react';
 import AvailabilityMiniCalendar from '@/components/talent/AvailabilityMiniCalendar';
+import PageHeader from '@/components/PageHeader';
 import Logo from '@/components/Logo';
 
 export default function TalentProfile() {
@@ -36,15 +37,15 @@ export default function TalentProfile() {
     setLoading(false);
   };
 
-  if (loading) return (<div className="min-h-screen bg-slate-950 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-purple-500" /></div>);
-  if (!profile) return (<div className="min-h-screen bg-slate-950 text-white flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold mb-4">Profile not found</h1><Link to={createPageUrl('Dashboard')}><Button>Go to Dashboard</Button></Link></div></div>);
+  if (loading) return (<div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>);
+  if (!profile) return (<div className="min-h-screen bg-black text-white flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold mb-4">Profile not found</h1><Link to={createPageUrl('Dashboard')}><Button>Go to Dashboard</Button></Link></div></div>);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-        <Link to={createPageUrl('Dashboard')}><Button variant="ghost" size="sm" className="text-slate-400 hover:text-white"><ChevronLeft className="w-4 h-4 mr-1" />Back</Button></Link>
-        <Logo className="h-8 w-auto" />
-        {isOwner ? (<Link to={createPageUrl('TalentSetup') + '?edit=true'}><Button size="sm" variant="outline" className="border-slate-700">Edit Profile</Button></Link>) : (<div className="w-20" />)}
+    <div className="min-h-screen bg-black text-white">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-black sticky top-0 z-10">
+        <Link to={createPageUrl('Dashboard')}><Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white"><ChevronLeft className="w-4 h-4 mr-1" />Back</Button></Link>
+        <Logo className="h-12 w-auto" variant="light" />
+        {isOwner ? (<Link to={createPageUrl('TalentSetup') + '?edit=true'}><Button size="sm" variant="outline" className="border-zinc-700">Edit Profile</Button></Link>) : (<div className="w-20" />)}
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
@@ -75,7 +76,7 @@ export default function TalentProfile() {
                   <h1 className="text-3xl font-bold">{profile.stage_name}</h1>
                   {profile.is_verified && (<Badge className="bg-green-500 text-white"><CheckCircle2 className="w-3 h-3 mr-1" />Verified</Badge>)}
                 </div>
-                <p className="text-purple-400 text-lg capitalize">{profile.talent_category?.replace(/_/g, ' ')}</p>
+                <p className="text-zinc-400 text-lg capitalize">{profile.talent_category?.replace(/_/g, ' ')}</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-4 mb-6">
@@ -101,8 +102,8 @@ export default function TalentProfile() {
             )}
             {!isOwner && (
               <div className="flex gap-3">
-                <Link to={createPageUrl('BookTalent') + `?talent_id=${profile.id}`}><Button size="lg" className="bg-purple-600 hover:bg-purple-500"><Calendar className="w-5 h-5 mr-2" />Book Now</Button></Link>
-                <Link to={createPageUrl('Messages') + `?to=${profile.user_id}`}><Button size="lg" variant="outline" className="border-slate-700 bg-transparent"><MessageSquare className="w-5 h-5 mr-2" />Message</Button></Link>
+                <Link to={createPageUrl('BookTalent') + `?talent_id=${profile.id}`}><Button size="lg" className="bg-white text-black hover:bg-zinc-100"><Calendar className="w-5 h-5 mr-2" />Book Now</Button></Link>
+                <Link to={createPageUrl('Messages') + `?to=${profile.user_id}`}><Button size="lg" variant="outline" className="border-zinc-700 bg-transparent"><MessageSquare className="w-5 h-5 mr-2" />Message</Button></Link>
               </div>
             )}
           </div>
@@ -131,7 +132,7 @@ export default function TalentProfile() {
           ) : (
             <div className="space-y-4">
               {reviews.map((review) => (
-                <div key={review.id} className="p-5 bg-slate-900/50 rounded-2xl border border-slate-800">
+                <div key={review.id} className="p-5 bg-zinc-900 rounded-2xl border border-zinc-800">
                   <div className="flex items-start justify-between mb-3">
                     <div><p className="font-medium">{review.reviewer_name || 'Anonymous'}</p><p className="text-sm text-slate-500">{review.event_type} • {review.event_date}</p></div>
                     <div className="flex">{[1,2,3,4,5].map(i => (<Star key={i} className={`w-4 h-4 ${i <= review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-slate-600'}`} />))}</div>

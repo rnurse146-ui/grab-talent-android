@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ChevronLeft, Send, Loader2, MessageSquare, ArrowLeft } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import Logo from '@/components/Logo';
+import HelpChat from '@/components/HelpChat';
 
 function formatTime(dateStr) {
   const d = new Date(dateStr);
@@ -200,16 +201,16 @@ export default function Messages() {
   return (
     <div className="h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
       {/* Top Nav */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-slate-800 shrink-0">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-black shrink-0">
         <Link to={createPageUrl('Dashboard')}>
-          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
+          <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white">
             <ChevronLeft className="w-4 h-4 mr-1" />Back
           </Button>
         </Link>
         <div className="flex items-center gap-2">
-          <Logo className="h-8 w-auto" />
+          <Logo className="h-12 w-auto" variant="light" />
           {totalUnread > 0 && (
-            <span className="bg-purple-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+            <span className="bg-white text-black text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
               {totalUnread}
             </span>
           )}
@@ -220,10 +221,10 @@ export default function Messages() {
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar — Conversations */}
         <div className={`
-          w-full md:w-80 border-r border-slate-800 flex flex-col shrink-0
+          w-full md:w-80 border-r border-zinc-800 flex flex-col shrink-0
           ${showList ? 'flex' : 'hidden md:flex'}
         `}>
-          <div className="px-4 py-3 border-b border-slate-800">
+          <div className="px-4 py-3 border-b border-zinc-800">
             <h2 className="font-semibold text-base flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-purple-400" />
               Conversations
@@ -249,7 +250,7 @@ export default function Messages() {
                     <button
                       key={conv.id}
                       onClick={() => openConversation(conv)}
-                      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors hover:bg-slate-800/60 ${isActive ? 'bg-purple-500/15 border-r-2 border-purple-500' : ''}`}
+                      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors hover:bg-zinc-800/60 ${isActive ? 'bg-white/10 border-r-2 border-white' : ''}`}
                     >
                       <Avatar name={conv.otherName} size={10} />
                       <div className="flex-1 min-w-0">
@@ -285,7 +286,7 @@ export default function Messages() {
           {activeConv ? (
             <>
               {/* Chat Header */}
-              <div className="px-4 py-3 border-b border-slate-800 flex items-center gap-3 shrink-0 bg-slate-950/80 backdrop-blur-sm">
+              <div className="px-4 py-3 border-b border-zinc-800 flex items-center gap-3 shrink-0 bg-black/80 backdrop-blur-sm">
                 <button onClick={() => setShowList(true)} className="md:hidden text-slate-400 hover:text-white">
                   <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -336,19 +337,19 @@ export default function Messages() {
               </div>
 
               {/* Input */}
-              <div className="px-4 py-3 border-t border-slate-800 shrink-0 bg-slate-950">
+              <div className="px-4 py-3 border-t border-zinc-800 shrink-0 bg-black">
                 <div className="flex gap-2 items-center">
                   <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    className="bg-slate-900 border-slate-700 rounded-full px-4 focus:border-purple-500"
+                    className="bg-zinc-900 border-zinc-700 rounded-full px-4"
                     onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                   />
                   <Button
                     onClick={sendMessage}
                     disabled={sending || !newMessage.trim()}
-                    className="bg-purple-600 hover:bg-purple-500 rounded-full w-10 h-10 p-0 shrink-0"
+                    className="bg-white text-black hover:bg-zinc-100 rounded-full w-10 h-10 p-0 shrink-0"
                   >
                     {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </Button>
@@ -357,8 +358,8 @@ export default function Messages() {
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">
-              <div className="text-center text-slate-500">
-                <MessageSquare className="w-14 h-14 mx-auto mb-3 text-slate-700" />
+              <div className="text-center text-zinc-500">
+                <MessageSquare className="w-14 h-14 mx-auto mb-3 text-zinc-700" />
                 <p className="font-medium">Select a conversation</p>
                 <p className="text-sm mt-1">Choose a chat from the sidebar to start messaging</p>
               </div>
@@ -367,5 +368,6 @@ export default function Messages() {
         </div>
       </div>
     </div>
+    <HelpChat />
   );
 }

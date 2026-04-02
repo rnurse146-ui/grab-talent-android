@@ -5,7 +5,7 @@ import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ChevronLeft, Star, Loader2, CheckCircle2 } from 'lucide-react';
-import Logo from '@/components/Logo';
+import PageHeader from '@/components/PageHeader';
 
 export default function WriteReview() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -64,32 +64,28 @@ export default function WriteReview() {
     setSubmitting(false);
   };
 
-  if (loading) return (<div className="min-h-screen bg-slate-950 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-purple-500" /></div>);
+  if (loading) return (<div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>);
 
   if (!booking) return (
-    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <div className="text-center"><h1 className="text-2xl font-bold mb-4">Booking not found</h1><Link to={createPageUrl('Bookings')}><Button>View Bookings</Button></Link></div>
     </div>
   );
 
   if (success) return (
-    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
       <div className="text-center max-w-md">
         <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6"><CheckCircle2 className="w-10 h-10 text-green-500" /></div>
         <h1 className="text-2xl font-bold mb-2">Review Submitted!</h1>
-        <p className="text-slate-400 mb-6">Thank you for your feedback. Your review helps other seekers find great talent.</p>
-        <Link to={createPageUrl('Bookings')}><Button className="bg-purple-600 hover:bg-purple-500">Back to Bookings</Button></Link>
+        <p className="text-zinc-400 mb-6">Thank you for your feedback. Your review helps other seekers find great talent.</p>
+        <Link to={createPageUrl('Bookings')}><Button className="bg-white text-black hover:bg-zinc-100">Back to Bookings</Button></Link>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-        <Link to={createPageUrl('Bookings')}><Button variant="ghost" size="sm" className="text-slate-400"><ChevronLeft className="w-4 h-4 mr-1" />Back</Button></Link>
-        <Logo className="h-8 w-auto" />
-        <div className="w-16" />
-      </div>
+    <div className="min-h-screen bg-black text-white">
+      <PageHeader backTo={createPageUrl('Bookings')} />
 
       <div className="max-w-lg mx-auto px-6 py-8">
         <div className="text-center mb-8">
@@ -99,7 +95,7 @@ export default function WriteReview() {
 
         <div className="space-y-6">
           {/* Rating */}
-          <div className="p-6 bg-slate-900 rounded-2xl border border-slate-800 text-center">
+          <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800 text-center">
             <h3 className="font-semibold mb-4">How was your experience?</h3>
             <div className="flex justify-center gap-2">
               {[1, 2, 3, 4, 5].map(star => (
@@ -124,17 +120,17 @@ export default function WriteReview() {
           </div>
 
           {/* Review Text */}
-          <div className="p-6 bg-slate-900 rounded-2xl border border-slate-800">
+          <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
             <h3 className="font-semibold mb-4">Write a review (optional)</h3>
             <Textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
               placeholder="Tell others about your experience..."
-              className="bg-slate-800 border-slate-700 h-32"
+              className="bg-zinc-800 border-zinc-700 h-32"
             />
           </div>
 
-          <Button onClick={handleSubmit} disabled={!rating || submitting} className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-500 text-lg">
+          <Button onClick={handleSubmit} disabled={!rating || submitting} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
             {submitting ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Submitting...</> : 'Submit Review'}
           </Button>
         </div>
