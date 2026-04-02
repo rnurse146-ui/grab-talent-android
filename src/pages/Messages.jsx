@@ -199,7 +199,8 @@ export default function Messages() {
   );
 
   return (
-    <div className="h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
+    <>
+    <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
       {/* Top Nav */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-black shrink-0">
         <Link to={createPageUrl('Dashboard')}>
@@ -369,5 +370,6 @@ export default function Messages() {
       </div>
     </div>
     <HelpChat />
+    </>
   );
 }
