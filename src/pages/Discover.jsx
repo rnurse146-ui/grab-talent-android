@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { 
   X, Heart, Star, MapPin, Banknote, CheckCircle2,
-  Filter, ChevronRight, Loader2
+  Filter, ChevronRight, Loader2, List, Calendar
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from '@/components/Logo';
@@ -49,8 +49,10 @@ export default function Discover() {
   const [swiping, setSwiping] = useState(null);
   const [swipedIds, setSwipedIds] = useState(new Set());
   const [showFilters, setShowFilters] = useState(false);
-  
-  const [lastPass, setLastPass] = useState(null); // { talent, historyId, maybeId }
+  const [maybeCount, setMaybeCount] = useState(0);
+  const [eventDate, setEventDate] = useState('');
+  const [lastPass, setLastPass] = useState(null);
+  const dragX = useRef(0);
 
   const [filters, setFilters] = useState({
     category: 'all',
@@ -70,9 +72,13 @@ export default function Discover() {
     const currentUser = await base44.auth.me();
     setUser(currentUser);
     
-    const history = await base44.entities.SwipeHistory.filter({ seeker_id: currentUser.id });
+    const [history, maybe] = await Promise.all([
+      base44.entities.SwipeHistory.filter({ seeker_id: currentUser.id }),
+      base44.entities.MaybeList.filter({ seeker_id: currentUser.id })
+    ]);
     const swipedSet = new Set(history.map(h => h.talent_profile_id));
     setSwipedIds(swipedSet);
+    setMaybeCount(maybe.length);
     
     await loadTalents(swipedSet);
   };
@@ -108,10 +114,22 @@ export default function Discover() {
   const handleUndo = async () => {
     if (!lastPass) return;
     await base44.entities.SwipeHistory.delete(lastPass.historyId);
-    if (lastPass.maybeId) await base44.entities.MaybeList.delete(lastPass.maybeId);
+    if (lastPass.maybeId) {
+      await base44.entities.MaybeList.delete(lastPass.maybeId);
+      setMaybeCount(prev => Math.max(0, prev - 1));
+    }
     setSwipedIds(prev => { const next = new Set(prev); next.delete(lastPass.talent.id); return next; });
     setCurrentIndex(prev => prev - 1);
     setLastPass(null);
+  };
+
+  const handleDragEnd = (event, info) => {
+    const threshold = 80;
+    if (info.offset.x > threshold) {
+      handleSwipe('right');
+    } else if (info.offset.x < -threshold) {
+      handleSwipe('left');
+    }
   };
 
   const handleSwipe = async (direction) => {
@@ -138,6 +156,7 @@ export default function Discover() {
         talent_city: talent.location_city
       });
       maybeId = maybeRecord.id;
+      setMaybeCount(prev => prev + 1);
     }
 
     setLastPass({ talent, historyId: historyRecord.id, maybeId });
@@ -162,9 +181,33 @@ export default function Discover() {
         <Link to={createPageUrl('Dashboard')}>
           <Logo className="h-12 w-auto" variant="light" />
         </Link>
-        <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="border-zinc-700 bg-transparent">
-          <Filter className="w-4 h-4 mr-2" />Filters
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link to={createPageUrl('MaybeList')}>
+            <Button variant="outline" size="sm" className="border-zinc-700 bg-transparent relative">
+              <List className="w-4 h-4 mr-1" />Maybe List
+              {maybeCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-green-500 text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{maybeCount}</span>
+              )}
+            </Button>
+          </Link>
+          <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="border-zinc-700 bg-transparent">
+            <Filter className="w-4 h-4 mr-2" />Filters
+          </Button>
+        </div>
+      </div>
+
+      {/* Event Date Bar */}
+      <div className="flex items-center gap-3 px-6 py-3 border-b border-zinc-800 bg-zinc-950">
+        <Calendar className="w-4 h-4 text-zinc-400 shrink-0" />
+        <span className="text-xs text-zinc-400 shrink-0">My event date:</span>
+        <input
+          type="date"
+          value={eventDate}
+          onChange={e => setEventDate(e.target.value)}
+          className="bg-transparent border border-zinc-700 rounded-lg px-3 py-1 text-sm text-white focus:outline-none focus:border-white"
+          min={new Date().toISOString().split('T')[0]}
+        />
+        {eventDate && <span className="text-xs text-green-400">✓ Will pre-fill when booking</span>}
       </div>
 
       <AnimatePresence>
@@ -307,12 +350,17 @@ export default function Discover() {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ 
                   scale: 1, opacity: 1,
-                  x: swiping === 'left' ? -300 : swiping === 'right' ? 300 : 0,
-                  rotate: swiping === 'left' ? -10 : swiping === 'right' ? 10 : 0
+                  x: swiping === 'left' ? -400 : swiping === 'right' ? 400 : 0,
+                  rotate: swiping === 'left' ? -15 : swiping === 'right' ? 15 : 0
                 }}
                 exit={{ scale: 0.95, opacity: 0 }}
+                drag={swiping ? false : 'x'}
+                dragConstraints={{ left: -20, right: 20 }}
+                dragElastic={0.8}
+                onDragEnd={handleDragEnd}
                 transition={{ duration: 0.3 }}
-                className="w-full max-w-sm"
+                className="w-full max-w-sm cursor-grab active:cursor-grabbing select-none"
+                style={{ touchAction: 'none' }}
               >
                 <div className="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl">
                   <div className="relative aspect-[3/4]">
@@ -352,7 +400,7 @@ export default function Discover() {
               <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-red-500 hover:bg-red-500/20 transition-colors">
                 <X className="w-8 h-8 text-red-400" />
               </motion.button>
-              <Link to={createPageUrl('TalentProfile') + `?id=${currentTalent.id}`}>
+              <Link to={createPageUrl('BookTalent') + `?talent_id=${currentTalent.id}${eventDate ? '&event_date=' + eventDate : ''}`}>
                 <motion.button whileTap={{ scale: 0.9 }} className="w-12 h-12 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-white transition-colors">
                   <ChevronRight className="w-6 h-6 text-white" />
                 </motion.button>

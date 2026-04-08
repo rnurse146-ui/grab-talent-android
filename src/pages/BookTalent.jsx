@@ -27,13 +27,15 @@ const EVENT_TYPES = [
 export default function BookTalent() {
   const urlParams = new URLSearchParams(window.location.search);
   const talentId = urlParams.get('talent_id');
+  const prefillDate = urlParams.get('event_date');
 
   const [talent, setTalent] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [formData, setFormData] = useState({ event_name: '', event_type: '', event_date: null, start_time: '', end_time: '', venue_name: '', venue_address: '', venue_city: '', special_requirements: '', seeker_phone: '' });
+  const initialDate = prefillDate ? new Date(prefillDate + 'T12:00:00') : null;
+  const [formData, setFormData] = useState({ event_name: '', event_type: '', event_date: initialDate, start_time: '', end_time: '', venue_name: '', venue_address: '', venue_city: '', special_requirements: '', seeker_phone: '' });
 
   useEffect(() => { loadData(); }, [talentId]);
 
