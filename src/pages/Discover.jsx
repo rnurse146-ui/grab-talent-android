@@ -53,6 +53,8 @@ export default function Discover() {
   const [eventDate, setEventDate] = useState('');
   const [lastPass, setLastPass] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [welcomeStep, setWelcomeStep] = useState(1);
+  const WELCOME_STEPS = 3;
   const dragX = useRef(0);
 
   const [filters, setFilters] = useState({
@@ -188,121 +190,189 @@ export default function Discover() {
         <Link to={createPageUrl('Dashboard')}>
           <Logo className="h-12 w-auto" variant="light" />
         </Link>
+        <span className="text-zinc-500 text-sm">{welcomeStep} / {WELCOME_STEPS}</span>
+      </div>
+
+      {/* Progress bar */}
+      <div className="flex gap-1 px-6 pt-4">
+        {[1,2,3].map(s => (
+          <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-300 ${s <= welcomeStep ? 'bg-white' : 'bg-zinc-800'}`} />
+        ))}
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-lg mx-auto px-6 py-10">
-          <div className="text-center mb-8">
-            <div className="text-5xl mb-4">🎭</div>
-            <h1 className="text-3xl font-bold mb-2">Find Your Perfect Talent</h1>
-            <p className="text-zinc-400">Tell us what you're looking for and we'll find the best matches for your event.</p>
-          </div>
+        <div className="max-w-lg mx-auto px-6 py-8">
 
-          <div className="space-y-6">
-            {/* Category */}
-            <div>
-              <label className="text-sm font-semibold text-white mb-3 block">What type of performer are you looking for?</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {TALENT_CATEGORIES.map(cat => {
-                  const active = filters.category === cat.value;
-                  return (
-                    <button
-                      key={cat.value}
-                      onClick={() => setFilters(f => ({ ...f, category: cat.value }))}
-                      className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all text-left ${
-                        active ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500'
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+          <AnimatePresence mode="wait">
 
-            {/* City */}
-            <div>
-              <label className="text-sm font-semibold text-white mb-2 block">📍 Where is your event?</label>
-              <Input
-                value={filters.city}
-                onChange={e => setFilters(f => ({ ...f, city: e.target.value }))}
-                placeholder="Enter city (e.g. London)"
-                className="bg-zinc-900 border-zinc-700 text-white"
-              />
-            </div>
-
-            {/* Price Range */}
-            <div>
-              <label className="text-sm font-semibold text-white mb-2 block">💷 Budget per hour (£)</label>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-xs text-zinc-500 mb-1">Min price</p>
-                  <Input type="number" value={filters.minPrice} onChange={e => setFilters(f => ({ ...f, minPrice: e.target.value }))} placeholder="0" className="bg-zinc-900 border-zinc-700 text-white" />
+            {/* Step 1 — Performer Type */}
+            {welcomeStep === 1 && (
+              <motion.div key="step1" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.25 }}>
+                <div className="text-center mb-8">
+                  <div className="text-5xl mb-4">🎭</div>
+                  <h1 className="text-2xl font-bold mb-2">What type of performer are you looking for?</h1>
+                  <p className="text-zinc-400 text-sm">Select one or leave on "All" to browse everything.</p>
                 </div>
-                <div>
-                  <p className="text-xs text-zinc-500 mb-1">Max price</p>
-                  <Input type="number" value={filters.maxPrice} onChange={e => setFilters(f => ({ ...f, maxPrice: e.target.value }))} placeholder="Any" className="bg-zinc-900 border-zinc-700 text-white" />
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {TALENT_CATEGORIES.map(cat => {
+                    const active = filters.category === cat.value;
+                    return (
+                      <button
+                        key={cat.value}
+                        onClick={() => setFilters(f => ({ ...f, category: cat.value }))}
+                        className={`px-3 py-3 rounded-xl text-sm font-medium border transition-all text-left ${
+                          active ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            )}
 
-            {/* Equipment */}
-            <div>
-              <label className="text-sm font-semibold text-white mb-2 block">🔧 Performer must bring their own equipment</label>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { value: 'sound_system', label: '🔊 Sound System' },
-                  { value: 'lighting', label: '💡 Lighting' },
-                  { value: 'microphones', label: '🎤 Microphones' },
-                  { value: 'back_lights', label: '🔦 Back Lights' },
-                  { value: 'fog_machine', label: '🌫️ Fog Machine' },
-                  { value: 'stage', label: '🎪 Stage' },
-                ].map(eq => {
-                  const active = filters.equipment.includes(eq.value);
-                  return (
-                    <button
-                      key={eq.value}
-                      onClick={() => setFilters(prev => ({
-                        ...prev,
-                        equipment: active ? prev.equipment.filter(e => e !== eq.value) : [...prev.equipment, eq.value]
-                      }))}
-                      className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all ${
-                        active ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500'
-                      }`}
-                    >
-                      {eq.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            {/* Step 2 — Location & Budget */}
+            {welcomeStep === 2 && (
+              <motion.div key="step2" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.25 }}>
+                <div className="text-center mb-8">
+                  <div className="text-5xl mb-4">📍</div>
+                  <h1 className="text-2xl font-bold mb-2">Where & What's Your Budget?</h1>
+                  <p className="text-zinc-400 text-sm">All fields are optional — leave blank to see all.</p>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-sm font-semibold text-white mb-2 block">Event City</label>
+                    <Input
+                      value={filters.city}
+                      onChange={e => setFilters(f => ({ ...f, city: e.target.value }))}
+                      placeholder="e.g. London, Manchester"
+                      className="bg-zinc-900 border-zinc-700 text-white h-12 text-base"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-white mb-2 block">💷 Hourly Budget (£)</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-xs text-zinc-500 mb-1">Min</p>
+                        <Input type="number" value={filters.minPrice} onChange={e => setFilters(f => ({ ...f, minPrice: e.target.value }))} placeholder="£0" className="bg-zinc-900 border-zinc-700 text-white h-12" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-zinc-500 mb-1">Max</p>
+                        <Input type="number" value={filters.maxPrice} onChange={e => setFilters(f => ({ ...f, maxPrice: e.target.value }))} placeholder="Any" className="bg-zinc-900 border-zinc-700 text-white h-12" />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-white mb-2 block">⭐ Minimum Rating</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[{ value: '', label: 'Any' }, { value: '3', label: '3+' }, { value: '4', label: '4+' }, { value: '4.5', label: '4.5+' }].map(r => (
+                        <button
+                          key={r.value}
+                          onClick={() => setFilters(f => ({ ...f, minRating: r.value }))}
+                          className={`py-2.5 rounded-xl text-sm font-medium border transition-all ${
+                            filters.minRating === r.value ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                          }`}
+                        >
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-            {/* Verified */}
-            <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-xl border border-zinc-700">
-              <div>
-                <p className="font-semibold text-white text-sm">✅ Verified performers only</p>
-                <p className="text-xs text-zinc-400 mt-0.5">Only show ID-verified talent</p>
-              </div>
+            {/* Step 3 — Equipment & Verification */}
+            {welcomeStep === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.25 }}>
+                <div className="text-center mb-8">
+                  <div className="text-5xl mb-4">🔧</div>
+                  <h1 className="text-2xl font-bold mb-2">Equipment & Trust</h1>
+                  <p className="text-zinc-400 text-sm">Filter by what the performer brings and verification status.</p>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-sm font-semibold text-white mb-3 block">Performer must provide</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { value: 'sound_system', label: '🔊 Sound System' },
+                        { value: 'lighting', label: '💡 Lighting' },
+                        { value: 'microphones', label: '🎤 Microphones' },
+                        { value: 'back_lights', label: '🔦 Back Lights' },
+                        { value: 'fog_machine', label: '🌫️ Fog Machine' },
+                        { value: 'stage', label: '🎪 Stage' },
+                      ].map(eq => {
+                        const active = filters.equipment.includes(eq.value);
+                        return (
+                          <button
+                            key={eq.value}
+                            onClick={() => setFilters(prev => ({
+                              ...prev,
+                              equipment: active ? prev.equipment.filter(e => e !== eq.value) : [...prev.equipment, eq.value]
+                            }))}
+                            className={`px-3 py-3 rounded-xl text-sm font-medium border transition-all ${
+                              active ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                            }`}
+                          >
+                            {eq.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setFilters(f => ({ ...f, verifiedOnly: !f.verifiedOnly }))}
+                    className={`flex items-center justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+                      filters.verifiedOnly ? 'border-green-500 bg-green-500/10' : 'border-zinc-700 bg-zinc-900 hover:border-zinc-500'
+                    }`}
+                  >
+                    <div>
+                      <p className="font-bold text-white">✅ Verified Performers Only</p>
+                      <p className="text-sm text-zinc-400 mt-1">Only show ID-verified talent for extra peace of mind</p>
+                    </div>
+                    <div className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ml-4 ${
+                      filters.verifiedOnly ? 'bg-green-500' : 'bg-zinc-700'
+                    }`}>
+                      <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        filters.verifiedOnly ? 'translate-x-6' : 'translate-x-0.5'
+                      }`} />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+
+          {/* Navigation */}
+          <div className="flex gap-3 mt-10">
+            {welcomeStep > 1 && (
               <button
-                onClick={() => setFilters(f => ({ ...f, verifiedOnly: !f.verifiedOnly }))}
-                className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${
-                  filters.verifiedOnly ? 'bg-green-500' : 'bg-zinc-700'
-                }`}
+                onClick={() => setWelcomeStep(s => s - 1)}
+                className="flex-1 py-3.5 rounded-2xl border border-zinc-700 text-zinc-300 font-semibold hover:border-white hover:text-white transition-colors"
               >
-                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                  filters.verifiedOnly ? 'translate-x-6' : 'translate-x-0.5'
-                }`} />
+                ← Back
               </button>
-            </div>
+            )}
+            {welcomeStep < WELCOME_STEPS ? (
+              <button
+                onClick={() => setWelcomeStep(s => s + 1)}
+                className="flex-1 py-3.5 rounded-2xl bg-white text-black font-bold text-base hover:bg-zinc-100 transition-colors"
+              >
+                Next →
+              </button>
+            ) : (
+              <button
+                onClick={handleWelcomeStart}
+                className="flex-1 py-3.5 rounded-2xl bg-white text-black font-bold text-base hover:bg-zinc-100 transition-colors"
+              >
+                Find Talent 🎉
+              </button>
+            )}
           </div>
-
-          <button
-            onClick={handleWelcomeStart}
-            className="w-full mt-8 py-4 rounded-2xl bg-white text-black font-bold text-lg hover:bg-zinc-100 transition-colors"
-          >
-            Find Talent 🎉
-          </button>
-          <p className="text-center text-zinc-500 text-xs mt-3">All filters are optional — leave blank to see everyone</p>
+          <p className="text-center text-zinc-600 text-xs mt-3">All filters are optional — skip to see everyone</p>
         </div>
       </div>
     </div>
