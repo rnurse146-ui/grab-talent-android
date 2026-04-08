@@ -52,6 +52,7 @@ export default function Discover() {
   const [maybeCount, setMaybeCount] = useState(0);
   const [eventDate, setEventDate] = useState('');
   const [lastPass, setLastPass] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(true);
   const dragX = useRef(0);
 
   const [filters, setFilters] = useState({
@@ -174,6 +175,138 @@ export default function Discover() {
     loadTalents();
     setShowFilters(false);
   };
+
+  const handleWelcomeStart = () => {
+    setShowWelcome(false);
+    loadTalents();
+  };
+
+  if (showWelcome) return (
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-black">
+        <Link to={createPageUrl('Dashboard')}>
+          <Logo className="h-12 w-auto" variant="light" />
+        </Link>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-lg mx-auto px-6 py-10">
+          <div className="text-center mb-8">
+            <div className="text-5xl mb-4">🎭</div>
+            <h1 className="text-3xl font-bold mb-2">Find Your Perfect Talent</h1>
+            <p className="text-zinc-400">Tell us what you're looking for and we'll find the best matches for your event.</p>
+          </div>
+
+          <div className="space-y-6">
+            {/* Category */}
+            <div>
+              <label className="text-sm font-semibold text-white mb-3 block">What type of performer are you looking for?</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {TALENT_CATEGORIES.map(cat => {
+                  const active = filters.category === cat.value;
+                  return (
+                    <button
+                      key={cat.value}
+                      onClick={() => setFilters(f => ({ ...f, category: cat.value }))}
+                      className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all text-left ${
+                        active ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* City */}
+            <div>
+              <label className="text-sm font-semibold text-white mb-2 block">📍 Where is your event?</label>
+              <Input
+                value={filters.city}
+                onChange={e => setFilters(f => ({ ...f, city: e.target.value }))}
+                placeholder="Enter city (e.g. London)"
+                className="bg-zinc-900 border-zinc-700 text-white"
+              />
+            </div>
+
+            {/* Price Range */}
+            <div>
+              <label className="text-sm font-semibold text-white mb-2 block">💷 Budget per hour (£)</label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-zinc-500 mb-1">Min price</p>
+                  <Input type="number" value={filters.minPrice} onChange={e => setFilters(f => ({ ...f, minPrice: e.target.value }))} placeholder="0" className="bg-zinc-900 border-zinc-700 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 mb-1">Max price</p>
+                  <Input type="number" value={filters.maxPrice} onChange={e => setFilters(f => ({ ...f, maxPrice: e.target.value }))} placeholder="Any" className="bg-zinc-900 border-zinc-700 text-white" />
+                </div>
+              </div>
+            </div>
+
+            {/* Equipment */}
+            <div>
+              <label className="text-sm font-semibold text-white mb-2 block">🔧 Performer must bring their own equipment</label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { value: 'sound_system', label: '🔊 Sound System' },
+                  { value: 'lighting', label: '💡 Lighting' },
+                  { value: 'microphones', label: '🎤 Microphones' },
+                  { value: 'back_lights', label: '🔦 Back Lights' },
+                  { value: 'fog_machine', label: '🌫️ Fog Machine' },
+                  { value: 'stage', label: '🎪 Stage' },
+                ].map(eq => {
+                  const active = filters.equipment.includes(eq.value);
+                  return (
+                    <button
+                      key={eq.value}
+                      onClick={() => setFilters(prev => ({
+                        ...prev,
+                        equipment: active ? prev.equipment.filter(e => e !== eq.value) : [...prev.equipment, eq.value]
+                      }))}
+                      className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all ${
+                        active ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                      }`}
+                    >
+                      {eq.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Verified */}
+            <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-xl border border-zinc-700">
+              <div>
+                <p className="font-semibold text-white text-sm">✅ Verified performers only</p>
+                <p className="text-xs text-zinc-400 mt-0.5">Only show ID-verified talent</p>
+              </div>
+              <button
+                onClick={() => setFilters(f => ({ ...f, verifiedOnly: !f.verifiedOnly }))}
+                className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${
+                  filters.verifiedOnly ? 'bg-green-500' : 'bg-zinc-700'
+                }`}
+              >
+                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                  filters.verifiedOnly ? 'translate-x-6' : 'translate-x-0.5'
+                }`} />
+              </button>
+            </div>
+          </div>
+
+          <button
+            onClick={handleWelcomeStart}
+            className="w-full mt-8 py-4 rounded-2xl bg-white text-black font-bold text-lg hover:bg-zinc-100 transition-colors"
+          >
+            Find Talent 🎉
+          </button>
+          <p className="text-center text-zinc-500 text-xs mt-3">All filters are optional — leave blank to see everyone</p>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-black text-white">
