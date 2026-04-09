@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, MapPin, Banknote, CheckCircle2, Clock, Calendar, ChevronLeft, MessageSquare, Image, Loader2, Award } from 'lucide-react';
 import AvailabilityMiniCalendar from '@/components/talent/AvailabilityMiniCalendar';
+import AvailabilityManager from '@/components/talent/AvailabilityManager';
 import PageHeader from '@/components/PageHeader';
 import Logo from '@/components/Logo';
 
@@ -113,7 +114,11 @@ export default function TalentProfile() {
 
         <div className="mb-10">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2"><Calendar className="w-5 h-5 text-purple-400" />Availability</h2>
-          <AvailabilityMiniCalendar talentProfileId={profile.id} />
+          {isOwner ? (
+            <AvailabilityManager talentProfileId={profile.id} talentUserId={profile.user_id} />
+          ) : (
+            <AvailabilityMiniCalendar talentProfileId={profile.id} />
+          )}
         </div>
 
         {profile.media_gallery?.length > 0 && (
