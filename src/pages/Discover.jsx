@@ -99,6 +99,19 @@ export default function Discover() {
       filtered = filtered.filter(t => filters.categories.includes(t.talent_category));
     }
 
+    // Filter by availability date
+    if (eventDate) {
+      const availabilityRecords = await base44.entities.TalentAvailability.filter({});
+      const unavailableIds = new Set();
+      availabilityRecords.forEach(rec => {
+        const blocked = [...(rec.blocked_dates || []), ...(rec.booking_dates || [])];
+        if (blocked.includes(eventDate)) {
+          unavailableIds.add(rec.talent_profile_id);
+        }
+      });
+      filtered = filtered.filter(t => !unavailableIds.has(t.id));
+    }
+
     if (filters.minPrice) filtered = filtered.filter(t => t.hourly_rate >= parseFloat(filters.minPrice));
     if (filters.maxPrice) filtered = filtered.filter(t => t.hourly_rate <= parseFloat(filters.maxPrice));
     if (filters.city) filtered = filtered.filter(t => t.location_city?.toLowerCase().includes(filters.city.toLowerCase()));
@@ -255,7 +268,20 @@ export default function Discover() {
                 </div>
                 <div className="space-y-6">
                   <div>
-                    <label className="text-sm font-semibold text-white mb-2 block">Event City</label>
+                    <label className="text-sm font-semibold text-white mb-2 block">📅 Event Date</label>
+                    <input
+                      type="date"
+                      value={eventDate}
+                      onChange={e => setEventDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-white h-12"
+                    />
+                    {eventDate && (
+                      <p className="text-xs text-green-400 mt-1">✓ Only showing available performers on this date</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-white mb-2 block">📍 Event City</label>
                     <Input
                       value={filters.city}
                       onChange={e => setFilters(f => ({ ...f, city: e.target.value }))}
