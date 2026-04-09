@@ -58,7 +58,7 @@ export default function Discover() {
   const dragX = useRef(0);
 
   const [filters, setFilters] = useState({
-    category: 'all',
+    categories: [],
     maxPrice: '',
     minPrice: '',
     city: '',
@@ -90,13 +90,14 @@ export default function Discover() {
     setLoading(true);
     
     let query = { is_available: true };
-    if (filters.category !== 'all') {
-      query.talent_category = filters.category;
-    }
     
     const allTalents = await base44.entities.TalentProfile.filter(query, '-average_rating', 50);
     
     let filtered = allTalents.filter(t => !alreadySwiped.has(t.id));
+
+    if (filters.categories.length > 0) {
+      filtered = filtered.filter(t => filters.categories.includes(t.talent_category));
+    }
 
     if (filters.minPrice) filtered = filtered.filter(t => t.hourly_rate >= parseFloat(filters.minPrice));
     if (filters.maxPrice) filtered = filtered.filter(t => t.hourly_rate <= parseFloat(filters.maxPrice));
@@ -211,20 +212,32 @@ export default function Discover() {
                 <div className="text-center mb-8">
                   <div className="text-5xl mb-4">🎭</div>
                   <h1 className="text-2xl font-bold mb-2">What type of performer are you looking for?</h1>
-                  <p className="text-zinc-400 text-sm">Select one or leave on "All" to browse everything.</p>
+                  <p className="text-zinc-400 text-sm">Select as many as you like, or leave blank to see all.</p>
                 </div>
+                {filters.categories.length > 0 && (
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs text-zinc-400">{filters.categories.length} selected</span>
+                    <button onClick={() => setFilters(f => ({ ...f, categories: [] }))} className="text-xs text-white underline">Clear all</button>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {TALENT_CATEGORIES.map(cat => {
-                    const active = filters.category === cat.value;
+                  {TALENT_CATEGORIES.filter(c => c.value !== 'all').map(cat => {
+                    const active = filters.categories.includes(cat.value);
                     return (
                       <button
                         key={cat.value}
-                        onClick={() => setFilters(f => ({ ...f, category: cat.value }))}
-                        className={`px-3 py-3 rounded-xl text-sm font-medium border transition-all text-left ${
+                        onClick={() => setFilters(f => ({
+                          ...f,
+                          categories: active
+                            ? f.categories.filter(c => c !== cat.value)
+                            : [...f.categories, cat.value]
+                        }))}
+                        className={`px-3 py-3 rounded-xl text-sm font-medium border transition-all text-left flex items-center justify-between gap-1 ${
                           active ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500'
                         }`}
                       >
-                        {cat.label}
+                        <span>{cat.label}</span>
+                        {active && <span className="text-black text-xs font-bold">✓</span>}
                       </button>
                     );
                   })}
@@ -512,7 +525,7 @@ export default function Discover() {
                 <Button onClick={applyFilters} className="flex-1 bg-purple-600 hover:bg-purple-500">Apply Filters</Button>
                 <Button
                   onClick={() => {
-                    setFilters({ category: 'all', maxPrice: '', minPrice: '', city: '', minRating: '', verifiedOnly: false, equipment: [] });
+                    setFilters({ categories: [], maxPrice: '', minPrice: '', city: '', minRating: '', verifiedOnly: false, equipment: [] });
                     setShowFilters(false);
                     loadTalents(swipedIds);
                   }}
