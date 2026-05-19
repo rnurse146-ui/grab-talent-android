@@ -81,6 +81,13 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
                   <p className="text-sm text-zinc-500">Chat with clients</p>
                 </motion.div>
               </Link>
+              <Link to="/TalentAvailability">
+                <motion.div whileHover={{ scale: 1.02 }} className="p-5 rounded-2xl bg-purple-900/40 border border-purple-700/60 hover:border-purple-500 cursor-pointer h-full transition-colors">
+                  <Calendar className="w-8 h-8 text-purple-400 mb-3" />
+                  <h3 className="font-semibold mb-1">Availability</h3>
+                  <p className="text-sm text-zinc-500">Block / open dates</p>
+                </motion.div>
+              </Link>
             </div>
           </div>
 

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   ChevronLeft, Calendar, Clock, MapPin, Banknote,
   Loader2, CheckCircle2, XCircle, AlertCircle,
-  MessageSquare, Star, User, Phone
+  MessageSquare, Star, User, Phone, CalendarX
 } from 'lucide-react';
 import { format } from 'date-fns';
 import PageHeader from '@/components/PageHeader';
@@ -207,6 +207,15 @@ export default function BookingDetails() {
               <Button variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:text-white">
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Message {isSeeker ? booking.talent_stage_name : booking.seeker_name}
+              </Button>
+            </Link>
+          )}
+
+          {isTalent && booking.event_date && (
+            <Link to={`/TalentAvailability`}>
+              <Button variant="outline" className="w-full border-purple-700/50 text-purple-400 hover:bg-purple-500/10">
+                <CalendarX className="w-4 h-4 mr-2" />
+                Manage Availability / Block Dates
               </Button>
             </Link>
           )}
