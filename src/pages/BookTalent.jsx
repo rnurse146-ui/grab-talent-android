@@ -36,6 +36,7 @@ export default function BookTalent() {
   const [success, setSuccess] = useState(false);
   const initialDate = prefillDate ? new Date(prefillDate + 'T12:00:00') : null;
   const [formData, setFormData] = useState({ event_name: '', event_type: '', event_date: initialDate, start_time: '', end_time: '', venue_name: '', venue_address: '', venue_city: '', special_requirements: '', seeker_phone: '' });
+  const [calendarMonth, setCalendarMonth] = useState(initialDate || new Date());
 
   useEffect(() => { loadData(); }, [talentId]);
 
@@ -128,7 +129,25 @@ export default function BookTalent() {
             <div><Label className="text-zinc-400">Event Type</Label><Select value={formData.event_type} onValueChange={(v) => setFormData({...formData, event_type: v})} required><SelectTrigger className="bg-slate-900 border-slate-800 mt-2"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent className="bg-slate-900 border-slate-800">{EVENT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent></Select></div>
           </div>
 
-          <div><Label className="text-zinc-400">Event Date</Label><div className="mt-2"><Calendar mode="single" selected={formData.event_date} onSelect={(date) => setFormData({...formData, event_date: date})} disabled={(date) => date < new Date()} className="rounded-xl border border-zinc-800 bg-zinc-900 p-3" /></div></div>
+          <div>
+            <Label className="text-zinc-400">Event Date</Label>
+            {formData.event_date && (
+              <p className="text-sm text-purple-400 mt-1">
+                Selected: {format(formData.event_date, 'EEEE, MMMM d yyyy')}
+              </p>
+            )}
+            <div className="mt-2">
+              <Calendar
+                mode="single"
+                selected={formData.event_date}
+                onSelect={(date) => setFormData({...formData, event_date: date})}
+                month={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                disabled={(date) => date < new Date()}
+                className="rounded-xl border border-zinc-800 bg-zinc-900 p-3"
+              />
+            </div>
+          </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div><Label className="text-zinc-400">Start Time</Label><Input type="time" value={formData.start_time} onChange={(e) => setFormData({...formData, start_time: e.target.value})} className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
