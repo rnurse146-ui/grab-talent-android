@@ -1,0 +1,130 @@
+{
+  "name": "Booking",
+  "type": "object",
+  "properties": {
+    "talent_profile_id": {
+      "type": "string",
+      "description": "Reference to TalentProfile"
+    },
+    "seeker_id": {
+      "type": "string",
+      "description": "User ID of the seeker"
+    },
+    "talent_user_id": {
+      "type": "string",
+      "description": "User ID of the talent"
+    },
+    "event_name": {
+      "type": "string",
+      "description": "Name of the event"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "wedding",
+        "corporate",
+        "birthday",
+        "club",
+        "pub",
+        "festival",
+        "private_party",
+        "charity",
+        "other"
+      ],
+      "description": "Type of event"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the event"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "Start time"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "End time"
+    },
+    "duration_hours": {
+      "type": "number",
+      "description": "Total hours booked"
+    },
+    "venue_name": {
+      "type": "string",
+      "description": "Name of venue"
+    },
+    "venue_address": {
+      "type": "string",
+      "description": "Full address"
+    },
+    "venue_city": {
+      "type": "string",
+      "description": "City of venue"
+    },
+    "special_requirements": {
+      "type": "string",
+      "description": "Any special requests"
+    },
+    "base_price": {
+      "type": "number",
+      "description": "Price before commission"
+    },
+    "commission_amount": {
+      "type": "number",
+      "description": "11% platform commission"
+    },
+    "total_price": {
+      "type": "number",
+      "description": "Total amount paid by seeker"
+    },
+    "talent_payout": {
+      "type": "number",
+      "description": "Amount paid to talent (89%)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined",
+        "confirmed",
+        "completed",
+        "cancelled",
+        "no_show"
+      ],
+      "default": "pending",
+      "description": "Booking status"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "released",
+        "refunded",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Payment status. 'paid' = held by app. 'released' = sent to talent after arrival confirmed."
+    },
+    "seeker_name": {
+      "type": "string"
+    },
+    "seeker_phone": {
+      "type": "string"
+    },
+    "talent_stage_name": {
+      "type": "string"
+    },
+    "talent_category": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "talent_profile_id",
+    "seeker_id",
+    "event_date",
+    "venue_city"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "SwipeHistory",
+  "type": "object",
+  "properties": {
+    "seeker_id": {
+      "type": "string",
+      "description": "User ID of the seeker"
+    },
+    "talent_profile_id": {
+      "type": "string",
+      "description": "Reference to TalentProfile"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "maybe"
+      ],
+      "description": "Swipe action taken"
+    }
+  },
+  "required": [
+    "seeker_id",
+    "talent_profile_id",
+    "action"
+  ]
+}

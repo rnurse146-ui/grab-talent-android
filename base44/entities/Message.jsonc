@@ -1,0 +1,39 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "Unique conversation identifier"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "User ID of sender"
+    },
+    "receiver_id": {
+      "type": "string",
+      "description": "User ID of receiver"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message content"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "booking_id": {
+      "type": "string",
+      "description": "Related booking if any"
+    }
+  },
+  "required": [
+    "conversation_id",
+    "sender_id",
+    "receiver_id",
+    "content"
+  ]
+}

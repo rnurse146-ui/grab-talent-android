@@ -1,0 +1,42 @@
+{
+  "name": "Review",
+  "type": "object",
+  "properties": {
+    "booking_id": {
+      "type": "string",
+      "description": "Reference to Booking"
+    },
+    "talent_profile_id": {
+      "type": "string",
+      "description": "Reference to TalentProfile"
+    },
+    "reviewer_id": {
+      "type": "string",
+      "description": "User ID of reviewer"
+    },
+    "reviewer_name": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Rating 1-5"
+    },
+    "review_text": {
+      "type": "string",
+      "description": "Written review"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "booking_id",
+    "talent_profile_id",
+    "reviewer_id",
+    "rating"
+  ]
+}

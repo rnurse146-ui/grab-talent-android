@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, MapPin, Banknote, CheckCircle2, Clock, Calendar, ChevronLeft, MessageSquare, Image, Loader2, Award } from 'lucide-react';
+import { Star, MapPin, Banknote, CheckCircle2, Clock, Calendar, ChevronLeft, MessageSquare, Image, Loader2, Award, Eye, Pencil } from 'lucide-react';
 import AvailabilityMiniCalendar from '@/components/talent/AvailabilityMiniCalendar';
 import AvailabilityManager from '@/components/talent/AvailabilityManager';
 import PageHeader from '@/components/PageHeader';
@@ -46,8 +46,25 @@ export default function TalentProfile() {
       <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-black sticky top-0 z-10">
         <Link to={createPageUrl('Dashboard')}><Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white"><ChevronLeft className="w-4 h-4 mr-1" />Back</Button></Link>
         <Logo className="h-12 w-auto" variant="light" />
-        {isOwner ? (<Link to={createPageUrl('TalentSetup') + '?edit=true'}><Button size="sm" variant="outline" className="border-zinc-700">Edit Profile</Button></Link>) : (<div className="w-20" />)}
+        {isOwner ? (<Link to={createPageUrl('TalentSetup') + '?edit=true'}><Button size="sm" className="bg-white text-black hover:bg-zinc-100">Edit Profile</Button></Link>) : (<div className="w-20" />)}
       </div>
+
+      {isOwner && (
+        <div className="bg-purple-900/30 border-b border-purple-700/40 px-6 py-3">
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-purple-300 text-sm">
+              <Eye className="w-4 h-4" />
+              <span>You're viewing your public profile — this is exactly how others see you</span>
+            </div>
+            <Link to={createPageUrl('TalentSetup') + '?edit=true'}>
+              <Button size="sm" className="bg-white text-black hover:bg-zinc-100 shrink-0">
+                <Pencil className="w-3.5 h-3.5 mr-1.5" />
+                Edit Profile
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row gap-8 mb-10">

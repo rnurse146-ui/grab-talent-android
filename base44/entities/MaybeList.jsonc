@@ -1,0 +1,40 @@
+{
+  "name": "MaybeList",
+  "type": "object",
+  "properties": {
+    "seeker_id": {
+      "type": "string",
+      "description": "User ID of the seeker"
+    },
+    "talent_profile_id": {
+      "type": "string",
+      "description": "Reference to TalentProfile"
+    },
+    "talent_stage_name": {
+      "type": "string"
+    },
+    "talent_category": {
+      "type": "string"
+    },
+    "talent_photo": {
+      "type": "string"
+    },
+    "talent_hourly_rate": {
+      "type": "number"
+    },
+    "talent_rating": {
+      "type": "number"
+    },
+    "talent_city": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Personal notes about this talent"
+    }
+  },
+  "required": [
+    "seeker_id",
+    "talent_profile_id"
+  ]
+}
