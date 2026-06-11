@@ -67,11 +67,11 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
                   <p className="text-sm text-zinc-500">Bio, photos, videos</p>
                 </motion.div>
               </Link>
-              <Link to={talentProfile ? `/TalentProfile?id=${talentProfile.id}` : '#'}>
+              <Link to={talentProfile?.id ? `/TalentProfile?id=${talentProfile.id}` : '/TalentSetup'}>
                 <motion.div whileHover={{ scale: 1.02 }} className="p-5 rounded-2xl bg-zinc-900 border border-zinc-700 hover:border-zinc-500 cursor-pointer h-full transition-colors">
                   <Eye className="w-8 h-8 text-white mb-3" />
                   <h3 className="font-semibold mb-1">My Profile</h3>
-                  <p className="text-sm text-zinc-500">How others see you</p>
+                  <p className="text-sm text-zinc-500">{talentProfile?.id ? 'How others see you' : 'Set up your profile first'}</p>
                 </motion.div>
               </Link>
               <Link to={createPageUrl('Messages')}>
