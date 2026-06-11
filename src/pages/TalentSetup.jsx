@@ -106,9 +106,14 @@ export default function TalentSetup() {
   const handleSubmit = async () => {
     setLoading(true);
     const profileData = { ...formData, user_id: user.id, hourly_rate: parseFloat(formData.hourly_rate), minimum_hours: parseInt(formData.minimum_hours), location_radius: parseInt(formData.location_radius), experience_years: formData.experience_years ? parseInt(formData.experience_years) : null, is_available: true };
-    if (existingProfile) { await base44.entities.TalentProfile.update(existingProfile.id, profileData); }
-    else { await base44.entities.TalentProfile.create({ ...profileData, is_verified: false, average_rating: null, total_reviews: 0, total_bookings: 0 }); }
-    window.location.href = createPageUrl('Dashboard');
+    let savedProfile;
+    if (existingProfile) {
+      savedProfile = await base44.entities.TalentProfile.update(existingProfile.id, profileData);
+    } else {
+      savedProfile = await base44.entities.TalentProfile.create({ ...profileData, is_verified: false, average_rating: null, total_reviews: 0, total_bookings: 0 });
+    }
+    const profileId = savedProfile?.id || existingProfile?.id;
+    window.location.href = profileId ? `/TalentProfile?id=${profileId}` : createPageUrl('Dashboard');
   };
 
   if (initialLoading) return (<div className="min-h-screen bg-slate-950 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-purple-500" /></div>);
