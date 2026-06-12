@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import {
   ChevronLeft, Calendar, Clock, MapPin, Banknote,
   Loader2, CheckCircle2, XCircle, AlertCircle,
-  MessageSquare, Star, User, Phone, CalendarX
+  MessageSquare, Star, User, Phone, CalendarX, ShieldCheck
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import PageHeader from '@/components/PageHeader';
 
@@ -30,6 +31,8 @@ export default function BookingDetails() {
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [attendanceInput, setAttendanceInput] = useState('');
 
   useEffect(() => { loadData(); }, [bookingId]);
 
@@ -78,6 +81,16 @@ Good luck and have a great performance! 🎭
       }
     }
 
+    setUpdating(false);
+  };
+
+  const handleAttendanceConfirm = async () => {
+    if (attendanceInput.toLowerCase() !== 'confirm') return;
+    setUpdating(true);
+    await base44.entities.Booking.update(booking.id, { status: 'completed' });
+    setBooking(prev => ({ ...prev, status: 'completed' }));
+    setShowAttendanceModal(false);
+    setAttendanceInput('');
     setUpdating(false);
   };
 
@@ -224,6 +237,24 @@ Good luck and have a great performance! 🎭
             </Button>
           )}
 
+          {/* Attendance Confirmation — seeker confirms talent has arrived */}
+          {isSeeker && booking.status === 'confirmed' && (
+            <div className="p-5 bg-green-900/20 rounded-2xl border border-green-700/40 space-y-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-green-400" />
+                <p className="text-white font-medium">Has the talent arrived?</p>
+              </div>
+              <p className="text-zinc-400 text-sm">Once {booking.talent_stage_name} has arrived at the venue, confirm their attendance to mark the booking as completed.</p>
+              <Button
+                onClick={() => setShowAttendanceModal(true)}
+                className="w-full bg-green-600 hover:bg-green-500 text-white"
+              >
+                <ShieldCheck className="w-4 h-4 mr-2" />
+                Confirm Talent Arrived
+              </Button>
+            </div>
+          )}
+
           {isSeeker && booking.status === 'completed' && (
             <Link to={createPageUrl('WriteReview') + `?booking_id=${booking.id}`}>
               <Button className="w-full bg-white text-black hover:bg-zinc-100">
@@ -260,6 +291,40 @@ Good luck and have a great performance! 🎭
           )}
         </div>
       </div>
+
+      {showAttendanceModal && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-sm space-y-5">
+            <div className="text-center">
+              <ShieldCheck className="w-12 h-12 text-green-400 mx-auto mb-3" />
+              <h2 className="text-xl font-bold mb-1">Confirm Attendance</h2>
+              <p className="text-zinc-400 text-sm">Type <span className="text-white font-semibold">confirm</span> below to verify that {booking.talent_stage_name} has arrived at the venue.</p>
+            </div>
+            <Input
+              value={attendanceInput}
+              onChange={(e) => setAttendanceInput(e.target.value)}
+              placeholder='Type "confirm" here'
+              className="bg-zinc-800 border-zinc-700 text-center text-white"
+            />
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 border-zinc-700 text-zinc-400"
+                onClick={() => { setShowAttendanceModal(false); setAttendanceInput(''); }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAttendanceConfirm}
+                disabled={attendanceInput.toLowerCase() !== 'confirm' || updating}
+                className="flex-1 bg-green-600 hover:bg-green-500 text-white disabled:opacity-40"
+              >
+                {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
