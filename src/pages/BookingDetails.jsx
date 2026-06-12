@@ -47,6 +47,37 @@ export default function BookingDetails() {
     setUpdating(true);
     await base44.entities.Booking.update(booking.id, { status: newStatus });
     setBooking(prev => ({ ...prev, status: newStatus }));
+
+    // Send email to talent when seeker confirms the booking
+    if (newStatus === 'confirmed') {
+      const talentUsers = await base44.entities.User.filter({ id: booking.talent_user_id });
+      if (talentUsers.length > 0 && talentUsers[0].email) {
+        const talentEmail = talentUsers[0].email;
+        const eventDate = booking.event_date ? format(new Date(booking.event_date), 'EEEE, MMMM d, yyyy') : 'TBD';
+        await base44.integrations.Core.SendEmail({
+          to: talentEmail,
+          subject: `🎉 You've been hired! New confirmed booking for ${booking.event_name || 'an event'}`,
+          body: `Hi ${booking.talent_stage_name},
+
+Great news — you've been hired! ${booking.seeker_name} has confirmed their booking with you.
+
+📅 Event: ${booking.event_name || 'Event'}
+🗓️ Date: ${eventDate}
+⏰ Time: ${booking.start_time} – ${booking.end_time} (${booking.duration_hours}h)
+📍 Venue: ${booking.venue_name}, ${booking.venue_address}, ${booking.venue_city}
+💷 Your Payout: £${booking.talent_payout}
+${booking.seeker_phone ? `📞 Client Phone: ${booking.seeker_phone}` : ''}
+${booking.special_requirements ? `\n📝 Special Requirements: ${booking.special_requirements}` : ''}
+
+Log in to Grab Talent to view full booking details and message your client.
+
+Good luck and have a great performance! 🎭
+
+— The Grab Talent Team`
+        });
+      }
+    }
+
     setUpdating(false);
   };
 
