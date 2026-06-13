@@ -268,16 +268,18 @@ export default function Discover() {
                 </div>
                 <div className="space-y-6">
                   <div>
-                    <label className="text-sm font-semibold text-white mb-2 block">📅 Event Date</label>
+                    <label className="text-sm font-semibold text-white mb-2 block">📅 Event Date <span className="text-red-400">*</span></label>
                     <input
                       type="date"
                       value={eventDate}
                       onChange={e => setEventDate(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-white h-12"
+                      className={`w-full bg-zinc-900 rounded-xl px-4 py-3 text-white text-base focus:outline-none h-12 border-2 transition-colors ${eventDate ? 'border-green-500' : 'border-red-500/60 focus:border-red-400'}`}
                     />
-                    {eventDate && (
-                      <p className="text-xs text-green-400 mt-1">✓ Only showing available performers on this date</p>
+                    {eventDate ? (
+                      <p className="text-xs text-green-400 mt-1">✓ Only showing performers available on this date</p>
+                    ) : (
+                      <p className="text-xs text-red-400 mt-1">Required — we need your event date to check talent availability</p>
                     )}
                   </div>
                   <div>
@@ -397,8 +399,12 @@ export default function Discover() {
             )}
             {welcomeStep < WELCOME_STEPS ? (
               <button
-                onClick={() => setWelcomeStep(s => s + 1)}
-                className="flex-1 py-3.5 rounded-2xl bg-white text-black font-bold text-base hover:bg-zinc-100 transition-colors"
+                onClick={() => {
+                  if (welcomeStep === 2 && !eventDate) return;
+                  setWelcomeStep(s => s + 1);
+                }}
+                disabled={welcomeStep === 2 && !eventDate}
+                className="flex-1 py-3.5 rounded-2xl bg-white text-black font-bold text-base hover:bg-zinc-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Next →
               </button>
@@ -439,17 +445,20 @@ export default function Discover() {
       </div>
 
       {/* Event Date Bar */}
-      <div className="flex items-center gap-3 px-6 py-3 border-b border-zinc-800 bg-zinc-950">
-        <Calendar className="w-4 h-4 text-zinc-400 shrink-0" />
-        <span className="text-xs text-zinc-400 shrink-0">My event date:</span>
+      <div className={`flex items-center gap-3 px-6 py-3 border-b ${eventDate ? 'border-zinc-800 bg-zinc-950' : 'border-red-900/50 bg-red-950/30'}`}>
+        <Calendar className={`w-4 h-4 shrink-0 ${eventDate ? 'text-zinc-400' : 'text-red-400'}`} />
+        <span className={`text-xs shrink-0 ${eventDate ? 'text-zinc-400' : 'text-red-400 font-medium'}`}>Event date:</span>
         <input
           type="date"
           value={eventDate}
-          onChange={e => setEventDate(e.target.value)}
-          className="bg-transparent border border-zinc-700 rounded-lg px-3 py-1 text-sm text-white focus:outline-none focus:border-white"
+          onChange={e => { setEventDate(e.target.value); if (e.target.value) loadTalents(); }}
+          className={`bg-transparent rounded-lg px-3 py-1 text-sm text-white focus:outline-none border ${eventDate ? 'border-zinc-700 focus:border-white' : 'border-red-500 focus:border-red-400'}`}
           min={new Date().toISOString().split('T')[0]}
         />
-        {eventDate && <span className="text-xs text-green-400">✓ Will pre-fill when booking</span>}
+        {eventDate
+          ? <span className="text-xs text-green-400">✓ Showing available talent only</span>
+          : <span className="text-xs text-red-400">Required to match availability</span>
+        }
       </div>
 
       <AnimatePresence>
@@ -567,7 +576,16 @@ export default function Discover() {
       </AnimatePresence>
 
       <div className="flex-1 flex flex-col items-center justify-center p-6">
-        {loading ? (
+        {!eventDate ? (
+          <div className="text-center max-w-xs">
+            <div className="w-24 h-24 rounded-full bg-red-900/30 border-2 border-red-700/50 flex items-center justify-center mx-auto mb-5">
+              <Calendar className="w-10 h-10 text-red-400" />
+            </div>
+            <h2 className="text-xl font-bold mb-2">Set Your Event Date First</h2>
+            <p className="text-zinc-400 text-sm mb-6">We need your event date to only show you talent that's actually available on that day — no nasty double-bookings.</p>
+            <p className="text-xs text-zinc-500">👆 Pick a date in the bar above to start discovering talent</p>
+          </div>
+        ) : loading ? (
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
             <p className="text-slate-400">Finding talent...</p>
