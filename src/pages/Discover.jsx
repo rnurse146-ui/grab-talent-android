@@ -86,8 +86,9 @@ export default function Discover() {
     await loadTalents(swipedSet);
   };
 
-  const loadTalents = async (alreadySwiped = swipedIds) => {
+  const loadTalents = async (alreadySwiped = swipedIds, dateOverride = undefined) => {
     setLoading(true);
+    const activeDate = dateOverride !== undefined ? dateOverride : eventDate;
     
     let query = { is_available: true };
     
@@ -100,12 +101,12 @@ export default function Discover() {
     }
 
     // Filter by availability date
-    if (eventDate) {
+    if (activeDate) {
       const availabilityRecords = await base44.entities.TalentAvailability.filter({});
       const unavailableIds = new Set();
       availabilityRecords.forEach(rec => {
         const blocked = [...(rec.blocked_dates || []), ...(rec.booking_dates || [])];
-        if (blocked.includes(eventDate)) {
+        if (blocked.includes(activeDate)) {
           unavailableIds.add(rec.talent_profile_id);
         }
       });
@@ -451,13 +452,13 @@ export default function Discover() {
         <input
           type="date"
           value={eventDate}
-          onChange={e => { setEventDate(e.target.value); if (e.target.value) loadTalents(); }}
+          onChange={e => { const d = e.target.value; setEventDate(d); loadTalents(swipedIds, d); }}
           className={`bg-transparent rounded-lg px-3 py-1 text-sm text-white focus:outline-none border ${eventDate ? 'border-zinc-700 focus:border-white' : 'border-red-500 focus:border-red-400'}`}
           min={new Date().toISOString().split('T')[0]}
         />
         {eventDate
           ? <span className="text-xs text-green-400">✓ Showing available talent only</span>
-          : <span className="text-xs text-red-400">Required to match availability</span>
+          : <span className="text-xs text-red-400 animate-pulse">↑ Set a date to discover talent</span>
         }
       </div>
 
