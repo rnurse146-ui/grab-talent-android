@@ -13,6 +13,7 @@ import {
 export default function Onboarding() {
   const urlParams = new URLSearchParams(window.location.search);
   const initialType = urlParams.get('type') || null;
+  const eventDate = urlParams.get('event_date') || null;
 
   const [step, setStep] = useState(initialType ? 2 : 1);
   const [userType, setUserType] = useState(initialType);
@@ -218,6 +219,7 @@ export default function Onboarding() {
                 <div className="text-sm text-slate-400 space-y-1">
                   <p>Type: {userType === 'talent' ? '🎭 Talent' : userType === 'seeker' ? '🔍 Seeker' : '🎭🔍 Both'}</p>
                   <p>Location: 📍 {city}</p>
+                  {eventDate && <p>Event Date: 📅 {new Date(eventDate).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</p>}
                 </div>
               </div>
 
