@@ -56,26 +56,61 @@ export default function BookingDetails() {
     await base44.entities.Booking.update(booking.id, { status: newStatus });
     setBooking(prev => ({ ...prev, status: newStatus }));
 
-    // Send email to talent when seeker confirms the booking
+    // Send email with calendar invite to talent when seeker confirms the booking
     if (newStatus === 'confirmed') {
       const talentUsers = await base44.entities.User.filter({ id: booking.talent_user_id });
       if (talentUsers.length > 0 && talentUsers[0].email) {
         const talentEmail = talentUsers[0].email;
-        const eventDate = booking.event_date ? format(new Date(booking.event_date), 'EEEE, MMMM d, yyyy') : 'TBD';
+        const eventDateFormatted = booking.event_date ? format(new Date(booking.event_date), 'EEEE, MMMM d, yyyy') : 'TBD';
+
+        // Build ICS calendar invite content
+        const icsDate = booking.event_date ? booking.event_date.replace(/-/g, '') : '';
+        const startTime = booking.start_time ? booking.start_time.replace(':', '') + '00' : '090000';
+        const endTime = booking.end_time ? booking.end_time.replace(':', '') + '00' : '180000';
+        const dtStart = icsDate ? `${icsDate}T${startTime}` : '';
+        const dtEnd = icsDate ? `${icsDate}T${endTime}` : '';
+        const uid = `grabtalent-${booking.id}@grabtalent.app`;
+        const icsContent = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//Grab Talent//EN',
+          'CALSCALE:GREGORIAN',
+          'METHOD:REQUEST',
+          'BEGIN:VEVENT',
+          `UID:${uid}`,
+          `DTSTART:${dtStart}`,
+          `DTEND:${dtEnd}`,
+          `SUMMARY:🎭 ${booking.event_name || 'Gig'} — ${booking.event_type?.replace(/_/g, ' ')}`,
+          `LOCATION:${[booking.venue_name, booking.venue_address, booking.venue_city].filter(Boolean).join(', ')}`,
+          `DESCRIPTION:Booked by ${booking.seeker_name}${booking.seeker_phone ? ` (${booking.seeker_phone})` : ''}. Payout: £${booking.talent_payout}.${booking.special_requirements ? ' Notes: ' + booking.special_requirements : ''}`,
+          `ORGANIZER:mailto:noreply@grabtalent.app`,
+          `ATTENDEE:mailto:${talentEmail}`,
+          'STATUS:CONFIRMED',
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ].join('\r\n');
+
         await base44.integrations.Core.SendEmail({
           to: talentEmail,
-          subject: `🎉 You've been hired! New confirmed booking for ${booking.event_name || 'an event'}`,
+          subject: `🎉 Confirmed Gig: ${booking.event_name || 'New Booking'} on ${eventDateFormatted}`,
           body: `Hi ${booking.talent_stage_name},
 
 Great news — you've been hired! ${booking.seeker_name} has confirmed their booking with you.
 
 📅 Event: ${booking.event_name || 'Event'}
-🗓️ Date: ${eventDate}
+🗓️ Date: ${eventDateFormatted}
 ⏰ Time: ${booking.start_time} – ${booking.end_time} (${booking.duration_hours}h)
 📍 Venue: ${booking.venue_name}, ${booking.venue_address}, ${booking.venue_city}
 💷 Your Payout: £${booking.talent_payout}
 ${booking.seeker_phone ? `📞 Client Phone: ${booking.seeker_phone}` : ''}
 ${booking.special_requirements ? `\n📝 Special Requirements: ${booking.special_requirements}` : ''}
+
+📆 ADD TO YOUR CALENDAR
+Copy the text below, save it as a file called "gig.ics", then open it to add the event directly to your calendar app (works with Google Calendar, Apple Calendar, Outlook and more):
+
+--- COPY FROM HERE ---
+${icsContent}
+--- COPY TO HERE ---
 
 Log in to Grab Talent to view full booking details and message your client.
 
