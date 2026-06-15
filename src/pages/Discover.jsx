@@ -652,7 +652,7 @@ export default function Discover() {
                       </div>
                       {currentTalent.bio && (<p className="text-sm text-slate-300 line-clamp-2">{currentTalent.bio}</p>)}
                       <Link
-                        to={`/TalentProfile?id=${currentTalent.id}`}
+                        to={`/TalentProfile?id=${currentTalent.id}${eventDate ? '&event_date=' + eventDate : ''}`}
                         onClick={e => e.stopPropagation()}
                         className="mt-3 inline-flex items-center gap-1.5 text-xs text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded-full px-3 py-1.5 transition-colors backdrop-blur-sm"
                       >

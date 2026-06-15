@@ -14,6 +14,8 @@ import Logo from '@/components/Logo';
 export default function TalentProfile() {
   const urlParams = new URLSearchParams(window.location.search);
   const profileId = urlParams.get('id');
+  const eventDate = urlParams.get('event_date');
+  const eventName = urlParams.get('event_name');
 
   const [profile, setProfile] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -62,6 +64,18 @@ export default function TalentProfile() {
                 Edit Profile
               </Button>
             </Link>
+          </div>
+        </div>
+      )}
+
+      {!isOwner && eventDate && (
+        <div className="bg-amber-950/40 border-b border-amber-700/40 px-6 py-3">
+          <div className="max-w-4xl mx-auto flex items-center gap-3 text-sm">
+            <Calendar className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="text-amber-200">
+              Booking for{eventName ? <strong className="text-white"> {eventName}</strong> : ''} on{' '}
+              <strong className="text-white">{new Date(eventDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong>
+            </span>
           </div>
         </div>
       )}
@@ -120,7 +134,7 @@ export default function TalentProfile() {
             )}
             {!isOwner && (
               <div className="flex gap-3">
-                <Link to={createPageUrl('BookTalent') + `?talent_id=${profile.id}`}><Button size="lg" className="bg-white text-black hover:bg-zinc-100"><Calendar className="w-5 h-5 mr-2" />Book Now</Button></Link>
+                <Link to={createPageUrl('BookTalent') + `?talent_id=${profile.id}${eventDate ? '&event_date=' + eventDate : ''}${eventName ? '&event_name=' + encodeURIComponent(eventName) : ''}`}><Button size="lg" className="bg-white text-black hover:bg-zinc-100"><Calendar className="w-5 h-5 mr-2" />Book Now</Button></Link>
                 <Link to={createPageUrl('Messages') + `?to=${profile.user_id}`}><Button size="lg" variant="outline" className="border-zinc-700 bg-transparent"><MessageSquare className="w-5 h-5 mr-2" />Message</Button></Link>
               </div>
             )}
