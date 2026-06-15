@@ -33,6 +33,11 @@ export default function BookingDetails() {
   const [updating, setUpdating] = useState(false);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [attendanceInput, setAttendanceInput] = useState('');
+  const [showRatingPrompt, setShowRatingPrompt] = useState(false);
+  const [quickRating, setQuickRating] = useState(0);
+  const [quickRatingHover, setQuickRatingHover] = useState(0);
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [submittingRating, setSubmittingRating] = useState(false);
 
   useEffect(() => { loadData(); }, [bookingId]);
 
@@ -92,6 +97,30 @@ Good luck and have a great performance! 🎭
     setShowAttendanceModal(false);
     setAttendanceInput('');
     setUpdating(false);
+    setShowRatingPrompt(true);
+  };
+
+  const handleQuickRatingSubmit = async () => {
+    if (!quickRating) return;
+    setSubmittingRating(true);
+    await base44.entities.Review.create({
+      booking_id: booking.id,
+      talent_profile_id: booking.talent_profile_id,
+      reviewer_id: user.id,
+      reviewer_name: user.full_name,
+      rating: quickRating,
+      event_type: booking.event_type,
+      event_date: booking.event_date
+    });
+    const profiles = await base44.entities.TalentProfile.filter({ id: booking.talent_profile_id });
+    if (profiles.length > 0) {
+      const profile = profiles[0];
+      const newTotal = (profile.total_reviews || 0) + 1;
+      const newAvg = ((profile.average_rating || 0) * (profile.total_reviews || 0) + quickRating) / newTotal;
+      await base44.entities.TalentProfile.update(profile.id, { total_reviews: newTotal, average_rating: newAvg });
+    }
+    setRatingSubmitted(true);
+    setSubmittingRating(false);
   };
 
   const handlePaymentRelease = async () => {
@@ -291,6 +320,73 @@ Good luck and have a great performance! 🎭
           )}
         </div>
       </div>
+
+      {/* Uber-style post-completion rating prompt */}
+      {showRatingPrompt && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 w-full max-w-sm text-center space-y-5">
+            {ratingSubmitted ? (
+              <>
+                <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-8 h-8 text-green-400" />
+                </div>
+                <h2 className="text-xl font-bold">Thanks for rating!</h2>
+                <p className="text-zinc-400 text-sm">Your feedback helps others find great talent.</p>
+                <div className="flex flex-col gap-2 pt-2">
+                  <Link to={createPageUrl('WriteReview') + `?booking_id=${booking.id}`}>
+                    <Button variant="outline" className="w-full border-zinc-700 text-zinc-300">
+                      Write a full review
+                    </Button>
+                  </Link>
+                  <Button onClick={() => setShowRatingPrompt(false)} className="w-full bg-white text-black hover:bg-zinc-100">
+                    Done
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto">
+                  <Star className="w-8 h-8 text-purple-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold mb-1">How was {booking.talent_stage_name}?</h2>
+                  <p className="text-zinc-400 text-sm">Rate your experience</p>
+                </div>
+                <div className="flex justify-center gap-3">
+                  {[1,2,3,4,5].map(star => (
+                    <button
+                      key={star}
+                      onClick={() => setQuickRating(star)}
+                      onMouseEnter={() => setQuickRatingHover(star)}
+                      onMouseLeave={() => setQuickRatingHover(0)}
+                      className="transition-transform hover:scale-125 active:scale-110"
+                    >
+                      <Star className={`w-10 h-10 transition-colors ${star <= (quickRatingHover || quickRating) ? 'text-yellow-400 fill-yellow-400' : 'text-zinc-600'}`} />
+                    </button>
+                  ))}
+                </div>
+                {quickRating > 0 && (
+                  <p className="text-sm font-medium text-yellow-400">
+                    {['','Poor','Fair','Good','Very Good','Excellent'][quickRating]}
+                  </p>
+                )}
+                <div className="flex flex-col gap-2 pt-2">
+                  <Button
+                    onClick={handleQuickRatingSubmit}
+                    disabled={!quickRating || submittingRating}
+                    className="w-full bg-white text-black hover:bg-zinc-100 h-12 text-base font-semibold disabled:opacity-40"
+                  >
+                    {submittingRating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Rating'}
+                  </Button>
+                  <button onClick={() => setShowRatingPrompt(false)} className="text-zinc-500 text-sm hover:text-zinc-300 transition-colors py-1">
+                    Skip for now
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {showAttendanceModal && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
