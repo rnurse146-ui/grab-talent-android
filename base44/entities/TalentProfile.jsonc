@@ -132,6 +132,11 @@
         ]
       },
       "description": "Equipment the performer brings to the event"
+    },
+    "last_minute_available": {
+      "type": "boolean",
+      "default": false,
+      "description": "Available for last-minute cover bookings (shown at front of discovery feed for urgent events)"
     }
   },
   "required": [

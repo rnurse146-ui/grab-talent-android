@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2, Zap } from 'lucide-react';
 import Logo from '@/components/Logo';
 
 const TALENT_CATEGORIES = [
@@ -49,7 +49,7 @@ export default function TalentSetup() {
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profileVideo, setProfileVideo] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState({ stage_name: '', talent_category: '', bio: '', hourly_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [] });
+  const [formData, setFormData] = useState({ stage_name: '', talent_category: '', bio: '', hourly_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [], last_minute_available: false });
   const [specialtyInput, setSpecialtyInput] = useState('');
 
   useEffect(() => { loadUser(); }, []);
@@ -61,7 +61,7 @@ export default function TalentSetup() {
     if (profiles.length > 0) {
       const profile = profiles[0];
       setExistingProfile(profile);
-      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', profile_video: profile.profile_video || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [] });
+      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', profile_video: profile.profile_video || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [], last_minute_available: profile.last_minute_available || false });
       setProfileVideo(profile.profile_video || null);
       setProfilePhoto(profile.profile_photo);
     } else if (currentUser.preferred_city) {
@@ -105,7 +105,7 @@ export default function TalentSetup() {
 
   const handleSubmit = async () => {
     setLoading(true);
-    const profileData = { ...formData, user_id: user.id, hourly_rate: parseFloat(formData.hourly_rate), minimum_hours: parseInt(formData.minimum_hours), location_radius: parseInt(formData.location_radius), experience_years: formData.experience_years ? parseInt(formData.experience_years) : null, is_available: true };
+    const profileData = { ...formData, user_id: user.id, hourly_rate: parseFloat(formData.hourly_rate), minimum_hours: parseInt(formData.minimum_hours), location_radius: parseInt(formData.location_radius), experience_years: formData.experience_years ? parseInt(formData.experience_years) : null, last_minute_available: !!formData.last_minute_available, is_available: true };
     let savedProfile;
     if (existingProfile) {
       savedProfile = await base44.entities.TalentProfile.update(existingProfile.id, profileData);
@@ -210,6 +210,23 @@ export default function TalentSetup() {
                 <div><Label className="text-slate-400">City</Label><Input value={formData.location_city} onChange={(e) => setFormData({ ...formData, location_city: e.target.value })} placeholder="London" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
                 <div><Label className="text-slate-400">Travel Radius</Label><Select value={formData.location_radius} onValueChange={(value) => setFormData({ ...formData, location_radius: value })}><SelectTrigger className="bg-slate-900 border-slate-800 h-12 mt-2"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-slate-800">{[10,25,50,100,200].map(r => (<SelectItem key={r} value={r.toString()}>{r} miles</SelectItem>))}</SelectContent></Select></div>
               </div>
+
+              <div
+                onClick={() => setFormData(prev => ({ ...prev, last_minute_available: !prev.last_minute_available }))}
+                className={`flex items-center justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${formData.last_minute_available ? 'border-orange-500 bg-orange-500/10' : 'border-slate-700 bg-slate-900 hover:border-slate-600'}`}
+              >
+                <div className="flex items-start gap-3">
+                  <Zap className={`w-5 h-5 mt-0.5 shrink-0 ${formData.last_minute_available ? 'text-orange-400' : 'text-slate-500'}`} />
+                  <div>
+                    <p className="font-bold text-white">Available for last-minute cover</p>
+                    <p className="text-sm text-slate-400 mt-1">Opt in to take on urgent bookings (same-day or within a week). You'll be shown first to seekers needing cover at short notice.</p>
+                  </div>
+                </div>
+                <div className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ml-4 ${formData.last_minute_available ? 'bg-orange-500' : 'bg-slate-700'}`}>
+                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${formData.last_minute_available ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                </div>
+              </div>
+
               <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(2)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={() => setStep(4)} disabled={!formData.hourly_rate || !formData.location_city} className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
             </motion.div>
           )}

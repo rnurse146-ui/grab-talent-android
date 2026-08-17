@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { 
   X, Heart, Star, MapPin, Banknote, CheckCircle2,
-  Filter, ChevronRight, Loader2, List, Calendar, User
+  Filter, ChevronRight, Loader2, List, Calendar, User, Zap
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from '@/components/Logo';
@@ -123,7 +123,20 @@ export default function Discover() {
         filters.equipment.every(eq => (t.equipment_provided || []).includes(eq))
       );
     }
-    
+
+    // Prioritize last-minute-available talent when the event is within 7 days
+    if (activeDate) {
+      const daysUntil = Math.ceil((new Date(activeDate + 'T12:00:00') - new Date(new Date().toDateString())) / (1000 * 60 * 60 * 24));
+      if (daysUntil <= 7) {
+        filtered.sort((a, b) => {
+          const aLM = a.last_minute_available ? 1 : 0;
+          const bLM = b.last_minute_available ? 1 : 0;
+          if (bLM !== aLM) return bLM - aLM;
+          return (b.average_rating || 0) - (a.average_rating || 0);
+        });
+      }
+    }
+
     setTalents(filtered);
     setCurrentIndex(0);
     setLoading(false);
@@ -648,6 +661,9 @@ export default function Discover() {
                         <Badge variant="secondary" className="bg-white/20 text-white"><Banknote className="w-3 h-3 mr-1" />£{currentTalent.hourly_rate}/hr</Badge>
                         {currentTalent.average_rating && (
                           <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300"><Star className="w-3 h-3 mr-1 fill-yellow-300" />{currentTalent.average_rating.toFixed(1)}</Badge>
+                        )}
+                        {currentTalent.last_minute_available && (
+                          <Badge variant="secondary" className="bg-orange-500/30 text-orange-200"><Zap className="w-3 h-3 mr-1 fill-orange-300" />Last-minute</Badge>
                         )}
                       </div>
                       {currentTalent.bio && (<p className="text-sm text-slate-300 line-clamp-2">{currentTalent.bio}</p>)}

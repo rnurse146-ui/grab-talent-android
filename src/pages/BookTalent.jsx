@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, Banknote, Loader2, CheckCircle2, Star } from 'lucide-react';
+import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, Banknote, Loader2, CheckCircle2, Star, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import PageHeader from '@/components/PageHeader';
 
@@ -163,6 +163,16 @@ export default function BookTalent() {
           </div>
 
           <div><Label className="text-zinc-400">Special Requirements (optional)</Label><Textarea value={formData.special_requirements} onChange={(e) => setFormData({...formData, special_requirements: e.target.value})} placeholder="Any special requests..." className="bg-zinc-900 border-zinc-800 mt-2 h-24" /></div>
+
+          <div className="p-4 rounded-2xl bg-green-950/40 border border-green-700/40">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-green-200 text-sm">Booking Protection included</p>
+                <p className="text-xs text-green-200/70 mt-1 leading-relaxed">If your talent cancels with less than 7 days' notice, we'll refund your money back as soon as we're notified — no hassle, no chasing.</p>
+              </div>
+            </div>
+          </div>
 
           <Button type="submit" disabled={submitting || !formData.event_date} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
             {submitting ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Sending...</> : 'Send Booking Request'}
