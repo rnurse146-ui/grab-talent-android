@@ -4,10 +4,11 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, Send, Loader2, MessageSquare, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, Send, Loader2, MessageSquare, ArrowLeft, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import Logo from '@/components/Logo';
 import HelpChat from '@/components/HelpChat';
+import { containsContactInfo } from '@/lib/messageFilter';
 
 function formatTime(dateStr) {
   const d = new Date(dateStr);
@@ -37,6 +38,8 @@ export default function Messages() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [showList, setShowList] = useState(true); // mobile nav
+  const [bookingVerified, setBookingVerified] = useState(false);
+  const [blockedWarning, setBlockedWarning] = useState('');
   const messagesEndRef = useRef(null);
   const activeConvIdRef = useRef(null);
   const userRef = useRef(null);
@@ -107,8 +110,19 @@ export default function Messages() {
     const cu = currentUser || userRef.current;
     setActiveConvId(conv.id);
     setShowList(false);
+    setBlockedWarning('');
     const sorted = [...conv.messages].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
     setMessages(sorted);
+
+    // Contact sharing is unlocked once a booking between these users is confirmed/completed
+    const otherId = conv.otherId;
+    const bookings = await base44.entities.Booking.filter({
+      $or: [
+        { seeker_id: cu.id, talent_user_id: otherId },
+        { seeker_id: otherId, talent_user_id: cu.id }
+      ]
+    });
+    setBookingVerified(bookings.some(b => ['confirmed', 'completed'].includes(b.status)));
 
     // Mark unread messages as read
     const unreadMsgs = conv.messages.filter(m => !m.is_read && m.receiver_id === cu.id);
@@ -171,9 +185,20 @@ export default function Messages() {
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !activeConvId) return;
+    const content = newMessage.trim();
+
+    // Block phone numbers and social media handles until the booking is confirmed through the app
+    if (!bookingVerified) {
+      const { blocked, reasons } = containsContactInfo(content);
+      if (blocked) {
+        setBlockedWarning(`This message was blocked because it contains ${reasons.join(' and ')}. To protect both users, contact details can only be shared once a booking is confirmed through Grab Talent.`);
+        return;
+      }
+    }
+    setBlockedWarning('');
+
     setSending(true);
     const conv = conversations.find(c => c.id === activeConvId);
-    const content = newMessage.trim();
     setNewMessage('');
 
     await base44.entities.Message.create({
@@ -336,6 +361,20 @@ export default function Messages() {
                 })}
                 <div ref={messagesEndRef} />
               </div>
+
+              {/* Contact sharing protection */}
+              {!bookingVerified && (
+                <div className="px-4 py-2 border-t border-zinc-800 shrink-0 bg-black flex items-center gap-2">
+                  <ShieldCheck className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                  <p className="text-xs text-zinc-500">Contact details are locked until a booking is confirmed through Grab Talent.</p>
+                </div>
+              )}
+              {blockedWarning && (
+                <div className="px-4 py-3 border-t border-amber-700/40 shrink-0 bg-amber-950/40 flex items-start gap-2">
+                  <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-200 leading-relaxed">{blockedWarning}</p>
+                </div>
+              )}
 
               {/* Input */}
               <div className="px-4 py-3 border-t border-zinc-800 shrink-0 bg-black">
