@@ -170,6 +170,7 @@ export default function BookTalent() {
               <div>
                 <p className="font-semibold text-green-200 text-sm">Booking Protection included</p>
                 <p className="text-xs text-green-200/70 mt-1 leading-relaxed">If your talent cancels with less than 7 days' notice, we'll refund your money back as soon as we're notified — no hassle, no chasing.</p>
+                <p className="text-xs text-green-200/70 mt-2 leading-relaxed">For your peace of mind, talent are held to a <strong className="text-green-200">3-strike policy</strong>: each late cancellation counts as a violation, and after 3 strikes their account is deactivated from the platform.</p>
               </div>
             </div>
           </div>

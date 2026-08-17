@@ -38,6 +38,7 @@ export default function BookingDetails() {
   const [quickRatingHover, setQuickRatingHover] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [submittingRating, setSubmittingRating] = useState(false);
+  const [talentProfile, setTalentProfile] = useState(null);
 
   useEffect(() => { loadData(); }, [bookingId]);
 
@@ -46,7 +47,13 @@ export default function BookingDetails() {
     setUser(currentUser);
     if (bookingId) {
       const bookings = await base44.entities.Booking.filter({ id: bookingId });
-      if (bookings.length > 0) setBooking(bookings[0]);
+      if (bookings.length > 0) {
+        setBooking(bookings[0]);
+        if (bookings[0].talent_profile_id) {
+          const profiles = await base44.entities.TalentProfile.filter({ id: bookings[0].talent_profile_id });
+          if (profiles.length > 0) setTalentProfile(profiles[0]);
+        }
+      }
     }
     setLoading(false);
   };
@@ -166,6 +173,33 @@ Good luck and have a great performance! 🎭
     setBooking(prev => ({ ...prev, payment_status: 'released', status: 'completed' }));
   };
 
+  const handleTalentCancel = async () => {
+    setUpdating(true);
+    await base44.entities.Booking.update(booking.id, { status: 'cancelled' });
+    setBooking(prev => ({ ...prev, status: 'cancelled' }));
+
+    // 3-strike rule: cancelling within 7 days of the event counts as a violation
+    if (booking.event_date) {
+      const eventDate = new Date(booking.event_date + 'T12:00:00');
+      const daysUntil = Math.ceil((eventDate - new Date(new Date().toDateString())) / (1000 * 60 * 60 * 24));
+      if (daysUntil <= 7) {
+        const profiles = await base44.entities.TalentProfile.filter({ id: booking.talent_profile_id });
+        if (profiles.length > 0) {
+          const profile = profiles[0];
+          const newStrikes = (profile.strikes_count || 0) + 1;
+          const updates = { strikes_count: newStrikes };
+          if (newStrikes >= 3) {
+            updates.account_suspended = true;
+            updates.is_available = false;
+          }
+          await base44.entities.TalentProfile.update(profile.id, updates);
+          setTalentProfile(prev => ({ ...prev, ...updates }));
+        }
+      }
+    }
+    setUpdating(false);
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <Loader2 className="w-8 h-8 animate-spin text-white" />
@@ -263,6 +297,15 @@ Good luck and have a great performance! 🎭
 
 
 
+        {isSeeker && (
+          <div className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-zinc-400 leading-relaxed">This talent is held to our <strong className="text-white">3-strike policy</strong>: if they cancel within 7 days of your event it counts as a violation, and after 3 strikes their account is deactivated. You're also protected with a full refund if they let you down at short notice.</p>
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="space-y-3">
           {/* Talent actions */}
@@ -275,6 +318,22 @@ Good luck and have a great performance! 🎭
               <Button onClick={() => handleStatusUpdate('declined')} disabled={updating} variant="outline" className="flex-1 border-red-500/50 text-red-400 hover:bg-red-500/20">
                 <XCircle className="w-4 h-4 mr-2" />
                 Decline
+              </Button>
+            </div>
+          )}
+
+          {isTalent && ['accepted', 'confirmed'].includes(booking.status) && (
+            <div className="p-5 bg-red-900/20 rounded-2xl border border-red-700/40 space-y-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-red-400" />
+                <p className="text-white font-medium">Need to cancel this booking?</p>
+              </div>
+              <p className="text-zinc-400 text-sm">
+                Cancelling within 7 days of the event counts as a <strong className="text-red-400">violation</strong> under our 3-strike policy. You currently have <strong className="text-white">{talentProfile?.strikes_count || 0}/3</strong> strikes — after 3 your account is deactivated from the platform.
+              </p>
+              <Button onClick={handleTalentCancel} disabled={updating} variant="outline" className="w-full border-red-500/50 text-red-400 hover:bg-red-500/20">
+                {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4 mr-2" />}
+                Cancel Booking
               </Button>
             </div>
           )}
