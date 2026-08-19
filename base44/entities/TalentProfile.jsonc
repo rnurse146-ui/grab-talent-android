@@ -138,6 +138,32 @@
       "default": false,
       "description": "Available for last-minute cover bookings (shown at front of discovery feed for urgent events)"
     },
+    "social_links": {
+      "type": "object",
+      "properties": {
+        "instagram": {
+          "type": "string",
+          "description": "Instagram handle or URL"
+        },
+        "tiktok": {
+          "type": "string",
+          "description": "TikTok handle or URL"
+        },
+        "facebook": {
+          "type": "string",
+          "description": "Facebook page URL or handle"
+        },
+        "youtube": {
+          "type": "string",
+          "description": "YouTube channel handle or URL"
+        },
+        "website": {
+          "type": "string",
+          "description": "Personal website URL"
+        }
+      },
+      "description": "Linked social media profiles shown on the public profile"
+    },
     "strikes_count": {
       "type": "number",
       "default": 0,

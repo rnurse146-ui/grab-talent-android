@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2, Zap } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2, Zap, Share2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 
 const TALENT_CATEGORIES = [
@@ -49,7 +49,7 @@ export default function TalentSetup() {
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profileVideo, setProfileVideo] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState({ stage_name: '', talent_category: '', bio: '', hourly_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [], last_minute_available: false });
+  const [formData, setFormData] = useState({ stage_name: '', talent_category: '', bio: '', hourly_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [], last_minute_available: false, social_links: { instagram: '', tiktok: '', facebook: '', youtube: '', website: '' } });
   const [specialtyInput, setSpecialtyInput] = useState('');
 
   useEffect(() => { loadUser(); }, []);
@@ -61,7 +61,7 @@ export default function TalentSetup() {
     if (profiles.length > 0) {
       const profile = profiles[0];
       setExistingProfile(profile);
-      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', profile_video: profile.profile_video || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [], last_minute_available: profile.last_minute_available || false });
+      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', profile_video: profile.profile_video || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [], last_minute_available: profile.last_minute_available || false, social_links: { instagram: profile.social_links?.instagram || '', tiktok: profile.social_links?.tiktok || '', facebook: profile.social_links?.facebook || '', youtube: profile.social_links?.youtube || '', website: profile.social_links?.website || '' } });
       setProfileVideo(profile.profile_video || null);
       setProfilePhoto(profile.profile_photo);
     } else if (currentUser.preferred_city) {
@@ -131,7 +131,7 @@ export default function TalentSetup() {
           <h1 className="text-xl font-bold">{existingProfile ? 'Edit' : 'Create'} Your Profile</h1>
         </div>
 
-        <div className="flex gap-2 mb-10">{[1, 2, 3, 4].map(i => (<div key={i} className={`h-1.5 flex-1 rounded-full transition-all ${i <= step ? 'bg-gradient-to-r from-orange-500 to-purple-500' : 'bg-slate-800'}`} />))}</div>
+        <div className="flex gap-2 mb-10">{[1, 2, 3, 4, 5].map(i => (<div key={i} className={`h-1.5 flex-1 rounded-full transition-all ${i <= step ? 'bg-gradient-to-r from-orange-500 to-purple-500' : 'bg-slate-800'}`} />))}</div>
 
         <AnimatePresence mode="wait">
           {step === 1 && (
@@ -272,7 +272,22 @@ export default function TalentSetup() {
                 </div>
               </div>
               <div className="p-4 rounded-xl bg-slate-900 border border-slate-800"><h3 className="font-medium mb-3 flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />Summary</h3><div className="text-sm text-slate-400 space-y-1"><p><span className="text-white">{formData.stage_name}</span> • {TALENT_CATEGORIES.find(c => c.value === formData.talent_category)?.label}</p><p>📍 {formData.location_city} • 💷 £{formData.hourly_rate}/hr</p></div></div>
-              <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(3)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={handleSubmit} disabled={loading || !formData.profile_photo} className="flex-1 bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600">{loading ? 'Saving...' : existingProfile ? 'Save Changes' : 'Create Profile'}</Button></div>
+              <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(3)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={() => setStep(5)} disabled={!formData.profile_photo} className="flex-1 bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
+            </motion.div>
+          )}
+
+          {step === 5 && (
+            <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+              <div className="text-center mb-6"><Share2 className="w-10 h-10 text-blue-400 mx-auto mb-3" /><h2 className="text-xl font-semibold">Social Media & Sharing</h2><p className="text-sm text-slate-400 mt-1">Link your profiles so bookers can see more of your work. Optional.</p></div>
+              <div className="space-y-4">
+                <div><Label className="text-slate-400">Instagram</Label><Input value={formData.social_links.instagram} onChange={(e) => setFormData({ ...formData, social_links: { ...formData.social_links, instagram: e.target.value } })} placeholder="@yourhandle or instagram.com/yourhandle" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
+                <div><Label className="text-slate-400">TikTok</Label><Input value={formData.social_links.tiktok} onChange={(e) => setFormData({ ...formData, social_links: { ...formData.social_links, tiktok: e.target.value } })} placeholder="@yourhandle or tiktok.com/@yourhandle" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
+                <div><Label className="text-slate-400">Facebook</Label><Input value={formData.social_links.facebook} onChange={(e) => setFormData({ ...formData, social_links: { ...formData.social_links, facebook: e.target.value } })} placeholder="facebook.com/yourpage" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
+                <div><Label className="text-slate-400">YouTube</Label><Input value={formData.social_links.youtube} onChange={(e) => setFormData({ ...formData, social_links: { ...formData.social_links, youtube: e.target.value } })} placeholder="youtube.com/@yourchannel" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
+                <div><Label className="text-slate-400">Website</Label><Input value={formData.social_links.website} onChange={(e) => setFormData({ ...formData, social_links: { ...formData.social_links, website: e.target.value } })} placeholder="yourdomain.com" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
+              </div>
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-sm text-slate-400"><p className="flex items-center gap-2"><Share2 className="w-4 h-4 text-blue-400 shrink-0" />After saving, you'll get a shareable link to your Grab Talent profile — post it on your socials to show you're available for work.</p></div>
+              <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(4)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={handleSubmit} disabled={loading} className="flex-1 bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600">{loading ? 'Saving...' : existingProfile ? 'Save Changes' : 'Create Profile'}</Button></div>
             </motion.div>
           )}
         </AnimatePresence>

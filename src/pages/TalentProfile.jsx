@@ -5,9 +5,10 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, MapPin, Banknote, CheckCircle2, Clock, Calendar, ChevronLeft, MessageSquare, Image, Loader2, Award, Eye, Pencil } from 'lucide-react';
+import { Star, MapPin, Banknote, CheckCircle2, Clock, Calendar, ChevronLeft, MessageSquare, Image, Loader2, Award, Eye, Pencil, Instagram, Facebook, Youtube, Globe, Music2 } from 'lucide-react';
 import AvailabilityMiniCalendar from '@/components/talent/AvailabilityMiniCalendar';
 import AvailabilityManager from '@/components/talent/AvailabilityManager';
+import ShareProfile from '@/components/talent/ShareProfile';
 import PageHeader from '@/components/PageHeader';
 import Logo from '@/components/Logo';
 
@@ -42,6 +43,22 @@ export default function TalentProfile() {
 
   if (loading) return (<div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>);
   if (!profile) return (<div className="min-h-screen bg-black text-white flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold mb-4">Profile not found</h1><Link to={createPageUrl('Dashboard')}><Button>Go to Dashboard</Button></Link></div></div>);
+
+  const socialLinks = [
+    { key: 'instagram', url: profile.social_links?.instagram, Icon: Instagram },
+    { key: 'tiktok', url: profile.social_links?.tiktok, Icon: Music2 },
+    { key: 'facebook', url: profile.social_links?.facebook, Icon: Facebook },
+    { key: 'youtube', url: profile.social_links?.youtube, Icon: Youtube },
+    { key: 'website', url: profile.social_links?.website, Icon: Globe },
+  ].map(s => {
+    const raw = (s.url || '').trim().replace(/^@/, '');
+    if (!raw) return { ...s, href: '' };
+    if (/^https?:\/\//i.test(raw)) return { ...s, href: raw };
+    if (s.key === 'website') return { ...s, href: `https://${raw}` };
+    if (s.key === 'facebook') return { ...s, href: `https://facebook.com/${raw}` };
+    return { ...s, href: `https://${s.key}.com/${s.key === 'tiktok' ? '@' : ''}${raw}` };
+  });
+  const hasSocial = socialLinks.some(s => s.href);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -132,6 +149,17 @@ export default function TalentProfile() {
                 {profile.specialties?.map((spec, i) => (<Badge key={i} variant="secondary" className="bg-slate-800 text-slate-300">{spec}</Badge>))}
               </div>
             )}
+
+            {hasSocial && (
+              <div className="flex flex-wrap items-center gap-3 mb-6">
+                <span className="text-sm text-slate-500">Find me on:</span>
+                {socialLinks.filter(s => s.href).map(s => (
+                  <a key={s.key} href={s.href} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-colors">
+                    <s.Icon className="w-4 h-4" />
+                  </a>
+                ))}
+              </div>
+            )}
             {!isOwner && (
               <div className="flex gap-3">
                 <Link to={createPageUrl('BookTalent') + `?talent_id=${profile.id}${eventDate ? '&event_date=' + eventDate : ''}${eventName ? '&event_name=' + encodeURIComponent(eventName) : ''}`}><Button size="lg" className="bg-white text-black hover:bg-zinc-100"><Calendar className="w-5 h-5 mr-2" />Book Now</Button></Link>
@@ -140,6 +168,8 @@ export default function TalentProfile() {
             )}
           </div>
         </div>
+
+        {isOwner && (<ShareProfile profile={profile} />)}
 
         {profile.bio && (<div className="mb-10"><h2 className="text-xl font-semibold mb-4">About</h2><p className="text-slate-300 whitespace-pre-line">{profile.bio}</p></div>)}
 
