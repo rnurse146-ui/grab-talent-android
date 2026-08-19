@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2, Zap, Share2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2, Zap, Share2, Eye } from 'lucide-react';
 import Logo from '@/components/Logo';
 
 const TALENT_CATEGORIES = [
@@ -129,6 +130,12 @@ export default function TalentSetup() {
         <div className="text-center mb-8">
           <Logo className="h-12 w-auto mx-auto mb-4" />
           <h1 className="text-xl font-bold">{existingProfile ? 'Edit' : 'Create'} Your Profile</h1>
+          {existingProfile && (
+            <Link to={`/TalentProfile?id=${existingProfile.id}`} className="inline-flex items-center gap-1.5 mt-3 text-sm text-purple-300 hover:text-purple-200 transition-colors">
+              <Eye className="w-4 h-4" />
+              Preview my profile as customers see it
+            </Link>
+          )}
         </div>
 
         <div className="flex gap-2 mb-10">{[1, 2, 3, 4, 5].map(i => (<div key={i} className={`h-1.5 flex-1 rounded-full transition-all ${i <= step ? 'bg-gradient-to-r from-orange-500 to-purple-500' : 'bg-slate-800'}`} />))}</div>
