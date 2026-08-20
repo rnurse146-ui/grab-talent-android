@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2, Zap, Share2, Eye } from 'lucide-react';
+import TalentHitch from '@/components/TalentHitch';
 import Logo from '@/components/Logo';
 
 const TALENT_CATEGORIES = [
@@ -299,6 +300,7 @@ export default function TalentSetup() {
           )}
         </AnimatePresence>
       </motion.div>
+      <TalentHitch />
     </div>
   );
 }
