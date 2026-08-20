@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mic, X, Loader2, Send, Volume2, VolumeX } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const SYSTEM_PROMPT = `You are "Talent Hitch", the friendly voice guide inside the Grab Talent app — a UK platform connecting event organisers ("seekers") with performers ("talent"). The user hears your replies spoken aloud, so keep them short, warm and conversational (2-4 sentences). Guide people step-by-step. Your personality is warm, confident and easy-going with a little playful charisma — like a friendly film-star narrator cracking a light grin — but always helpful and on-point.
 
@@ -49,6 +50,15 @@ function speak(text, muted) {
   window.speechSynthesis.speak(u);
 }
 
+const VOICES = [
+  { value: 'honey', label: 'Honey — warm & smooth' },
+  { value: 'river', label: 'River — calm & neutral' },
+  { value: 'storm', label: 'Storm — deep & authoritative' },
+  { value: 'sunny', label: 'Sunny — bright & upbeat' },
+  { value: 'spark', label: 'Spark — energetic' },
+  { value: 'browser', label: 'Browser (instant)' },
+];
+
 export default function TalentHitch() {
   const location = useLocation();
   const SpeechRecognition = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
@@ -64,9 +74,27 @@ export default function TalentHitch() {
   ]);
   const recRef = useRef(null);
   const bottomRef = useRef(null);
+  const audioRef = useRef(null);
+  const [voice, setVoice] = useState('honey');
 
   useEffect(() => { if ('speechSynthesis' in window) window.speechSynthesis.getVoices(); }, []);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
+
+  const playReply = async (text) => {
+    if (muted) return;
+    if (voice === 'browser') { speak(text, false); return; }
+    try {
+      audioRef.current?.pause();
+      const res = await base44.integrations.Core.GenerateSpeech({ text, voice, language_code: 'en' });
+      const url = res?.url || res?.file_url;
+      if (!url) return;
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.play().catch(() => {});
+    } catch (e) {
+      speak(text, false);
+    }
+  };
 
   const handleSend = async (text) => {
     const userMsg = (text || '').trim();
@@ -82,7 +110,7 @@ export default function TalentHitch() {
       });
       const reply = typeof response === 'string' ? response : (response?.response || 'Sorry, I did not catch that.');
       setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
-      speak(reply, muted);
+      playReply(reply);
     } catch (e) {
       setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I couldn't connect just now. Try again in a moment." }]);
     }
@@ -135,6 +163,16 @@ export default function TalentHitch() {
                 <X className="w-4 h-4" />
               </button>
             </div>
+          </div>
+
+          <div className="px-4 py-2 border-b border-zinc-800 flex items-center gap-2">
+            <span className="text-[10px] text-zinc-500 shrink-0">Voice</span>
+            <Select value={voice} onValueChange={setVoice}>
+              <SelectTrigger className="h-7 text-xs bg-zinc-900 border-zinc-700 flex-1"><SelectValue /></SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-700">
+                {VOICES.map(v => <SelectItem key={v.value} value={v.value} className="text-xs">{v.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
