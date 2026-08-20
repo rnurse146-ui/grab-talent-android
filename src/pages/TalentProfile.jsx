@@ -29,14 +29,16 @@ export default function TalentProfile() {
 
   const loadData = async () => {
     if (!profileId) { setLoading(false); return; }
-    const currentUser = await base44.auth.me();
-    setUser(currentUser);
-    const profiles = await base44.entities.TalentProfile.filter({ id: profileId });
-    if (profiles.length > 0) {
-      setProfile(profiles[0]);
-      setIsOwner(profiles[0].user_id === currentUser.id);
+    try {
+      const profileData = await base44.entities.TalentProfile.get(profileId);
+      setProfile(profileData);
+      let currentUser = null;
+      try { currentUser = await base44.auth.me(); setUser(currentUser); } catch {}
+      setIsOwner(currentUser ? profileData.user_id === currentUser.id : false);
       const profileReviews = await base44.entities.Review.filter({ talent_profile_id: profileId }, '-created_date', 10);
       setReviews(profileReviews);
+    } catch (e) {
+      console.error('Failed to load profile', e);
     }
     setLoading(false);
   };
