@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mic, X, Loader2, Send, Volume2, VolumeX } from 'lucide-react';
 
-const SYSTEM_PROMPT = `You are "Talent Hitch", the friendly voice guide inside the Grab Talent app — a UK platform connecting event organisers ("seekers") with performers ("talent"). The user hears your replies spoken aloud, so keep them short, warm and conversational (2-4 sentences). Guide people step-by-step.
+const SYSTEM_PROMPT = `You are "Talent Hitch", the friendly voice guide inside the Grab Talent app — a UK platform connecting event organisers ("seekers") with performers ("talent"). The user hears your replies spoken aloud, so keep them short, warm and conversational (2-4 sentences). Guide people step-by-step. Your personality is warm, confident and easy-going with a little playful charisma — like a friendly film-star narrator cracking a light grin — but always helpful and on-point.
 
 SEEKER FLOW (finding talent):
 1. Onboarding: choose "I'm looking for talent", enter your city, optional phone, then finish.
@@ -28,15 +28,24 @@ const PAGE_HINTS = {
   '/TalentSetup': 'The user is currently on TalentSetup, creating or editing their talent profile across 5 steps.',
 };
 
+function pickVoice(voices) {
+  const maleNames = /(male|daniel|george|ryan|arthur|oliver|guy|fred|james|brian)/i;
+  return voices.find(v => maleNames.test(v.name) && v.lang === 'en-GB')
+    || voices.find(v => maleNames.test(v.name) && v.lang.startsWith('en'))
+    || voices.find(v => v.lang === 'en-GB')
+    || voices.find(v => v.lang && v.lang.startsWith('en'));
+}
+
 function speak(text, muted) {
   if (muted || !('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'en-GB';
-  const voices = window.speechSynthesis.getVoices();
-  const gb = voices.find(v => v.lang === 'en-GB') || voices.find(v => v.lang.startsWith('en'));
-  if (gb) u.voice = gb;
-  u.rate = 1; u.pitch = 1;
+  const voice = pickVoice(window.speechSynthesis.getVoices());
+  if (voice) u.voice = voice;
+  u.rate = 0.95;   // smooth, easy-going pace
+  u.pitch = 0.85;  // warm, mid-deep tone
+  u.volume = 1;
   window.speechSynthesis.speak(u);
 }
 
