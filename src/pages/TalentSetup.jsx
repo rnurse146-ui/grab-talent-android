@@ -121,7 +121,7 @@ export default function TalentSetup() {
   if (initialLoading) return (<div className="min-h-screen bg-slate-950 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-purple-500" /></div>);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6 pb-28">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl" />
         <div className="absolute bottom-20 -left-40 w-80 h-80 bg-purple-500/15 rounded-full blur-3xl" />
