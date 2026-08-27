@@ -1,0 +1,44 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "app_user_auth",
+      "events": [
+        "signup"
+      ]
+    }
+  },
+  "name": "On New Signup",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "on_new_signup",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "notify": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "notifyNewSignup",
+            "args": {
+              "user_id": "${ .trigger.user_id }",
+              "email": "${ .trigger.email }",
+              "full_name": "${ .trigger.full_name }",
+              "role": "${ .trigger.role }",
+              "auth_method": "${ .trigger.auth_method }",
+              "occurred_at": "${ .trigger.occurred_at }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Email owner about new sign-up",
+            "description": "Notifies grab-talent-limited@hotmail.com"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Emails the owner when a new user signs up to the app"
+}
