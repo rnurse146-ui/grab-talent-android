@@ -47,12 +47,12 @@ export default function Settings() {
 
         <div className="space-y-6">
           <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
-            <h2 className="font-semibold mb-4 flex items-center gap-2"><User className="w-4 h-4 text-zinc-400" />Profile</h2>
+            <h2 className="font-semibold mb-4 flex items-center gap-2"><User className="w-4 h-4 text-purple-400" />Profile</h2>
             <div className="space-y-4">
-              <div><Label className="text-zinc-400">Full Name</Label><Input value={formData.full_name} onChange={(e) => setFormData({...formData, full_name: e.target.value})} className="bg-zinc-800 border-zinc-700 mt-2" /></div>
-              <div><Label className="text-zinc-400">Email</Label><Input value={user?.email || ''} disabled className="bg-zinc-800 border-zinc-700 mt-2 opacity-50" /></div>
-              <div><Label className="text-zinc-400">Phone</Label><Input value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="+44 7XXX" className="bg-zinc-800 border-zinc-700 mt-2" /></div>
-              <div><Label className="text-zinc-400">City</Label><Input value={formData.preferred_city} onChange={(e) => setFormData({...formData, preferred_city: e.target.value})} placeholder="London" className="bg-zinc-800 border-zinc-700 mt-2" /></div>
+              <div><Label className="text-zinc-400">Full Name</Label><Input value={formData.full_name} onChange={(e) => setFormData({...formData, full_name: e.target.value})} className="bg-zinc-800 border-zinc-700 mt-2 text-white placeholder:text-zinc-500" /></div>
+              <div><Label className="text-zinc-400">Email</Label><Input value={user?.email || ''} disabled className="bg-zinc-800 border-zinc-700 mt-2 text-white placeholder:text-zinc-500 opacity-50" /></div>
+              <div><Label className="text-zinc-400">Phone</Label><Input value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="+44 7XXX" className="bg-zinc-800 border-zinc-700 mt-2 text-white placeholder:text-zinc-500" /></div>
+              <div><Label className="text-zinc-400">City</Label><Input value={formData.preferred_city} onChange={(e) => setFormData({...formData, preferred_city: e.target.value})} placeholder="London" className="bg-zinc-800 border-zinc-700 mt-2 text-white placeholder:text-zinc-500" /></div>
             </div>
             <Button onClick={handleSave} disabled={saving} className="w-full mt-6 bg-white text-black hover:bg-zinc-100">
               {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : saved ? <><Check className="w-4 h-4 mr-2" />Saved!</> : 'Save Changes'}
@@ -62,7 +62,7 @@ export default function Settings() {
           <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
             <h2 className="font-semibold mb-4">Account</h2>
             <p className="text-zinc-400 text-sm mb-4">You're signed in as {user?.email}</p>
-            <Button onClick={handleLogout} variant="outline" className="w-full border-red-500/50 text-red-400 hover:bg-red-500/20"><LogOut className="w-4 h-4 mr-2" />Sign Out</Button>
+            <Button onClick={handleLogout} className="w-full bg-zinc-900 border border-red-500/50 text-red-400 hover:bg-red-500/20"><LogOut className="w-4 h-4 mr-2" />Sign Out</Button>
           </div>
         </div>
       </div>
