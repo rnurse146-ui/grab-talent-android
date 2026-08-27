@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { secrets } from 'base44:runtime';
 
 const NOTIFY_EMAIL = 'grab-talent-limited@hotmail.com';
 
@@ -6,6 +7,12 @@ export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
+
+    // Verify the caller is the platform workflow, not an anonymous HTTP request.
+    const expectedSecret = secrets.get("SIGNUP_NOTIFY_SECRET");
+    if (!expectedSecret || body.secret !== expectedSecret) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const email = body.email || 'unknown';
     const full_name = body.full_name || body.email || 'A new user';
