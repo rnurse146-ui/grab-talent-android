@@ -36,5 +36,46 @@
   "required": [
     "seeker_id",
     "talent_profile_id"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "data.seeker_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.seeker_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.seeker_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.seeker_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
