@@ -1,13 +1,4 @@
 {
-  "trigger": {
-    "condition": null,
-    "config": {
-      "trigger_type": "app_user_auth",
-      "events": [
-        "signup"
-      ]
-    }
-  },
   "name": "On New Signup",
   "definition": {
     "document": {
@@ -28,7 +19,8 @@
               "full_name": "${ .trigger.full_name }",
               "role": "${ .trigger.role }",
               "auth_method": "${ .trigger.auth_method }",
-              "occurred_at": "${ .trigger.occurred_at }"
+              "occurred_at": "${ .trigger.occurred_at }",
+              "secret": "gt_signup_notify_7f3a9c2e1b8d4e6f"
             }
           },
           "then": "end",
@@ -40,5 +32,14 @@
       }
     ]
   },
-  "description": "Emails the owner when a new user signs up to the app"
+  "description": "Emails the owner when a new user signs up to the app",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "app_user_auth",
+      "events": [
+        "signup"
+      ]
+    }
+  }
 }
