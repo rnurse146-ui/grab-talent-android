@@ -4,11 +4,12 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Search, Star, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Home() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => { checkAuth(); }, []);
 
@@ -16,8 +17,8 @@ export default function Home() {
     try {
       const isAuth = await base44.auth.isAuthenticated();
       if (isAuth) {
-        const u = await base44.auth.me();
-        setUser(u);
+        navigate(createPageUrl('Dashboard'));
+        return;
       }
     } catch (e) {}
     setLoading(false);
@@ -132,7 +133,10 @@ export default function Home() {
                 Sign In / Sign Up with Email
               </button>
 
-              <p className="text-center text-white/30 text-xs pt-2">
+              <p className="text-center text-white/50 text-xs pt-2">
+                You'll be emailed a verification code to confirm your account — please check your junk/spam folder if it doesn't arrive shortly.
+              </p>
+              <p className="text-center text-white/30 text-xs">
                 By continuing you agree to our Terms of Service and Privacy Policy.
               </p>
             </motion.div>

@@ -65,7 +65,7 @@ export default function TalentProfile() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-black sticky top-0 z-10">
-        <Link to={createPageUrl('Dashboard')}><Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white"><ChevronLeft className="w-4 h-4 mr-1" />Back</Button></Link>
+        <Link to={createPageUrl('Dashboard')}><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20 font-semibold"><ChevronLeft className="w-4 h-4 mr-1" />Back to Dashboard</Button></Link>
         <Logo className="h-12 w-auto" variant="light" />
         {isOwner ? (<Link to={createPageUrl('TalentSetup') + '?edit=true'}><Button size="sm" className="bg-white text-black hover:bg-zinc-100">Edit Profile</Button></Link>) : (<div className="w-20" />)}
       </div>

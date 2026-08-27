@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2, Zap, Share2, Eye } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2, Zap, Share2, Eye, Video, Sparkles } from 'lucide-react';
 import TalentHitch from '@/components/TalentHitch';
 import Logo from '@/components/Logo';
 
@@ -241,17 +241,11 @@ export default function TalentSetup() {
 
           {step === 4 && (
             <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-              <div className="text-center mb-6"><Camera className="w-10 h-10 text-pink-400 mx-auto mb-3" /><h2 className="text-xl font-semibold">Photos</h2></div>
-              <div><Label className="text-slate-400">Profile Photo</Label>
-                <div className="mt-3 flex items-center gap-6">
-                  <div className="w-24 h-24 rounded-2xl bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center overflow-hidden">{profilePhoto ? <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" /> : <Camera className="w-8 h-8 text-slate-600" />}</div>
-                  <label className="cursor-pointer"><input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" /><div className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium">{uploading ? 'Uploading...' : 'Upload'}</div></label>
-                </div>
-              </div>
-
+              <div className="text-center mb-6"><Video className="w-10 h-10 text-pink-400 mx-auto mb-3" /><h2 className="text-xl font-semibold">Showcase Your Talent</h2></div>
+              <div className="p-4 rounded-xl bg-gradient-to-r from-orange-500/20 to-purple-500/20 border border-orange-500/40 mb-6 flex items-start gap-3"><Sparkles className="w-5 h-5 text-orange-400 shrink-0 mt-0.5" /><p className="text-sm text-orange-100"><strong>Tip:</strong> Add a video showing off your talent — profiles with a video appear first and get up to 5× more views. This is the first thing people see!</p></div>
               <div>
-                <Label className="text-slate-400">Intro Video / Music Sample <span className="text-slate-500 text-xs font-normal">(shown first on your profile)</span></Label>
-                <p className="text-xs text-slate-500 mt-1 mb-3">Upload a short video clip or audio file. Supports MP4, MOV, MP3, WAV.</p>
+                <Label className="text-slate-400">Intro Video / Music Sample <span className="text-orange-400 text-xs font-normal">★ shown first on your profile</span></Label>
+                <p className="text-xs text-slate-500 mt-1 mb-3">Upload a short video clip or audio file — this is the first thing people see, so it's highly recommended! Supports MP4, MOV, MP3, WAV.</p>
                 <div className="flex items-center gap-4">
                   {profileVideo ? (
                     <div className="flex-1">
@@ -262,14 +256,21 @@ export default function TalentSetup() {
                       )}
                     </div>
                   ) : (
-                    <div className="w-24 h-24 rounded-2xl bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center shrink-0">
-                      <Music className="w-8 h-8 text-slate-600" />
+                    <div className="w-24 h-24 rounded-2xl bg-slate-900 border-2 border-dashed border-orange-500/50 flex items-center justify-center shrink-0">
+                      <Video className="w-8 h-8 text-orange-500/60" />
                     </div>
                   )}
                   <div className="flex flex-col gap-2">
-                    <label className="cursor-pointer"><input type="file" accept="video/*,audio/*" onChange={handleVideoUpload} className="hidden" /><div className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium">{uploading ? 'Uploading...' : profileVideo ? 'Replace' : 'Upload'}</div></label>
+                    <label className="cursor-pointer"><input type="file" accept="video/*,audio/*" onChange={handleVideoUpload} className="hidden" /><div className="px-4 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg text-sm font-medium">{uploading ? 'Uploading...' : profileVideo ? 'Replace Video' : 'Upload Video'}</div></label>
                     {profileVideo && <button type="button" onClick={() => { setProfileVideo(null); setFormData(prev => ({ ...prev, profile_video: '' })); }} className="px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg text-sm">Remove</button>}
                   </div>
+                </div>
+              </div>
+
+              <div><Label className="text-slate-400">Profile Photo</Label>
+                <div className="mt-3 flex items-center gap-6">
+                  <div className="w-24 h-24 rounded-2xl bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center overflow-hidden">{profilePhoto ? <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" /> : <Camera className="w-8 h-8 text-slate-600" />}</div>
+                  <label className="cursor-pointer"><input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" /><div className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium">{uploading ? 'Uploading...' : 'Upload'}</div></label>
                 </div>
               </div>
 
