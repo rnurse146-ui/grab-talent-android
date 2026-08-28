@@ -10,6 +10,7 @@ import {
   CheckCircle2, ChevronRight, Settings, Shield, Pencil
 } from 'lucide-react';
 import TalentCalendar from './TalentCalendar';
+import ProfileVisibilityToggle from '@/components/talent/ProfileVisibilityToggle';
 
 export default function TalentDashboard({ user, talentProfile, recentBookings }) {
   const pendingBookings = recentBookings.filter(b => b.status === 'pending');
@@ -213,6 +214,8 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
             </div>
           )}
 
+
+          {talentProfile && <ProfileVisibilityToggle profile={talentProfile} onUpdated={() => {}} />}
 
           {/* Quick Links */}
           <div className="bg-zinc-900 rounded-2xl border border-zinc-700 p-6">
