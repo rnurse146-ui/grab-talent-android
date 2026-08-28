@@ -5,7 +5,8 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, MapPin, Banknote, CheckCircle2, Clock, Calendar, ChevronLeft, MessageSquare, Image, Loader2, Award, Eye, Pencil, Instagram, Facebook, Youtube, Globe, Music2 } from 'lucide-react';
+import { Star, MapPin, Banknote, CheckCircle2, Clock, Calendar, ChevronLeft, MessageSquare, Image, Loader2, Award, Eye, Pencil, Instagram, Facebook, Youtube, Globe } from 'lucide-react';
+import TikTokIcon from '@/components/TikTokIcon';
 import AvailabilityMiniCalendar from '@/components/talent/AvailabilityMiniCalendar';
 import AvailabilityManager from '@/components/talent/AvailabilityManager';
 import ShareProfile from '@/components/talent/ShareProfile';
@@ -48,7 +49,7 @@ export default function TalentProfile() {
 
   const socialLinks = [
     { key: 'instagram', url: profile.social_links?.instagram, Icon: Instagram },
-    { key: 'tiktok', url: profile.social_links?.tiktok, Icon: Music2 },
+    { key: 'tiktok', url: profile.social_links?.tiktok, Icon: TikTokIcon },
     { key: 'facebook', url: profile.social_links?.facebook, Icon: Facebook },
     { key: 'youtube', url: profile.social_links?.youtube, Icon: Youtube },
     { key: 'website', url: profile.social_links?.website, Icon: Globe },
