@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, ChevronLeft, Clock, MapPin, Loader2, CheckCircle2, XCircle, AlertCircle, Banknote } from 'lucide-react';
 import { format } from 'date-fns';
 import PageHeader from '@/components/PageHeader';
+import PullToRefresh from '@/components/PullToRefresh';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-yellow-500/20 text-yellow-400', icon: AlertCircle },
@@ -49,7 +50,7 @@ export default function Bookings() {
   });
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <PullToRefresh onRefresh={loadData} className="h-[100dvh] bg-black text-white">
       <PageHeader backTo={createPageUrl('Dashboard')} />
 
       <div className="max-w-4xl mx-auto px-6 pt-8 pb-24 md:pb-8">
@@ -123,6 +124,6 @@ export default function Bookings() {
           </div>
         )}
       </div>
-    </div>
+    </PullToRefresh>
   );
 }

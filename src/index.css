@@ -79,6 +79,13 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input, textarea, select, [contenteditable], [contenteditable="true"], [role="textbox"] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   html, body {

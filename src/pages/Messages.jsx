@@ -9,6 +9,7 @@ import { format, isToday, isYesterday } from 'date-fns';
 import Logo from '@/components/Logo';
 import HelpChat from '@/components/HelpChat';
 import { containsContactInfo } from '@/lib/messageFilter';
+import PullToRefresh from '@/components/PullToRefresh';
 
 function formatTime(dateStr) {
   const d = new Date(dateStr);
@@ -104,6 +105,28 @@ export default function Messages() {
     }
 
     setLoading(false);
+  };
+
+  const refreshMessages = async () => {
+    const currentUser = userRef.current;
+    if (!currentUser) return;
+    try {
+      const allMessages = await base44.entities.Message.filter(
+        { $or: [{ sender_id: currentUser.id }, { receiver_id: currentUser.id }] },
+        '-created_date', 200
+      );
+      const convList = buildConversations(allMessages, currentUser);
+      setConversations(convList);
+      const activeId = activeConvIdRef.current;
+      if (activeId) {
+        const conv = convList.find(c => c.id === activeId);
+        if (conv) {
+          setMessages([...conv.messages].sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
+        }
+      }
+    } catch (e) {
+      // ignore — keep existing data on refresh failure
+    }
   };
 
   const openConversation = async (conv, currentUser) => {
@@ -303,7 +326,7 @@ export default function Messages() {
             </h2>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <PullToRefresh onRefresh={refreshMessages} className="flex-1 overflow-y-auto">
             {conversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-3 p-8">
                 <MessageSquare className="w-10 h-10 text-slate-700" />
@@ -345,7 +368,7 @@ export default function Messages() {
                 })}
               </div>
             )}
-          </div>
+          </PullToRefresh>
         </div>
 
         {/* Chat Area */}

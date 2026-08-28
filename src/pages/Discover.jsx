@@ -19,6 +19,8 @@ import {
 import { Link } from 'react-router-dom';
 import Logo from '@/components/Logo';
 import TalentHitch from '@/components/TalentHitch';
+import PullToRefresh from '@/components/PullToRefresh';
+import MobileSheetSelect from '@/components/MobileSheetSelect';
 
 const TALENT_CATEGORIES = [
   { value: 'all', label: 'All Categories' },
@@ -440,7 +442,8 @@ export default function Discover() {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white pb-28">
+    <PullToRefresh onRefresh={loadData} className="h-[100dvh] bg-black text-white">
+      <div className="min-h-[100dvh] pb-28 text-white">
       <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 z-10">
         <Link to={createPageUrl('Dashboard')}>
           <Logo className="h-12 w-auto" variant="light" />
@@ -485,12 +488,15 @@ export default function Discover() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block">Category</label>
-                  <Select value={filters.category} onValueChange={(v) => setFilters({...filters, category: v})}>
-                    <SelectTrigger className="bg-slate-900 border-slate-700"><SelectValue /></SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-slate-700">
-                      {TALENT_CATEGORIES.map(cat => (<SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
+                  <MobileSheetSelect
+                    value={filters.category}
+                    onChange={(v) => setFilters({...filters, category: v})}
+                    options={TALENT_CATEGORIES}
+                    placeholder="Category"
+                    title="Select Category"
+                    triggerClassName="bg-slate-900 border-slate-700"
+                    contentClassName="bg-slate-900 border-slate-700"
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block">City</label>
@@ -712,6 +718,7 @@ export default function Discover() {
         )}
       </div>
       <TalentHitch />
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }

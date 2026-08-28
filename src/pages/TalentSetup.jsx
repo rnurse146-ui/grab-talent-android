@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2, Zap, Share2, Eye, Video, Sparkles } from 'lucide-react';
 import TalentHitch from '@/components/TalentHitch';
 import Logo from '@/components/Logo';
+import MobileSheetSelect from '@/components/MobileSheetSelect';
 
 const TALENT_CATEGORIES = [
   { value: 'dj', label: 'DJ', icon: '🎧' },
@@ -148,10 +149,15 @@ export default function TalentSetup() {
               <div className="space-y-4">
                 <div><Label className="text-slate-400">Stage Name</Label><Input value={formData.stage_name} onChange={(e) => setFormData({ ...formData, stage_name: e.target.value })} placeholder="e.g. DJ Shadow" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
                 <div><Label className="text-slate-400">Category</Label>
-                  <Select value={formData.talent_category} onValueChange={(value) => setFormData({ ...formData, talent_category: value })}>
-                    <SelectTrigger className="bg-slate-900 border-slate-800 h-12 mt-2"><SelectValue placeholder="Select category" /></SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-slate-800 max-h-64">{TALENT_CATEGORIES.map((cat) => (<SelectItem key={cat.value} value={cat.value}><span className="flex items-center gap-2"><span>{cat.icon}</span><span>{cat.label}</span></span></SelectItem>))}</SelectContent>
-                  </Select>
+                  <MobileSheetSelect
+                    value={formData.talent_category}
+                    onChange={(value) => setFormData({ ...formData, talent_category: value })}
+                    options={TALENT_CATEGORIES}
+                    placeholder="Select category"
+                    title="Select Category"
+                    triggerClassName="bg-slate-900 border-slate-800 h-12 mt-2"
+                    contentClassName="bg-slate-900 border-slate-800 max-h-64"
+                  />
                 </div>
                 <div><Label className="text-slate-400">Years of Experience</Label><Input type="number" value={formData.experience_years} onChange={(e) => setFormData({ ...formData, experience_years: e.target.value })} placeholder="e.g. 5" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
               </div>
