@@ -81,7 +81,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       {/* Top Nav */}
-      <div className="border-b border-slate-800 bg-black/90 backdrop-blur-sm sticky top-0 z-10">
+      <div className="border-b border-slate-800 bg-black/90 backdrop-blur-sm sticky top-0 z-10 safe-top">
         <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col items-center gap-4">
           <Link to={createPageUrl('Dashboard')}>
             <Logo className="h-16 w-auto" variant="light" />

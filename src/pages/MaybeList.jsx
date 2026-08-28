@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart, Star, MapPin, Banknote, Trash2, Calendar, ChevronLeft, Loader2 } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
+import { toast } from '@/components/ui/use-toast';
 
 export default function MaybeList() {
   const [user, setUser] = useState(null);
@@ -24,15 +25,21 @@ export default function MaybeList() {
   };
 
   const removeFromList = async (id) => {
-    await base44.entities.MaybeList.delete(id);
+    const snapshot = maybeList;
     setMaybeList(prev => prev.filter(item => item.id !== id));
+    try {
+      await base44.entities.MaybeList.delete(id);
+    } catch (e) {
+      setMaybeList(snapshot);
+      toast({ title: 'Could not remove', description: e.message || 'Please try again.', variant: 'destructive' });
+    }
   };
 
   return (
     <div className="min-h-screen bg-black text-white">
       <PageHeader backTo={createPageUrl('Dashboard')} />
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-6 pt-8 pb-24 md:pb-8">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center">
             <Heart className="w-6 h-6 text-pink-400" />

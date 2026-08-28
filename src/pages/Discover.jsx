@@ -215,7 +215,7 @@ export default function Discover() {
   if (showWelcome) return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-black">
+      <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black">
         <Link to={createPageUrl('Dashboard')}>
           <Logo className="h-12 w-auto" variant="light" />
         </Link>
@@ -441,7 +441,7 @@ export default function Discover() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-28">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-black sticky top-0 z-10">
+      <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 z-10">
         <Link to={createPageUrl('Dashboard')}>
           <Logo className="h-12 w-auto" variant="light" />
         </Link>

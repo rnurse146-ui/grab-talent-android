@@ -148,6 +148,8 @@ export default function Messages() {
       const isMe = msg.sender_id === user.id;
 
       if (event.type === 'create') {
+        // Own messages are added optimistically on send; skip the subscription echo.
+        if (isMe) return;
         // Update conversations list
         setConversations(prev => {
           const existing = prev.find(c => c.id === convId);
@@ -199,19 +201,58 @@ export default function Messages() {
 
     setSending(true);
     const conv = conversations.find(c => c.id === activeConvId);
-    setNewMessage('');
 
-    await base44.entities.Message.create({
+    const tempId = `temp_${Date.now()}`;
+    const optimisticMsg = {
+      id: tempId,
       conversation_id: activeConvId,
       sender_id: user.id,
       receiver_id: conv.otherId,
       sender_name: user.full_name,
       receiver_name: conv.otherName,
       content,
-      is_read: false
-    });
+      is_read: false,
+      created_date: new Date().toISOString(),
+    };
 
-    setSending(false);
+    // Show the message instantly — don't wait for the server round-trip
+    setMessages(prev => [...prev, optimisticMsg]);
+    setConversations(prev => {
+      const updated = prev.map(c => c.id === activeConvId
+        ? { ...c, lastMessage: optimisticMsg, messages: [...c.messages, optimisticMsg] }
+        : c);
+      return updated.sort((a, b) => new Date(b.lastMessage?.created_date || 0) - new Date(a.lastMessage?.created_date || 0));
+    });
+    setNewMessage('');
+
+    try {
+      const created = await base44.entities.Message.create({
+        conversation_id: activeConvId,
+        sender_id: user.id,
+        receiver_id: conv.otherId,
+        sender_name: user.full_name,
+        receiver_name: conv.otherName,
+        content,
+        is_read: false
+      });
+      // Swap the temp message for the persisted record
+      setMessages(prev => prev.map(m => m.id === tempId ? created : m));
+      setConversations(prev => prev.map(c => c.id === activeConvId
+        ? { ...c, lastMessage: created, messages: c.messages.map(m => m.id === tempId ? created : m) }
+        : c));
+    } catch (e) {
+      // Rollback on failure
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      setConversations(prev => prev.map(c => {
+        if (c.id !== activeConvId) return c;
+        const msgs = c.messages.filter(m => m.id !== tempId);
+        return { ...c, messages: msgs, lastMessage: msgs[msgs.length - 1] || c.lastMessage };
+      }));
+      setNewMessage(content);
+      setBlockedWarning('Message failed to send. Please try again.');
+    } finally {
+      setSending(false);
+    }
   };
 
   const activeConv = conversations.find(c => c.id === activeConvId);
@@ -227,7 +268,7 @@ export default function Messages() {
     <>
     <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
       {/* Top Nav */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-black shrink-0">
+      <div className="flex items-center justify-between px-6 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] border-b border-zinc-800 bg-black shrink-0">
         <Link to={createPageUrl('Dashboard')}>
           <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white">
             <ChevronLeft className="w-4 h-4 mr-1" />Back
@@ -377,7 +418,7 @@ export default function Messages() {
               )}
 
               {/* Input */}
-              <div className="px-4 py-3 border-t border-zinc-800 shrink-0 bg-black">
+              <div className="px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+4rem)] md:pb-3 border-t border-zinc-800 shrink-0 bg-black">
                 <div className="flex gap-2 items-center">
                   <Input
                     value={newMessage}
