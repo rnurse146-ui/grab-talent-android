@@ -14,9 +14,13 @@ import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function Login() {
   const [email, setEmail] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  const emailError = emailTouched && email.length > 0 && !isValidEmail(email);
   // Post-login destination (e.g. the MCP OAuth consent page sends users here
   // with returnTo so the grant flow can resume). Same-origin paths only.
   const returnTo = safeReturnTo();
@@ -24,6 +28,11 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!isValidEmail(email)) {
+      setEmailTouched(true);
+      setError("Please enter a valid email address.");
+      return;
+    }
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
@@ -125,11 +134,15 @@ export default function Login() {
               autoFocus
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 h-12"
+              onChange={(e) => { setEmail(e.target.value); if (emailTouched) setEmailTouched(true); }}
+              onBlur={() => setEmailTouched(true)}
+              className={`pl-10 h-12 ${emailError ? "border-destructive focus-visible:ring-destructive" : ""}`}
               required
             />
           </div>
+          {emailError && (
+            <p className="text-xs text-destructive -mt-1">Please enter a valid email address.</p>
+          )}
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
