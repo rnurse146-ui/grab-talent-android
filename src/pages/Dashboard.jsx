@@ -130,6 +130,9 @@ export default function Dashboard() {
           recentBookings={talentBookings}
         />
       )}
+      <footer className="border-t border-slate-800 py-6 text-center text-xs text-zinc-500">
+        © {new Date().getFullYear()} Grab Talent. All rights reserved.
+      </footer>
       <HelpChat />
       <TalentHitch />
     </div>
