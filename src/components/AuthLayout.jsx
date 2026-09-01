@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function AuthLayout({ icon: Icon, title, subtitle, footer, children }) {
   return (
@@ -18,7 +19,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, childr
           <p className="text-center text-sm text-muted-foreground mt-6">{footer}</p>
         )}
         <p className="text-center text-xs text-muted-foreground/70 mt-4">
-          © {new Date().getFullYear()} Grab Talent. All rights reserved.
+          © {new Date().getFullYear()} Grab Talent. All rights reserved. · <Link to="/privacy-policy" className="text-primary hover:underline">Privacy Policy</Link>
         </p>
       </div>
     </div>

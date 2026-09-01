@@ -16,6 +16,7 @@ import BookingDetailsPage from './pages/BookingDetails';
 import TalentAvailabilityPage from './pages/TalentAvailability';
 import BookingHistoryPage from './pages/BookingHistory';
 import AccountSecurityPage from './pages/AccountSecurity';
+import PrivacyPolicyPage from './pages/PrivacyPolicy';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -44,6 +45,7 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 
       {/* Authenticated app routes — gated by ProtectedRoute */}
       <Route element={<><ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} /><MobileTabBar /></>}>
