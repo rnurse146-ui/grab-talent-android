@@ -99,7 +99,7 @@ export default function PullToRefresh({
   const progress = Math.min(pull / threshold, 1);
 
   return (
-    <div ref={containerRef} className={cn('relative overflow-y-auto overscroll-y-none', className)}>
+    <div ref={containerRef} className={cn('relative overflow-y-auto overscroll-y-none ptr-scroll', className)}>
       <div
         className="flex items-end justify-center overflow-hidden pointer-events-none"
         style={{ height: pull }}

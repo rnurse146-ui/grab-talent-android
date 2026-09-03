@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2, Zap, Share2, Eye, Video, Sparkles } from 'lucide-react';
 import TalentHitch from '@/components/TalentHitch';
 import Logo from '@/components/Logo';
@@ -220,9 +219,9 @@ export default function TalentSetup() {
               <div className="text-center mb-6"><Banknote className="w-10 h-10 text-green-400 mx-auto mb-3" /><h2 className="text-xl font-semibold">Pricing & Location</h2></div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div><Label className="text-slate-400">Hourly Rate (£)</Label><Input type="number" value={formData.hourly_rate} onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })} placeholder="150" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
-                <div><Label className="text-slate-400">Min Hours</Label><Select value={formData.minimum_hours} onValueChange={(value) => setFormData({ ...formData, minimum_hours: value })}><SelectTrigger className="bg-slate-900 border-slate-800 h-12 mt-2"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-slate-800">{[1,2,3,4,5,6].map(h => (<SelectItem key={h} value={h.toString()}>{h}h</SelectItem>))}</SelectContent></Select></div>
+                <div><Label className="text-slate-400">Min Hours</Label><MobileSheetSelect value={formData.minimum_hours} onChange={(value) => setFormData({ ...formData, minimum_hours: value })} options={[1,2,3,4,5,6].map(h => ({ value: h.toString(), label: `${h}h` }))} title="Minimum Hours" triggerClassName="bg-slate-900 border-slate-800 h-12 mt-2" contentClassName="bg-slate-900 border-slate-800" /></div>
                 <div><Label className="text-slate-400">City</Label><Input value={formData.location_city} onChange={(e) => setFormData({ ...formData, location_city: e.target.value })} placeholder="London" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
-                <div><Label className="text-slate-400">Travel Radius</Label><Select value={formData.location_radius} onValueChange={(value) => setFormData({ ...formData, location_radius: value })}><SelectTrigger className="bg-slate-900 border-slate-800 h-12 mt-2"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-slate-800">{[10,25,50,100,200].map(r => (<SelectItem key={r} value={r.toString()}>{r} miles</SelectItem>))}</SelectContent></Select></div>
+                <div><Label className="text-slate-400">Travel Radius</Label><MobileSheetSelect value={formData.location_radius} onChange={(value) => setFormData({ ...formData, location_radius: value })} options={[10,25,50,100,200].map(r => ({ value: r.toString(), label: `${r} miles` }))} title="Travel Radius" triggerClassName="bg-slate-900 border-slate-800 h-12 mt-2" contentClassName="bg-slate-900 border-slate-800" /></div>
               </div>
 
               <div

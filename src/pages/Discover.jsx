@@ -4,13 +4,6 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { 
   X, Heart, Star, MapPin, Banknote, CheckCircle2,
@@ -516,15 +509,15 @@ export default function Discover() {
                 </div>
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block">Min Rating ⭐</label>
-                  <Select value={filters.minRating} onValueChange={(v) => setFilters({...filters, minRating: v})}>
-                    <SelectTrigger className="bg-slate-900 border-slate-700"><SelectValue placeholder="Any" /></SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-slate-700">
-                      <SelectItem value={null}>Any</SelectItem>
-                      <SelectItem value="3">3+ ⭐</SelectItem>
-                      <SelectItem value="4">4+ ⭐</SelectItem>
-                      <SelectItem value="4.5">4.5+ ⭐</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <MobileSheetSelect
+                    value={filters.minRating}
+                    onChange={(v) => setFilters({...filters, minRating: v})}
+                    options={[{ value: '', label: 'Any' }, { value: '3', label: '3+ ⭐' }, { value: '4', label: '4+ ⭐' }, { value: '4.5', label: '4.5+ ⭐' }]}
+                    placeholder="Any"
+                    title="Minimum Rating"
+                    triggerClassName="bg-slate-900 border-slate-700"
+                    contentClassName="bg-slate-900 border-slate-700"
+                  />
                 </div>
               </div>
 
