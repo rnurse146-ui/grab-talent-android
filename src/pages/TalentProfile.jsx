@@ -174,7 +174,7 @@ export default function TalentProfile() {
 
         {isOwner && (<ShareProfile profile={profile} />)}
 
-        {profile.bio && (<div className="mb-10"><h2 className="text-xl font-semibold mb-4">About</h2><p className="text-slate-300 whitespace-pre-line">{profile.bio}</p></div>)}
+        {profile.bio && (<div className="mb-10"><h2 className="text-xl font-semibold mb-4">About</h2><p className="text-slate-300 whitespace-pre-line selectable-text">{profile.bio}</p></div>)}
 
         <div className="mb-10">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2"><Calendar className="w-5 h-5 text-purple-400" />Availability</h2>

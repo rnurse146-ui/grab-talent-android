@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Compass, Calendar, MessageSquare, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -12,7 +12,17 @@ const TABS = [
 
 export default function MobileTabBar() {
   const { isAuthenticated, isLoadingAuth } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   if (isLoadingAuth || !isAuthenticated) return null;
+
+  // Tapping the already-active tab returns to the clean base view (strips search params)
+  const handleTabTap = (e, to) => {
+    if (location.pathname === to && (location.search || location.hash)) {
+      e.preventDefault();
+      navigate(to, { replace: true });
+    }
+  };
 
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-black/95 backdrop-blur-md border-t border-zinc-800">
@@ -21,6 +31,7 @@ export default function MobileTabBar() {
           <NavLink
             key={to}
             to={to}
+            onClick={(e) => handleTabTap(e, to)}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 flex-1 text-[11px] font-medium transition-colors ${isActive ? 'text-white' : 'text-zinc-500'}`
             }

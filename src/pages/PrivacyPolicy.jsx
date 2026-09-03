@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
           </div>
         </div>
 
-        <div className="prose prose-invert max-w-none space-y-6 text-sm leading-relaxed text-muted-foreground">
+        <div className="prose prose-invert max-w-none space-y-6 text-sm leading-relaxed text-muted-foreground selectable-text">
           <p>
             Grab Talent ("we", "us", "our") operates the Grab Talent mobile application and website
             (together, the "Service"). This Privacy Policy explains how we collect, use, and protect

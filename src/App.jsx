@@ -3,7 +3,9 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -38,8 +40,61 @@ const AuthenticatedApp = () => {
     );
   }
 
+  return <AnimatedApp />;
+};
+
+// Horizontal push/pop screen transitions for a native WebView feel.
+const slideVariants = {
+  enter: (dir) => ({ x: dir === -1 ? '-100%' : '100%' }),
+  center: { x: '0%' },
+  exit: (dir) => ({ x: dir === -1 ? '100%' : '-100%' }),
+};
+
+function useNavDirection() {
+  const location = useLocation();
+  const stackRef = useRef([location.pathname]);
+  const [nav, setNav] = useState({ path: location.pathname, dir: 1 });
+
+  if (nav.path !== location.pathname) {
+    const stack = stackRef.current;
+    let dir = 1;
+    if (stack.length > 1 && stack[stack.length - 2] === location.pathname) {
+      stack.pop(); // navigating back to the previous screen → pop
+      dir = -1;
+    } else {
+      stack.push(location.pathname); // new screen → push
+    }
+    setNav({ path: location.pathname, dir });
+  }
+  return nav.dir;
+}
+
+const AnimatedApp = () => {
+  const location = useLocation();
+  const dir = useNavDirection();
   return (
-    <Routes>
+    <>
+      <AnimatePresence mode="popLayout" initial={false} custom={dir}>
+        <motion.div
+          key={location.pathname}
+          custom={dir}
+          variants={slideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+          className="w-full"
+        >
+          <AppRoutes location={location} />
+        </motion.div>
+      </AnimatePresence>
+      <MobileTabBar />
+    </>
+  );
+};
+
+const AppRoutes = ({ location }) => (
+  <Routes location={location}>
       {/* Public auth routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -48,7 +103,7 @@ const AuthenticatedApp = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 
       {/* Authenticated app routes — gated by ProtectedRoute */}
-      <Route element={<><ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} /><MobileTabBar /></>}>
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route path="/" element={
           <LayoutWrapper currentPageName={mainPageKey}>
             <MainPage />
@@ -74,7 +129,6 @@ const AuthenticatedApp = () => {
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
-};
 
 
 function App() {

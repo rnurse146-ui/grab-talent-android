@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import MobileSheetSelect from '@/components/MobileSheetSelect';
 import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, Banknote, Loader2, CheckCircle2, Star, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import PageHeader from '@/components/PageHeader';
@@ -126,7 +126,7 @@ export default function BookTalent() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid sm:grid-cols-2 gap-4">
             <div><Label className="text-zinc-400">Event Name</Label><Input value={formData.event_name} onChange={(e) => setFormData({...formData, event_name: e.target.value})} placeholder="e.g. Sarah's Wedding" className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
-            <div><Label className="text-zinc-400">Event Type</Label><Select value={formData.event_type} onValueChange={(v) => setFormData({...formData, event_type: v})} required><SelectTrigger className="bg-slate-900 border-slate-800 mt-2"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent className="bg-slate-900 border-slate-800">{EVENT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label className="text-zinc-400">Event Type</Label><MobileSheetSelect value={formData.event_type} onChange={(v) => setFormData({...formData, event_type: v})} options={EVENT_TYPES} placeholder="Select type" title="Event Type" triggerClassName="bg-slate-900 border-slate-800 h-10 mt-2" contentClassName="bg-slate-900 border-slate-800" /></div>
           </div>
 
           <div>

@@ -92,6 +92,11 @@
     overscroll-behavior: none;
   }
 
+  /* clip horizontal page-slide transitions */
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -100,4 +105,8 @@
 @layer utilities {
   .safe-top { padding-top: env(safe-area-inset-top); }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .selectable-text {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
 }
