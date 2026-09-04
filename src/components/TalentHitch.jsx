@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mic, X, Loader2, Send, Volume2, VolumeX } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import MobileSheetSelect from '@/components/MobileSheetSelect';
 
 const SYSTEM_PROMPT = `You are "Talent Hitch", the friendly voice guide inside the Grab Talent app — a UK platform connecting event organisers ("seekers") with performers ("talent"). The user hears your replies spoken aloud, so keep them short, warm and conversational (2-4 sentences). Guide people step-by-step. Your personality is warm, confident and easy-going with a little playful charisma — like a friendly film-star narrator cracking a light grin — but always helpful and on-point.
 
@@ -167,12 +167,13 @@ export default function TalentHitch() {
 
           <div className="px-4 py-2 border-b border-zinc-800 flex items-center gap-2">
             <span className="text-[10px] text-zinc-500 shrink-0">Voice</span>
-            <Select value={voice} onValueChange={setVoice}>
-              <SelectTrigger className="h-7 text-xs bg-zinc-900 border-zinc-700 flex-1"><SelectValue /></SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-700">
-                {VOICES.map(v => <SelectItem key={v.value} value={v.value} className="text-xs">{v.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <MobileSheetSelect
+              value={voice}
+              onChange={setVoice}
+              options={VOICES}
+              title="Voice"
+              triggerClassName="h-7 text-xs bg-zinc-900 border-zinc-700 flex-1"
+            />
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3">

@@ -115,7 +115,7 @@ export default function TalentAvailability() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       {/* Nav */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 sticky top-0 z-10 bg-slate-950/90 backdrop-blur-sm">
+      <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-slate-800 sticky top-0 z-10 bg-slate-950/90 backdrop-blur-sm">
         <Link to={createPageUrl('Dashboard')}>
           <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
             <ChevronLeft className="w-4 h-4 mr-1" />Back

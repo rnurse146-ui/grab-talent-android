@@ -61,7 +61,7 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <PageHeader backTo={createPageUrl('Dashboard')} />
+      <PageHeader showBack={false} />
 
       <div className="max-w-lg mx-auto px-6 pt-8 pb-24 md:pb-8">
         <h1 className="text-2xl font-bold mb-8">Settings</h1>

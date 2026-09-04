@@ -292,7 +292,7 @@ export default function Messages() {
     <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
       {/* Top Nav */}
       <div className="flex items-center justify-between px-6 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] border-b border-zinc-800 bg-black shrink-0">
-        <Link to={createPageUrl('Dashboard')}>
+        <Link to={createPageUrl('Dashboard')} className={showList ? 'hidden md:block' : undefined}>
           <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white">
             <ChevronLeft className="w-4 h-4 mr-1" />Back
           </Button>

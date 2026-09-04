@@ -51,7 +51,7 @@ export default function Bookings() {
 
   return (
     <PullToRefresh onRefresh={loadData} className="h-[100dvh] bg-black text-white">
-      <PageHeader backTo={createPageUrl('Dashboard')} />
+      <PageHeader showBack={false} />
 
       <div className="max-w-4xl mx-auto px-6 pt-8 pb-24 md:pb-8">
         <h1 className="text-2xl font-bold mb-6">My Bookings</h1>

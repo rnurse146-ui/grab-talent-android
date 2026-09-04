@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import Logo from '@/components/Logo';
 
-export default function PageHeader({ backTo, backLabel = "Back" }) {
+export default function PageHeader({ backTo, backLabel = "Back", showBack = true }) {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -19,9 +19,13 @@ export default function PageHeader({ backTo, backLabel = "Back" }) {
 
   return (
     <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 z-10">
-      <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white" onClick={handleBack}>
-        <ChevronLeft className="w-4 h-4 mr-1" />{backLabel}
-      </Button>
+      {showBack ? (
+        <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white" onClick={handleBack}>
+          <ChevronLeft className="w-4 h-4 mr-1" />{backLabel}
+        </Button>
+      ) : (
+        <div className="w-20" />
+      )}
       <Logo className="h-12 w-auto" variant="light" />
       <div className="w-20" />
     </div>
