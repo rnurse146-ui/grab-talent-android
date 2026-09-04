@@ -138,7 +138,7 @@ export default function TalentHitch() {
     <>
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 left-6 z-50 flex items-center gap-2 h-14 pl-4 pr-5 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-2xl hover:scale-105 transition-transform"
+        className="fixed fab-bottom left-6 z-50 flex items-center gap-2 h-14 pl-4 pr-5 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-2xl hover:scale-105 transition-transform"
         aria-label="Talent Hitch voice guide"
       >
         <Mic className="w-5 h-5" />
@@ -146,7 +146,7 @@ export default function TalentHitch() {
       </button>
 
       {open && (
-        <div className="fixed bottom-24 left-6 z-50 w-[calc(100vw-3rem)] max-w-sm h-[28rem] bg-zinc-950 border border-purple-800/60 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed fab-panel-bottom left-6 z-50 w-[calc(100vw-3rem)] max-w-sm h-[28rem] bg-zinc-950 border border-purple-800/60 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           <div className="px-4 py-3 bg-gradient-to-r from-purple-700 to-fuchsia-700 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"><Mic className="w-4 h-4 text-white" /></div>

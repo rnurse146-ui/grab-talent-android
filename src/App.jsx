@@ -10,6 +10,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import MobileTabBar from '@/components/MobileTabBar';
+import { resolveTab } from '@/lib/tabNavigation';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -50,19 +51,31 @@ const slideVariants = {
   exit: (dir) => ({ x: dir === -1 ? '100%' : '-100%' }),
 };
 
+// Independent navigation stack per bottom tab — back gestures stay within a tab,
+// and switching tabs resumes the target tab's stack where the user left it.
 function useNavDirection() {
   const location = useLocation();
-  const stackRef = useRef([location.pathname]);
+  const stacksRef = useRef({}); // tab root (or '_other') -> array of visited paths
   const [nav, setNav] = useState({ path: location.pathname, dir: 1 });
 
   if (nav.path !== location.pathname) {
-    const stack = stackRef.current;
+    const stacks = stacksRef.current;
+    const prevKey = resolveTab(nav.path) || '_other';
+    const nextKey = resolveTab(location.pathname) || '_other';
     let dir = 1;
-    if (stack.length > 1 && stack[stack.length - 2] === location.pathname) {
-      stack.pop(); // navigating back to the previous screen → pop
-      dir = -1;
+
+    if (prevKey === nextKey) {
+      const stack = stacks[nextKey] || (stacks[nextKey] = [nav.path]);
+      if (stack.length > 1 && stack[stack.length - 2] === location.pathname) {
+        stack.pop(); // navigating back to the previous screen → pop
+        dir = -1;
+      } else if (stack[stack.length - 1] !== location.pathname) {
+        stack.push(location.pathname); // new screen → push
+      }
     } else {
-      stack.push(location.pathname); // new screen → push
+      // Switching tabs: slide in from the right and resume the target tab's stack
+      const stack = stacks[nextKey] || (stacks[nextKey] = []);
+      if (stack[stack.length - 1] !== location.pathname) stack.push(location.pathname);
     }
     setNav({ path: location.pathname, dir });
   }

@@ -52,14 +52,14 @@ export default function HelpChat() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-white text-black shadow-2xl flex items-center justify-center hover:bg-zinc-100 transition-all"
+        className="fixed fab-bottom right-6 z-50 w-14 h-14 rounded-full bg-white text-black shadow-2xl flex items-center justify-center hover:bg-zinc-100 transition-all"
       >
         {open ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
       </button>
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-80 h-96 bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed fab-panel-bottom right-6 z-50 w-80 h-96 bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           <div className="px-4 py-3 bg-black border-b border-zinc-800 flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-green-400" />
             <span className="font-semibold text-sm text-white">Grab Talent Help</span>

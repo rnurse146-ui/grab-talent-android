@@ -4,7 +4,44 @@
 
 @layer base {
   :root {
-    /* Dark concert theme — propagates to the platform login page */
+    /* Light theme default — dark variant applies automatically via prefers-color-scheme below */
+    color-scheme: light;
+    --background: 240 20% 99%;
+    --foreground: 240 10% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 8%;
+    --primary: 240 10% 12%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 5% 94%;
+    --secondary-foreground: 240 10% 12%;
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 5% 40%;
+    --accent: 240 5% 94%;
+    --accent-foreground: 240 10% 12%;
+    --destructive: 0 72% 46%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 6% 86%;
+    --input: 240 6% 86%;
+    --ring: 271 82% 55%;
+    --chart-1: 271 82% 55%;
+    --chart-2: 173 62% 40%;
+    --chart-3: 197 48% 42%;
+    --chart-4: 40 88% 45%;
+    --chart-5: 27 82% 50%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 240 10% 12%;
+    --sidebar-primary: 271 82% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 94%;
+    --sidebar-accent-foreground: 240 10% 12%;
+    --sidebar-border: 240 6% 88%;
+    --sidebar-ring: 271 82% 55%;
+  }
+
+  .dark {
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
     --card: 240 6% 8%;
@@ -29,7 +66,6 @@
     --chart-3: 197 37% 45%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
     --sidebar-background: 240 6% 6%;
     --sidebar-foreground: 0 0% 95%;
     --sidebar-primary: 270 91% 65%;
@@ -39,8 +75,12 @@
     --sidebar-border: 240 6% 16%;
     --sidebar-ring: 270 91% 65%;
   }
+}
 
-  .dark {
+/* Automatic dark variant — restores the original concert theme on dark-mode devices */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
     --card: 240 6% 8%;
@@ -108,5 +148,21 @@
   .selectable-text {
     -webkit-user-select: text !important;
     user-select: text !important;
+  }
+
+  /* Floating helpers sit above the tab bar and system gesture area on mobile */
+  .fab-bottom {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+  .fab-panel-bottom {
+    bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
+  @media (max-width: 767px) {
+    .fab-bottom {
+      bottom: calc(5.25rem + env(safe-area-inset-bottom));
+    }
+    .fab-panel-bottom {
+      bottom: calc(9.75rem + env(safe-area-inset-bottom));
+    }
   }
 }
