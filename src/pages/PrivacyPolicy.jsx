@@ -110,7 +110,7 @@ export default function PrivacyPolicy() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-border text-xs text-muted-foreground/70">
-          © {new Date().getFullYear()} Grab Talent. All rights reserved. · <Link to="/" className="text-primary hover:underline">Back to app</Link>
+          © {new Date().getFullYear()} Grab Talent. All rights reserved. · <Link to="/" className="text-primary hover:underline">Back to app</Link> · <Link to="/terms-of-service" className="text-primary hover:underline">Terms &amp; Conditions</Link>
         </div>
       </div>
     </div>
