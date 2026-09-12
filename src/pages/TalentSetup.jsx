@@ -11,6 +11,36 @@ import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check
 import TalentHitch from '@/components/TalentHitch';
 import Logo from '@/components/Logo';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
+import CameraCapture from '@/components/CameraCapture';
+
+// Downscale large photos before upload — keeps setup uploads fast on mobile data
+function compressImage(file) {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/') || file.type === 'image/gif') { resolve(file); return; }
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const max = 1200;
+      let { width, height } = img;
+      if (width > max || height > max) {
+        const scale = Math.min(max / width, max / height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => {
+        if (blob && blob.size < file.size) resolve(new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' }));
+        else resolve(file);
+      }, 'image/jpeg', 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(file); };
+    img.src = objectUrl;
+  });
+}
 
 const TALENT_CATEGORIES = [
   { value: 'dj', label: 'DJ', icon: '🎧' },
@@ -72,33 +102,59 @@ export default function TalentSetup() {
     setInitialLoading(false);
   };
 
-  const handlePhotoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [showCamera, setShowCamera] = useState(null); // null | 'video' | 'photo'
+
+  const uploadAndApply = async (file, apply) => {
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setProfilePhoto(file_url);
-    setFormData(prev => ({ ...prev, profile_photo: file_url }));
-    setUploading(false);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      apply(file_url);
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const handleVideoUpload = async (e) => {
+  const handlePhotoFile = async (file) => {
+    const compressed = await compressImage(file);
+    await uploadAndApply(compressed, (url) => {
+      setProfilePhoto(url);
+      setFormData(prev => ({ ...prev, profile_photo: url }));
+    });
+  };
+
+  const handlePhotoUpload = (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setProfileVideo(file_url);
-    setFormData(prev => ({ ...prev, profile_video: file_url }));
-    setUploading(false);
+    if (file) handlePhotoFile(file);
+  };
+
+  const handleVideoFile = (file) => uploadAndApply(file, (url) => {
+    setProfileVideo(url);
+    setFormData(prev => ({ ...prev, profile_video: url }));
+  });
+
+  const handleVideoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) handleVideoFile(file);
   };
 
   const handleGalleryUpload = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
     setUploading(true);
-    const results = await Promise.all(files.map(file => base44.integrations.Core.UploadFile({ file })));
-    setFormData(prev => ({ ...prev, media_gallery: [...prev.media_gallery, ...results.map(r => r.file_url)].slice(0, 25) }));
-    setUploading(false);
+    try {
+      const prepared = await Promise.all(files.map(f => f.type.startsWith('image/') ? compressImage(f) : f));
+      const results = await Promise.all(prepared.map(file => base44.integrations.Core.UploadFile({ file })));
+      setFormData(prev => ({ ...prev, media_gallery: [...prev.media_gallery, ...results.map(r => r.file_url)].slice(0, 25) }));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleCameraCapture = (file) => {
+    const kind = showCamera;
+    setShowCamera(null);
+    if (kind === 'photo') handlePhotoFile(file);
+    else handleVideoFile(file);
   };
 
   const removeFromGallery = (index) => setFormData(prev => ({ ...prev, media_gallery: prev.media_gallery.filter((_, i) => i !== index) }));
@@ -267,6 +323,7 @@ export default function TalentSetup() {
                   )}
                   <div className="flex flex-col gap-2">
                     <label className="cursor-pointer"><input type="file" accept="video/*,audio/*" onChange={handleVideoUpload} className="hidden" /><div className="px-4 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg text-sm font-medium">{uploading ? 'Uploading...' : profileVideo ? 'Replace Video' : 'Upload Video'}</div></label>
+                    <button type="button" onClick={() => setShowCamera('video')} className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5"><Camera className="w-3.5 h-3.5" />Record with Camera</button>
                     {profileVideo && <button type="button" onClick={() => { setProfileVideo(null); setFormData(prev => ({ ...prev, profile_video: '' })); }} className="px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg text-sm">Remove</button>}
                   </div>
                 </div>
@@ -275,7 +332,10 @@ export default function TalentSetup() {
               <div><Label className="text-slate-400">Profile Photo</Label>
                 <div className="mt-3 flex items-center gap-6">
                   <div className="w-24 h-24 rounded-2xl bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center overflow-hidden">{profilePhoto ? <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" /> : <Camera className="w-8 h-8 text-slate-600" />}</div>
-                  <label className="cursor-pointer"><input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" /><div className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium">{uploading ? 'Uploading...' : 'Upload'}</div></label>
+                  <div className="flex flex-col gap-2">
+                    <label className="cursor-pointer"><input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" /><div className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium">{uploading ? 'Uploading...' : 'Upload'}</div></label>
+                    <button type="button" onClick={() => setShowCamera('photo')} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5"><Camera className="w-3.5 h-3.5" />Take Photo</button>
+                  </div>
                 </div>
               </div>
 
@@ -306,6 +366,7 @@ export default function TalentSetup() {
           )}
         </AnimatePresence>
       </motion.div>
+      <CameraCapture open={showCamera !== null} mode={showCamera || 'video'} onClose={() => setShowCamera(null)} onCapture={handleCameraCapture} />
       <TalentHitch />
     </div>
   );

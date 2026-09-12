@@ -76,11 +76,14 @@ export default function TalentHitch() {
   const bottomRef = useRef(null);
   const audioRef = useRef(null);
   const [voice, setVoice] = useState('honey');
+  const [soundBlocked, setSoundBlocked] = useState(false);
+  const lastReplyRef = useRef('');
 
   useEffect(() => { if ('speechSynthesis' in window) window.speechSynthesis.getVoices(); }, []);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
   const playReply = async (text) => {
+    lastReplyRef.current = text;
     if (muted) return;
     if (voice === 'browser') { speak(text, false); return; }
     try {
@@ -90,10 +93,18 @@ export default function TalentHitch() {
       if (!url) return;
       const audio = new Audio(url);
       audioRef.current = audio;
-      audio.play().catch(() => {});
+      audio.play().catch(() => setSoundBlocked(true));
     } catch (e) {
       speak(text, false);
     }
+  };
+
+  // Autoplay was blocked by the browser — a direct tap counts as user interaction
+  const handleEnableSound = () => {
+    setSoundBlocked(false);
+    if (muted) return;
+    if (voice === 'browser') { speak(lastReplyRef.current, false); return; }
+    if (audioRef.current) { audioRef.current.currentTime = 0; audioRef.current.play().catch(() => {}); }
   };
 
   const handleSend = async (text) => {
@@ -117,10 +128,18 @@ export default function TalentHitch() {
     setLoading(false);
   };
 
-  const toggleListen = () => {
+  const toggleListen = async () => {
     if (!supported) return;
     window.speechSynthesis.cancel();
     if (listening) { try { recRef.current?.stop(); } catch {} setListening(false); return; }
+    // Explicitly trigger the native microphone permission prompt
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(t => t.stop());
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: "🎙️ I can't reach your microphone. Tap the 🔒 icon in your browser's address bar (or your phone's settings for this app), allow Microphone, then tap the mic again." }]);
+      return;
+    }
     const rec = new SpeechRecognition();
     rec.continuous = false;
     rec.interimResults = false;
@@ -175,6 +194,12 @@ export default function TalentHitch() {
               triggerClassName="h-7 text-xs bg-zinc-900 border-zinc-700 flex-1"
             />
           </div>
+
+          {soundBlocked && (
+            <button onClick={handleEnableSound} className="w-full px-4 py-2 bg-purple-600/20 border-b border-purple-800/50 flex items-center justify-center gap-2 text-xs text-purple-200 font-medium">
+              <Volume2 className="w-4 h-4" />Tap to enable sound
+            </button>
+          )}
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.map((msg, i) => (

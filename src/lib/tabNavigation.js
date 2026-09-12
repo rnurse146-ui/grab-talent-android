@@ -1,7 +1,7 @@
 // Shared per-tab navigation memory for the bottom tab bar.
 // Each tab remembers the sub-page the user last left it on, so switching
 // back restores their position instead of resetting to the tab root.
-export const TAB_ROOTS = ['/Discover', '/Bookings', '/Messages', '/Settings'];
+export const TAB_ROOTS = ['/Dashboard', '/Discover', '/Bookings', '/Messages', '/Settings'];
 
 // Sub-pages that belong to a specific tab (kept separate from the tab roots)
 const ROUTE_TAB_MAP = {

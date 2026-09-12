@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, User, MapPin, Phone, LogOut, Loader2, Check, Trash2, AlertTriangle } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
+import ChangePassword from '@/components/settings/ChangePassword';
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel,
@@ -84,6 +85,7 @@ export default function Settings() {
             <h2 className="font-semibold mb-4">Account</h2>
             <p className="text-zinc-400 text-sm mb-4">You're signed in as {user?.email}</p>
             <Button onClick={handleLogout} className="w-full bg-zinc-900 border border-red-500/50 text-red-400 hover:bg-red-500/20"><LogOut className="w-4 h-4 mr-2" />Sign Out</Button>
+            <div className="mt-3"><ChangePassword user={user} /></div>
           </div>
 
           <div className="p-6 bg-red-950/30 rounded-2xl border border-red-800/50">
