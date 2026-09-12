@@ -223,6 +223,7 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
             <div className="space-y-1">
               {[
                 { to: '/TalentSetup?edit=true', icon: Pencil, label: 'Edit Profile' },
+                { to: talentProfile?.id ? `/TalentProfile?id=${talentProfile.id}` : '/TalentSetup', icon: Eye, label: 'View My Profile' },
                 { to: '/TalentAvailability', icon: Calendar, label: 'Manage Availability' },
                 { to: '/Verification', icon: Shield, label: 'Verification' },
                 { to: '/Bookings', icon: Calendar, label: 'All Bookings' },

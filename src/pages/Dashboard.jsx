@@ -42,11 +42,9 @@ export default function Dashboard() {
       setActiveView('seeker');
     }
 
-    // Load talent profile
-    if (isTalent) {
-      const profiles = await base44.entities.TalentProfile.filter({ user_id: currentUser.id });
-      if (profiles.length > 0) setTalentProfile(profiles[0]);
-    }
+    // Load talent profile — any user may have created one, regardless of their role
+    const profiles = await base44.entities.TalentProfile.filter({ user_id: currentUser.id });
+    if (profiles.length > 0) setTalentProfile(profiles[0]);
 
     // Load bookings for both roles
     const bookings = await base44.entities.Booking.filter(
