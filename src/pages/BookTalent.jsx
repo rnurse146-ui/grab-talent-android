@@ -11,6 +11,7 @@ import MobileSheetSelect from '@/components/MobileSheetSelect';
 import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, Banknote, Loader2, CheckCircle2, Star, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import PageHeader from '@/components/PageHeader';
+import { createNotification } from '@/lib/notifications';
 
 const EVENT_TYPES = [
   { value: 'wedding', label: 'Wedding' },
@@ -78,6 +79,13 @@ export default function BookTalent() {
       status: 'pending', payment_status: 'pending',
       seeker_name: user.full_name, seeker_phone: formData.seeker_phone,
       talent_stage_name: talent.stage_name, talent_category: talent.talent_category
+    });
+    await createNotification({
+      userId: talent.user_id,
+      type: 'booking',
+      title: 'New booking request',
+      body: `${user.full_name} requested you for "${formData.event_name}" in ${formData.venue_city}`,
+      linkUrl: createPageUrl('Bookings')
     });
     setSuccess(true);
     setSubmitting(false);

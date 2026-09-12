@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import Logo from '@/components/Logo';
+import NotificationBell from '@/components/NotificationBell';
 
 export default function PageHeader({ backTo, backLabel = "Back", showBack = true }) {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export default function PageHeader({ backTo, backLabel = "Back", showBack = true
         <div className="w-20" />
       )}
       <Logo className="h-12 w-auto" variant="light" />
-      <div className="w-20" />
+      <div className="w-20 flex justify-end"><NotificationBell /></div>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import SeekerDashboard from '@/components/dashboard/SeekerDashboard';
 import TalentDashboard from '@/components/dashboard/TalentDashboard';
 import HelpChat from '@/components/HelpChat';
 import TalentHitch from '@/components/TalentHitch';
+import NotificationBell from '@/components/NotificationBell';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -82,7 +83,10 @@ export default function Dashboard() {
     <div className="min-h-screen bg-slate-950 text-white">
       {/* Top Nav */}
       <div className="border-b border-slate-800 bg-black/90 backdrop-blur-sm sticky top-0 z-10 safe-top">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col items-center gap-4">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col items-center gap-4 relative">
+          <div className="absolute right-6 top-4">
+            <NotificationBell />
+          </div>
           <Link to={createPageUrl('Dashboard')}>
             <Logo className="h-16 w-auto" variant="light" />
           </Link>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ChevronLeft, Star, Loader2, CheckCircle2 } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
+import { createNotification } from '@/lib/notifications';
 
 export default function WriteReview() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -44,6 +45,14 @@ export default function WriteReview() {
       review_text: reviewText,
       event_type: booking.event_type,
       event_date: booking.event_date
+    });
+
+    await createNotification({
+      userId: booking.talent_user_id,
+      type: 'review',
+      title: `New ${rating}-star review`,
+      body: `${user.full_name} reviewed "${booking.event_name || 'your booking'}"`,
+      linkUrl: createPageUrl('Bookings')
     });
 
     // Update talent profile stats

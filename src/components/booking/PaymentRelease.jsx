@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Banknote, CheckCircle2, Loader2, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { createPageUrl } from '@/utils';
+import { createNotification } from '@/lib/notifications';
 
 export default function PaymentRelease({ booking, onRelease }) {
   const [step, setStep] = useState('prompt'); // 'prompt' | 'confirm' | 'done'
@@ -17,6 +19,13 @@ export default function PaymentRelease({ booking, onRelease }) {
     setError('');
     setReleasing(true);
     await onRelease();
+    await createNotification({
+      userId: booking.talent_user_id,
+      type: 'payment',
+      title: 'Payment released',
+      body: `£${booking.talent_payout?.toFixed(2)} has been released for "${booking.event_name || 'your event'}"`,
+      linkUrl: createPageUrl('Bookings')
+    });
     setReleasing(false);
     setStep('done');
   };

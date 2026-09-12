@@ -10,6 +10,7 @@ import Logo from '@/components/Logo';
 import HelpChat from '@/components/HelpChat';
 import { containsContactInfo } from '@/lib/messageFilter';
 import PullToRefresh from '@/components/PullToRefresh';
+import { createNotification } from '@/lib/notifications';
 
 function formatTime(dateStr) {
   const d = new Date(dateStr);
@@ -263,6 +264,15 @@ export default function Messages() {
       setConversations(prev => prev.map(c => c.id === activeConvId
         ? { ...c, lastMessage: created, messages: c.messages.map(m => m.id === tempId ? created : m) }
         : c));
+
+      // Alert the recipient
+      await createNotification({
+        userId: conv.otherId,
+        type: 'message',
+        title: `New message from ${user.full_name}`,
+        body: content,
+        linkUrl: createPageUrl('Messages')
+      });
     } catch (e) {
       // Rollback on failure
       setMessages(prev => prev.filter(m => m.id !== tempId));

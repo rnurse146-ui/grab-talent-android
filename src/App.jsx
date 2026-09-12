@@ -21,6 +21,7 @@ import BookingHistoryPage from './pages/BookingHistory';
 import AccountSecurityPage from './pages/AccountSecurity';
 import PrivacyPolicyPage from './pages/PrivacyPolicy';
 import TermsOfServicePage from './pages/TermsOfService';
+import NotificationsPage from './pages/Notifications';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -139,6 +140,7 @@ const AppRoutes = ({ location }) => (
         <Route path="/TalentAvailability" element={<LayoutWrapper currentPageName="TalentAvailability"><TalentAvailabilityPage /></LayoutWrapper>} />
         <Route path="/booking-history" element={<LayoutWrapper currentPageName="booking-history"><BookingHistoryPage /></LayoutWrapper>} />
         <Route path="/account-security" element={<LayoutWrapper currentPageName="account-security"><AccountSecurityPage /></LayoutWrapper>} />
+        <Route path="/Notifications" element={<LayoutWrapper currentPageName="Notifications"><NotificationsPage /></LayoutWrapper>} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

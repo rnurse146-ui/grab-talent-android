@@ -1,0 +1,42 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User the notification belongs to"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "booking",
+        "message",
+        "review",
+        "payment"
+      ],
+      "description": "What kind of event the notification is about"
+    },
+    "title": {
+      "type": "string",
+      "description": "Short headline shown in the notification list"
+    },
+    "body": {
+      "type": "string",
+      "description": "Longer description of the event"
+    },
+    "link_url": {
+      "type": "string",
+      "description": "In-app route to open when the notification is tapped"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has already seen this notification"
+    }
+  },
+  "required": [
+    "user_id",
+    "type",
+    "title"
+  ]
+}
