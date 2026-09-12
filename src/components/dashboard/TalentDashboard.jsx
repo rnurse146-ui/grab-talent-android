@@ -57,6 +57,8 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
+          {talentProfile && <ProfileVisibilityToggle profile={talentProfile} onUpdated={() => {}} />}
+
           {/* Quick Actions */}
           <div>
             <h2 className="font-semibold text-lg mb-4">Manage</h2>
@@ -214,8 +216,6 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
             </div>
           )}
 
-
-          {talentProfile && <ProfileVisibilityToggle profile={talentProfile} onUpdated={() => {}} />}
 
           {/* Quick Links */}
           <div className="bg-zinc-900 rounded-2xl border border-zinc-700 p-6">
