@@ -184,7 +184,15 @@ export default function TalentSetup() {
       </div>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 w-full max-w-2xl">
-        <div className="text-center mb-8">
+        <div className="relative text-center mb-8">
+          <button
+            type="button"
+            onClick={() => { if (window.history.length > 1) window.history.back(); else window.location.href = createPageUrl('Dashboard'); }}
+            className="absolute left-0 top-0 flex items-center gap-1.5 text-sm text-slate-400 hover:text-white bg-slate-900/80 border border-slate-800 rounded-full px-4 py-2 transition-colors"
+          >
+            <X className="w-4 h-4" />
+            Exit
+          </button>
           <Logo className="h-12 w-auto mx-auto mb-4" />
           <h1 className="text-xl font-bold">{existingProfile ? 'Edit' : 'Create'} Your Profile</h1>
           {existingProfile && (
