@@ -512,7 +512,7 @@ export default function Discover() {
                   <MobileSheetSelect
                     value={filters.minRating}
                     onChange={(v) => setFilters({...filters, minRating: v})}
-                    options={[{ value: '', label: 'Any' }, { value: '3', label: '3+ ⭐' }, { value: '4', label: '4+ ⭐' }, { value: '4.5', label: '4.5+ ⭐' }]}
+                    options={[{ value: '0', label: 'Any' }, { value: '3', label: '3+ ⭐' }, { value: '4', label: '4+ ⭐' }, { value: '4.5', label: '4.5+ ⭐' }]}
                     placeholder="Any"
                     title="Minimum Rating"
                     triggerClassName="bg-slate-900 border-slate-700"
@@ -613,7 +613,7 @@ export default function Discover() {
             <h2 className="text-xl font-semibold mb-2">No more talent to show</h2>
             <p className="text-slate-400 mb-6">Check back later or adjust your filters</p>
             <div className="flex gap-3 justify-center">
-              <Button onClick={() => setShowFilters(true)} variant="outline" className="border-slate-700">Change Filters</Button>
+              <Button onClick={() => setShowFilters(true)} variant="outline" className="border-slate-700 bg-transparent text-white hover:bg-zinc-800">Change Filters</Button>
               <Link to={createPageUrl('MaybeList')}><Button className="bg-purple-600 hover:bg-purple-500">View Maybe List</Button></Link>
             </div>
           </div>
