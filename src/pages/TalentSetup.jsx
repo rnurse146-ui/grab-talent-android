@@ -335,18 +335,19 @@ export default function TalentSetup() {
                   <div className="flex flex-col gap-2">
                     <label className="cursor-pointer"><input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" /><div className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium">{uploading ? 'Uploading...' : 'Upload'}</div></label>
                     <button type="button" onClick={() => setShowCamera('photo')} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5"><Camera className="w-3.5 h-3.5" />Take Photo</button>
+                    {profilePhoto && <button type="button" onClick={() => { setProfilePhoto(null); setFormData(prev => ({ ...prev, profile_photo: '' })); }} className="px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg text-sm">Remove</button>}
                   </div>
                 </div>
               </div>
 
               <div><Label className="text-slate-400">Gallery (up to 25)</Label>
                 <div className="mt-3 grid grid-cols-4 gap-3">
-                  {formData.media_gallery.map((url, i) => (<div key={i} className="relative aspect-square rounded-lg overflow-hidden group"><img src={url} alt="" className="w-full h-full object-cover" /><button onClick={() => removeFromGallery(i)} className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100"><X className="w-4 h-4" /></button></div>))}
+                  {formData.media_gallery.map((url, i) => (<div key={i} className="relative aspect-square rounded-lg overflow-hidden group"><img src={url} alt="" className="w-full h-full object-cover" /><button onClick={() => removeFromGallery(i)} className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center"><X className="w-4 h-4" /></button></div>))}
                   {formData.media_gallery.length < 25 && (<label className="aspect-square rounded-lg bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center cursor-pointer hover:border-slate-600"><input type="file" accept="image/*,video/*" multiple onChange={handleGalleryUpload} className="hidden" /><Upload className="w-6 h-6 text-slate-600" /></label>)}
                 </div>
               </div>
               <div className="p-4 rounded-xl bg-slate-900 border border-slate-800"><h3 className="font-medium mb-3 flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />Summary</h3><div className="text-sm text-slate-400 space-y-1"><p><span className="text-white">{formData.stage_name}</span> • {TALENT_CATEGORIES.find(c => c.value === formData.talent_category)?.label}</p><p>📍 {formData.location_city} • 💷 £{formData.hourly_rate}/hr</p></div></div>
-              <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(3)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={() => setStep(5)} disabled={!formData.profile_photo} className="flex-1 bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
+              <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(3)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={() => setStep(5)} disabled={!formData.profile_photo && !profileVideo} className="flex-1 bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
             </motion.div>
           )}
 
