@@ -54,18 +54,8 @@ export default function Verification() {
     setAiStatus('checking');
 
     // AI facial recognition comparison
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: 'You are an AI identity verification system. The first image is a government-issued ID document, the second is a selfie. Compare the faces. Determine if they appear to be the same person based on facial features (eyes, nose, face shape, jawline). Allow for lighting/angle differences.',
-      file_urls: [idUrl, selfieUrl],
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          match: { type: 'boolean' },
-          confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
-          reason: { type: 'string' }
-        }
-      }
-    });
+    const res = await base44.functions.invoke('checkVerification', { id_url: idUrl, selfie_url: selfieUrl });
+    const result = res?.data?.result;
 
     setAiResult(result);
     setAiStatus('done');
