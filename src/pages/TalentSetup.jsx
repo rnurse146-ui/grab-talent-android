@@ -161,6 +161,36 @@ export default function TalentSetup() {
   const addSpecialty = () => { if (specialtyInput.trim() && !formData.specialties.includes(specialtyInput.trim())) { setFormData(prev => ({ ...prev, specialties: [...prev.specialties, specialtyInput.trim()] })); setSpecialtyInput(''); } };
   const removeSpecialty = (index) => setFormData(prev => ({ ...prev, specialties: prev.specialties.filter((_, i) => i !== index) }));
 
+  // AI profile helper (secure server-side function) — writes a catchy bio and suggests specialties
+  const [aiBioLoading, setAiBioLoading] = useState(false);
+  const [aiSpecLoading, setAiSpecLoading] = useState(false);
+  const aiProfileContext = () => ({
+    stage_name: formData.stage_name,
+    category_label: TALENT_CATEGORIES.find(c => c.value === formData.talent_category)?.label || '',
+    experience_years: formData.experience_years,
+    location_city: formData.location_city,
+    hourly_rate: formData.hourly_rate,
+    specialties: formData.specialties,
+    equipment: formData.equipment_provided,
+  });
+
+  const handleGenerateBio = async () => {
+    setAiBioLoading(true);
+    try {
+      const res = await base44.functions.invoke('aiProfileHelper', { kind: 'bio', ...aiProfileContext(), current_bio: formData.bio });
+      if (res.data?.bio) setFormData(prev => ({ ...prev, bio: res.data.bio }));
+    } finally { setAiBioLoading(false); }
+  };
+
+  const handleSuggestSpecialties = async () => {
+    setAiSpecLoading(true);
+    try {
+      const res = await base44.functions.invoke('aiProfileHelper', { kind: 'specialties', ...aiProfileContext() });
+      const suggestions = (res.data?.specialties || []).filter(s => !formData.specialties.includes(s));
+      if (suggestions.length > 0) setFormData(prev => ({ ...prev, specialties: [...prev.specialties, ...suggestions] }));
+    } finally { setAiSpecLoading(false); }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     const profileData = { ...formData, user_id: user.id, hourly_rate: parseFloat(formData.hourly_rate), minimum_hours: parseInt(formData.minimum_hours), location_radius: parseInt(formData.location_radius), experience_years: formData.experience_years ? parseInt(formData.experience_years) : null, last_minute_available: !!formData.last_minute_available, is_available: true };
@@ -232,9 +262,20 @@ export default function TalentSetup() {
             <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
               <div className="text-center mb-6"><Star className="w-10 h-10 text-purple-400 mx-auto mb-3" /><h2 className="text-xl font-semibold">Your Story</h2></div>
               <div className="space-y-4">
-                <div><Label className="text-slate-400">Bio</Label><Textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} placeholder="Tell seekers about yourself..." className="bg-slate-900 border-slate-800 h-32 mt-2 resize-none" /></div>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-slate-400">Bio</Label>
+                    <button type="button" onClick={handleGenerateBio} disabled={aiBioLoading} className="flex items-center gap-1.5 text-xs font-medium text-purple-300 hover:text-purple-200 disabled:opacity-50">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      {aiBioLoading ? 'Writing...' : 'Write it for me'}
+                    </button>
+                  </div>
+                  <Textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} placeholder="Tell seekers about yourself — or let AI write a bio that catches the eye..." className="bg-slate-900 border-slate-800 h-32 mt-2 resize-none" />
+                  <p className="text-xs text-slate-500 mt-1">The AI draft uses your details from this form — edit it as much as you like.</p>
+                </div>
                 <div><Label className="text-slate-400">Specialties</Label>
                   <div className="flex gap-2 mt-2"><Input value={specialtyInput} onChange={(e) => setSpecialtyInput(e.target.value)} placeholder="e.g. Wedding DJ" className="bg-slate-900 border-slate-800" onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSpecialty())} /><Button onClick={addSpecialty} variant="outline" className="border-slate-700">Add</Button></div>
+                  <button type="button" onClick={handleSuggestSpecialties} disabled={aiSpecLoading} className="flex items-center gap-1.5 text-xs text-purple-300 hover:text-purple-200 disabled:opacity-50 mt-2"><Sparkles className="w-3.5 h-3.5" />{aiSpecLoading ? 'Thinking...' : 'Suggest specialties with AI'}</button>
                   {formData.specialties.length > 0 && (<div className="flex flex-wrap gap-2 mt-3">{formData.specialties.map((s, i) => (<span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm">{s}<button onClick={() => removeSpecialty(i)} className="hover:text-white"><X className="w-3 h-3" /></button></span>))}</div>)}
                 </div>
 
