@@ -46,7 +46,15 @@
     },
     "hourly_rate": {
       "type": "number",
-      "description": "Price per hour in GBP"
+      "description": "Price per hour in GBP (optional if a day or evening rate is set)"
+    },
+    "day_rate": {
+      "type": "number",
+      "description": "Flat day rate in GBP (optional)"
+    },
+    "evening_rate": {
+      "type": "number",
+      "description": "Flat evening rate in GBP (optional)"
     },
     "minimum_hours": {
       "type": "number",
@@ -178,7 +186,6 @@
   "required": [
     "stage_name",
     "talent_category",
-    "hourly_rate",
     "location_city"
   ],
   "rls": {

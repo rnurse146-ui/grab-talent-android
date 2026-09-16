@@ -12,6 +12,7 @@ import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, Banknote, Loader2
 import { format } from 'date-fns';
 import PageHeader from '@/components/PageHeader';
 import { createNotification } from '@/lib/notifications';
+import { rateSummary, estimateBookingPrice } from '@/lib/talentPricing';
 
 const EVENT_TYPES = [
   { value: 'wedding', label: 'Wedding' },
@@ -59,9 +60,7 @@ export default function BookTalent() {
     let hours = end - start;
     if (hours < 0) hours += 24;
     if (hours < talent.minimum_hours) hours = talent.minimum_hours;
-    const basePrice = hours * talent.hourly_rate;
-    const commission = basePrice * 0.11;
-    return { hours, basePrice, commission, total: basePrice + commission };
+    return estimateBookingPrice(talent, start, hours);
   };
 
   const handleSubmit = async (e) => {
@@ -72,10 +71,10 @@ export default function BookTalent() {
       talent_profile_id: talent.id, seeker_id: user.id, talent_user_id: talent.user_id,
       event_name: formData.event_name, event_type: formData.event_type,
       event_date: formData.event_date ? format(formData.event_date, 'yyyy-MM-dd') : '',
-      start_time: formData.start_time, end_time: formData.end_time, duration_hours: pricing.hours,
+      start_time: formData.start_time, end_time: formData.end_time, duration_hours: pricing ? pricing.hours : null,
       venue_name: formData.venue_name, venue_address: formData.venue_address, venue_city: formData.venue_city,
       special_requirements: formData.special_requirements,
-      base_price: pricing.basePrice, commission_amount: pricing.commission, total_price: pricing.total, talent_payout: pricing.basePrice,
+      base_price: pricing ? pricing.basePrice : null, commission_amount: pricing ? pricing.commission : null, total_price: pricing ? pricing.total : null, talent_payout: pricing ? pricing.basePrice : null,
       status: 'pending', payment_status: 'pending',
       seeker_name: user.full_name, seeker_phone: formData.seeker_phone,
       talent_stage_name: talent.stage_name, talent_category: talent.talent_category
@@ -123,7 +122,7 @@ export default function BookTalent() {
             <h2 className="font-semibold text-lg">{talent.stage_name}</h2>
             <p className="text-zinc-400 text-sm capitalize">{talent.talent_category?.replace(/_/g, ' ')}</p>
             <div className="flex items-center gap-3 text-sm text-zinc-400 mt-1">
-              <span>£{talent.hourly_rate}/hr</span><span>•</span><span>Min {talent.minimum_hours}h</span>
+              <span>{rateSummary(talent) || 'Pricing on request'}</span><span>•</span><span>Min {talent.minimum_hours}h</span>
               {talent.average_rating && (<><span>•</span><span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />{talent.average_rating.toFixed(1)}</span></>)}
             </div>
           </div>
@@ -183,6 +182,9 @@ export default function BookTalent() {
             </div>
           </div>
 
+          {!pricing && (
+            <p className="text-xs text-amber-400 -mt-2">{talent.stage_name} hasn't set a bookable rate yet — send your request and they'll confirm the price with you.</p>
+          )}
           <Button type="submit" disabled={submitting || !formData.event_date} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
             {submitting ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Sending...</> : 'Send Booking Request'}
           </Button>

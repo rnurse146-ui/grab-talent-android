@@ -14,6 +14,7 @@ import Logo from '@/components/Logo';
 import TalentHitch from '@/components/TalentHitch';
 import PullToRefresh from '@/components/PullToRefresh';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
+import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
 
 const TALENT_CATEGORIES = [
   { value: 'all', label: 'All Categories' },
@@ -57,6 +58,7 @@ export default function Discover() {
     categories: [],
     maxPrice: '',
     minPrice: '',
+    budgetBasis: 'hourly',
     city: '',
     minRating: '',
     verifiedOnly: false,
@@ -118,8 +120,14 @@ export default function Discover() {
       filtered = filtered.filter(t => !unavailableIds.has(t.id));
     }
 
-    if (filters.minPrice) filtered = filtered.filter(t => t.hourly_rate >= parseFloat(filters.minPrice));
-    if (filters.maxPrice) filtered = filtered.filter(t => t.hourly_rate <= parseFloat(filters.maxPrice));
+    if (filters.minPrice || filters.maxPrice) {
+      const min = filters.minPrice ? parseFloat(filters.minPrice) : null;
+      const max = filters.maxPrice ? parseFloat(filters.maxPrice) : null;
+      filtered = filtered.filter(t => {
+        const value = filters.budgetBasis === 'total' ? typicalTotalRate(t) : effectiveHourlyRate(t);
+        return value != null && (!min || value >= min) && (!max || value <= max);
+      });
+    }
     if (filters.city) filtered = filtered.filter(t => t.location_city?.toLowerCase().includes(filters.city.toLowerCase()));
     if (filters.minRating) filtered = filtered.filter(t => (t.average_rating || 0) >= parseFloat(filters.minRating));
     if (filters.verifiedOnly) filtered = filtered.filter(t => t.is_verified === true);
@@ -187,7 +195,7 @@ export default function Discover() {
         talent_stage_name: talent.stage_name,
         talent_category: talent.talent_category,
         talent_photo: talent.profile_photo,
-        talent_hourly_rate: talent.hourly_rate,
+        talent_hourly_rate: effectiveHourlyRate(talent),
         talent_rating: talent.average_rating,
         talent_city: talent.location_city
       });
@@ -311,7 +319,21 @@ export default function Discover() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-semibold text-white mb-2 block">💷 Hourly Budget (£)</label>
+                    <label className="text-sm font-semibold text-white mb-2 block">💷 Budget (£)</label>
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      {[{ value: 'hourly', label: 'Per hour' }, { value: 'total', label: 'Total spend' }].map(b => (
+                        <button
+                          key={b.value}
+                          onClick={() => setFilters(f => ({ ...f, budgetBasis: b.value }))}
+                          className={`py-2.5 rounded-xl text-sm font-medium border transition-all ${
+                            filters.budgetBasis === b.value ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                          }`}
+                        >
+                          {b.label}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-zinc-500 mb-2">Are you budgeting per hour, or what you'll spend overall?</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <p className="text-xs text-zinc-500 mb-1">Min</p>
@@ -509,14 +531,26 @@ export default function Discover() {
                 </div>
               </div>
 
-              {/* Row 2: Price range + Rating */}
-              <div className="grid sm:grid-cols-3 gap-4">
+              {/* Row 2: Budget basis + price range + Rating */}
+              <div className="grid sm:grid-cols-4 gap-4">
                 <div>
-                  <label className="text-xs text-slate-400 mb-1 block">Min Price (£/hr)</label>
+                  <label className="text-xs text-slate-400 mb-1 block">Budget Basis</label>
+                  <MobileSheetSelect
+                    value={filters.budgetBasis}
+                    onChange={(v) => setFilters({...filters, budgetBasis: v})}
+                    options={[{ value: 'hourly', label: 'Per hour' }, { value: 'total', label: 'Total spend' }]}
+                    placeholder="Per hour"
+                    title="Budget Basis"
+                    triggerClassName="bg-slate-900 border-slate-700"
+                    contentClassName="bg-slate-900 border-slate-700"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">Min Price ({filters.budgetBasis === 'total' ? '£ total' : '£/hr'})</label>
                   <Input type="number" value={filters.minPrice} onChange={(e) => setFilters({...filters, minPrice: e.target.value})} placeholder="0" className="bg-slate-900 border-slate-700" />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400 mb-1 block">Max Price (£/hr)</label>
+                  <label className="text-xs text-slate-400 mb-1 block">Max Price ({filters.budgetBasis === 'total' ? '£ total' : '£/hr'})</label>
                   <Input type="number" value={filters.maxPrice} onChange={(e) => setFilters({...filters, maxPrice: e.target.value})} placeholder="Any" className="bg-slate-900 border-slate-700" />
                 </div>
                 <div>
@@ -587,7 +621,7 @@ export default function Discover() {
                 <Button onClick={applyFilters} className="flex-1 bg-purple-600 hover:bg-purple-500">Apply Filters</Button>
                 <Button
                   onClick={() => {
-                    setFilters({ categories: [], maxPrice: '', minPrice: '', city: '', minRating: '', verifiedOnly: false, equipment: [] });
+                    setFilters({ categories: [], maxPrice: '', minPrice: '', budgetBasis: 'hourly', city: '', minRating: '', verifiedOnly: false, equipment: [] });
                     setShowFilters(false);
                     loadTalents(swipedIds);
                   }}
@@ -671,7 +705,7 @@ export default function Discover() {
                       <p className="text-purple-300 text-sm font-medium capitalize mb-3">{currentTalent.talent_category?.replace(/_/g, ' ')}</p>
                       <div className="flex flex-wrap gap-2 mb-3">
                         <Badge variant="secondary" className="bg-white/20 text-white"><MapPin className="w-3 h-3 mr-1" />{currentTalent.location_city}</Badge>
-                        <Badge variant="secondary" className="bg-white/20 text-white"><Banknote className="w-3 h-3 mr-1" />£{currentTalent.hourly_rate}/hr</Badge>
+                        <Badge variant="secondary" className="bg-white/20 text-white"><Banknote className="w-3 h-3 mr-1" />{rateSummary(currentTalent) || 'POA'}</Badge>
                         {currentTalent.average_rating && (
                           <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300"><Star className="w-3 h-3 mr-1 fill-yellow-300" />{currentTalent.average_rating.toFixed(1)}</Badge>
                         )}

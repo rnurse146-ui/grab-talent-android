@@ -81,7 +81,7 @@ export default function TalentSetup() {
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profileVideo, setProfileVideo] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState({ stage_name: '', talent_category: '', bio: '', hourly_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [], last_minute_available: false, social_links: { instagram: '', tiktok: '', facebook: '', youtube: '', website: '' } });
+  const [formData, setFormData] = useState({ stage_name: '', talent_category: '', bio: '', hourly_rate: '', evening_rate: '', day_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [], last_minute_available: false, social_links: { instagram: '', tiktok: '', facebook: '', youtube: '', website: '' } });
   const [specialtyInput, setSpecialtyInput] = useState('');
 
   useEffect(() => { loadUser(); }, []);
@@ -93,7 +93,7 @@ export default function TalentSetup() {
     if (profiles.length > 0) {
       const profile = profiles[0];
       setExistingProfile(profile);
-      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', profile_video: profile.profile_video || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [], last_minute_available: profile.last_minute_available || false, social_links: { instagram: profile.social_links?.instagram || '', tiktok: profile.social_links?.tiktok || '', facebook: profile.social_links?.facebook || '', youtube: profile.social_links?.youtube || '', website: profile.social_links?.website || '' } });
+      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', evening_rate: profile.evening_rate?.toString() || '', day_rate: profile.day_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', profile_video: profile.profile_video || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [], last_minute_available: profile.last_minute_available || false, social_links: { instagram: profile.social_links?.instagram || '', tiktok: profile.social_links?.tiktok || '', facebook: profile.social_links?.facebook || '', youtube: profile.social_links?.youtube || '', website: profile.social_links?.website || '' } });
       setProfileVideo(profile.profile_video || null);
       setProfilePhoto(profile.profile_photo);
     } else if (currentUser.preferred_city) {
@@ -193,7 +193,7 @@ export default function TalentSetup() {
 
   const handleSubmit = async () => {
     setLoading(true);
-    const profileData = { ...formData, user_id: user.id, hourly_rate: parseFloat(formData.hourly_rate), minimum_hours: parseInt(formData.minimum_hours), location_radius: parseInt(formData.location_radius), experience_years: formData.experience_years ? parseInt(formData.experience_years) : null, last_minute_available: !!formData.last_minute_available, is_available: true };
+    const profileData = { ...formData, user_id: user.id, hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null, evening_rate: formData.evening_rate ? parseFloat(formData.evening_rate) : null, day_rate: formData.day_rate ? parseFloat(formData.day_rate) : null, minimum_hours: parseInt(formData.minimum_hours), location_radius: parseInt(formData.location_radius), experience_years: formData.experience_years ? parseInt(formData.experience_years) : null, last_minute_available: !!formData.last_minute_available, is_available: true };
     let savedProfile;
     if (existingProfile) {
       savedProfile = await base44.entities.TalentProfile.update(existingProfile.id, profileData);
@@ -322,8 +322,16 @@ export default function TalentSetup() {
           {step === 3 && (
             <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
               <div className="text-center mb-6"><Banknote className="w-10 h-10 text-green-400 mx-auto mb-3" /><h2 className="text-xl font-semibold">Pricing & Location</h2></div>
+              <div>
+                <Label className="text-slate-400">Your Rates (£)</Label>
+                <p className="text-xs text-slate-500 mt-1 mb-3">Fill in whichever ways you charge — at least one is needed.</p>
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div><Label className="text-xs text-slate-400">Per Hour</Label><Input type="number" value={formData.hourly_rate} onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })} placeholder="e.g. 150" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
+                  <div><Label className="text-xs text-slate-400">Evening Rate</Label><Input type="number" value={formData.evening_rate} onChange={(e) => setFormData({ ...formData, evening_rate: e.target.value })} placeholder="e.g. 400" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
+                  <div><Label className="text-xs text-slate-400">Day Rate</Label><Input type="number" value={formData.day_rate} onChange={(e) => setFormData({ ...formData, day_rate: e.target.value })} placeholder="e.g. 600" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
+                </div>
+              </div>
               <div className="grid sm:grid-cols-2 gap-4">
-                <div><Label className="text-slate-400">Hourly Rate (£)</Label><Input type="number" value={formData.hourly_rate} onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })} placeholder="150" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
                 <div><Label className="text-slate-400">Min Hours</Label><MobileSheetSelect value={formData.minimum_hours} onChange={(value) => setFormData({ ...formData, minimum_hours: value })} options={[1,2,3,4,5,6].map(h => ({ value: h.toString(), label: `${h}h` }))} title="Minimum Hours" triggerClassName="bg-slate-900 border-slate-800 h-12 mt-2" contentClassName="bg-slate-900 border-slate-800" /></div>
                 <div><Label className="text-slate-400">City</Label><Input value={formData.location_city} onChange={(e) => setFormData({ ...formData, location_city: e.target.value })} placeholder="London" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
                 <div><Label className="text-slate-400">Travel Radius</Label><MobileSheetSelect value={formData.location_radius} onChange={(value) => setFormData({ ...formData, location_radius: value })} options={[10,25,50,100,200].map(r => ({ value: r.toString(), label: `${r} miles` }))} title="Travel Radius" triggerClassName="bg-slate-900 border-slate-800 h-12 mt-2" contentClassName="bg-slate-900 border-slate-800" /></div>
@@ -345,7 +353,7 @@ export default function TalentSetup() {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(2)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={() => setStep(4)} disabled={!formData.hourly_rate || !formData.location_city} className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
+              <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(2)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={() => setStep(4)} disabled={(!formData.hourly_rate && !formData.evening_rate && !formData.day_rate) || !formData.location_city} className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
             </motion.div>
           )}
 
@@ -395,7 +403,7 @@ export default function TalentSetup() {
                   {formData.media_gallery.length < 25 && (<label className="aspect-square rounded-lg bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center cursor-pointer hover:border-slate-600"><input type="file" accept="image/*,video/*" multiple onChange={handleGalleryUpload} className="hidden" /><Upload className="w-6 h-6 text-slate-600" /></label>)}
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800"><h3 className="font-medium mb-3 flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />Summary</h3><div className="text-sm text-slate-400 space-y-1"><p><span className="text-white">{formData.stage_name}</span> • {TALENT_CATEGORIES.find(c => c.value === formData.talent_category)?.label}</p><p>📍 {formData.location_city} • 💷 £{formData.hourly_rate}/hr</p></div></div>
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800"><h3 className="font-medium mb-3 flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />Summary</h3><div className="text-sm text-slate-400 space-y-1"><p><span className="text-white">{formData.stage_name}</span> • {TALENT_CATEGORIES.find(c => c.value === formData.talent_category)?.label}</p><p>📍 {formData.location_city} • 💷 {[formData.hourly_rate && `£${formData.hourly_rate}/hr`, formData.evening_rate && `£${formData.evening_rate} evening`, formData.day_rate && `£${formData.day_rate} day`].filter(Boolean).join(' • ') || 'No rates set'}</p></div></div>
               <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(3)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={() => setStep(5)} disabled={!formData.profile_photo && !profileVideo} className="flex-1 bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
             </motion.div>
           )}
