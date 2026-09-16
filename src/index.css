@@ -140,6 +140,13 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* clearance for the desktop top navigation bar */
+  @media (min-width: 768px) {
+    body {
+      padding-top: 3.5rem;
+    }
+  }
 }
 
 @layer utilities {

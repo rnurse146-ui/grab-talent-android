@@ -53,10 +53,13 @@ export default function MaybeList() {
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-purple-500" /></div>
         ) : maybeList.length === 0 ? (
-          <div className="text-center py-20">
-            <Heart className="w-16 h-16 text-zinc-700 mx-auto mb-4" />
+          <div className="text-center py-16 max-w-sm mx-auto">
+            <div className="w-20 h-20 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center mx-auto mb-5">
+              <Heart className="w-10 h-10 text-pink-400" />
+            </div>
             <h2 className="text-xl font-semibold mb-2">No saved talents yet</h2>
-            <p className="text-zinc-400 mb-6">Swipe right on talents you're interested in</p>
+            <p className="text-zinc-400 mb-2">Swipe right on performers in Discover and they'll be saved here — ready to compare, message and book.</p>
+            <p className="text-zinc-500 text-xs mb-6">💡 Tip: use Filters in Discover to narrow talent by price, location and rating first.</p>
             <Link to={createPageUrl('Discover')}><Button className="bg-white text-black hover:bg-zinc-100">Discover Talent</Button></Link>
           </div>
         ) : (

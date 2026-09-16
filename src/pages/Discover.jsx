@@ -62,6 +62,15 @@ export default function Discover() {
     verifiedOnly: false,
     equipment: []
   });
+  // How many filters differ from the default — shown as a badge on the Filters button
+  const activeFilterCount =
+    (filters.categories.length > 0 ? 1 : 0) +
+    (filters.city ? 1 : 0) +
+    (filters.minPrice ? 1 : 0) +
+    (filters.maxPrice ? 1 : 0) +
+    (filters.minRating ? 1 : 0) +
+    (filters.verifiedOnly ? 1 : 0) +
+    (filters.equipment.length > 0 ? 1 : 0);
 
   useEffect(() => {
     loadData();
@@ -435,9 +444,9 @@ export default function Discover() {
   );
 
   return (
-    <PullToRefresh onRefresh={loadData} className="h-[100dvh] bg-black text-white">
+    <PullToRefresh onRefresh={loadData} className="h-[100dvh] md:h-[calc(100dvh-3.5rem)] bg-black text-white">
       <div className="min-h-[100dvh] pb-28 text-white">
-      <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 z-10">
+      <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 md:top-14 z-10">
         <Link to={createPageUrl('Dashboard')}>
           <Logo className="h-12 w-auto" variant="light" />
         </Link>
@@ -450,8 +459,11 @@ export default function Discover() {
               )}
             </Button>
           </Link>
-          <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="border-zinc-700 bg-transparent">
+          <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className={`relative bg-transparent ${activeFilterCount > 0 ? 'border-purple-500' : 'border-zinc-700'}`}>
             <Filter className="w-4 h-4 mr-2" />Filters
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-purple-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{activeFilterCount}</span>
+            )}
           </Button>
         </div>
       </div>

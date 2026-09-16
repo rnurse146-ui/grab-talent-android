@@ -10,6 +10,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import MobileTabBar from '@/components/MobileTabBar';
+import DesktopNavBar from '@/components/DesktopNavBar';
 import { resolveTab } from '@/lib/tabNavigation';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -103,6 +104,7 @@ const AnimatedApp = () => {
           <AppRoutes location={location} />
         </motion.div>
       </AnimatePresence>
+      <DesktopNavBar />
       <MobileTabBar />
     </>
   );

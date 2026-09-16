@@ -19,7 +19,7 @@ export default function PageHeader({ backTo, backLabel = "Back", showBack = true
   };
 
   return (
-    <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 z-10">
+    <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 md:top-14 z-10">
       {showBack ? (
         <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white" onClick={handleBack}>
           <ChevronLeft className="w-4 h-4 mr-1" />{backLabel}

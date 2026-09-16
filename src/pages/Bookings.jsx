@@ -71,7 +71,7 @@ export default function Bookings() {
   });
 
   return (
-    <PullToRefresh onRefresh={loadData} className="h-[100dvh] bg-black text-white">
+    <PullToRefresh onRefresh={loadData} className="h-[100dvh] md:h-[calc(100dvh-3.5rem)] bg-black text-white">
       <PageHeader showBack={false} />
 
       <div className="max-w-4xl mx-auto px-6 pt-8 pb-24 md:pb-8">

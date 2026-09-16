@@ -299,7 +299,7 @@ export default function Messages() {
 
   return (
     <>
-    <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
+    <div className="h-screen md:h-[calc(100vh-3.5rem)] bg-black text-white flex flex-col overflow-hidden">
       {/* Top Nav */}
       <div className="flex items-center justify-between px-6 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] border-b border-zinc-800 bg-black shrink-0">
         <Link to={createPageUrl('Dashboard')} className={showList ? 'hidden md:block' : undefined}>
@@ -339,8 +339,12 @@ export default function Messages() {
           <PullToRefresh onRefresh={refreshMessages} className="flex-1 overflow-y-auto">
             {conversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-3 p-8">
-                <MessageSquare className="w-10 h-10 text-slate-700" />
-                <p className="text-sm text-center">No conversations yet. Message a talent or seeker to get started.</p>
+                <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                  <MessageSquare className="w-8 h-8 text-slate-600" />
+                </div>
+                <p className="text-sm text-center text-slate-300 font-medium">No conversations yet</p>
+                <p className="text-xs text-center text-slate-500 max-w-xs">Find a performer in Discover and send them a message — your chats will show up here.</p>
+                <Link to="/Discover" className="text-xs text-purple-400 underline underline-offset-4">Browse talent</Link>
               </div>
             ) : (
               <div className="py-2">
@@ -403,6 +407,7 @@ export default function Messages() {
                   <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-2">
                     <MessageSquare className="w-8 h-8 text-slate-700" />
                     <p className="text-sm">Say hello! 👋</p>
+                    <p className="text-xs text-center text-slate-600 max-w-xs">Ask about their style, availability or any special requests for your event.</p>
                   </div>
                 )}
                 {messages.map((msg, idx) => {
