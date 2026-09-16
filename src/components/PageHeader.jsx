@@ -1,7 +1,7 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, LayoutDashboard } from 'lucide-react';
 import Logo from '@/components/Logo';
 import NotificationBell from '@/components/NotificationBell';
 
@@ -9,12 +9,12 @@ export default function PageHeader({ backTo, backLabel = "Back", showBack = true
   const navigate = useNavigate();
 
   const handleBack = () => {
-    // Use the history stack when available; fall back to the provided route
+    // Use the history stack when available; fall back to the Dashboard
     // for direct-entry (deep link) cases where there's no previous entry.
     if (window.history.length > 1) {
       navigate(-1);
-    } else if (backTo) {
-      navigate(backTo);
+    } else {
+      navigate(backTo || '/Dashboard');
     }
   };
 
@@ -25,10 +25,20 @@ export default function PageHeader({ backTo, backLabel = "Back", showBack = true
           <ChevronLeft className="w-4 h-4 mr-1" />{backLabel}
         </Button>
       ) : (
-        <div className="w-20" />
+        <div className="w-20 md:w-44" />
       )}
-      <Logo className="h-12 w-auto" variant="light" />
-      <div className="w-20 flex justify-end"><NotificationBell /></div>
+      <Link to="/Dashboard" aria-label="Go to Dashboard">
+        <Logo className="h-12 w-auto" variant="light" />
+      </Link>
+      <div className="w-20 md:w-44 flex items-center justify-end gap-1">
+        <Button asChild variant="ghost" size="sm" className="text-zinc-400 hover:text-white" aria-label="Dashboard">
+          <Link to="/Dashboard" className="flex items-center gap-1.5">
+            <LayoutDashboard className="w-4 h-4" />
+            <span className="hidden sm:inline text-xs">Dashboard</span>
+          </Link>
+        </Button>
+        <NotificationBell />
+      </div>
     </div>
   );
 }

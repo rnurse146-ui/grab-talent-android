@@ -43,6 +43,18 @@ export default function Onboarding() {
     setLoading(false);
   };
 
+  // Escape hatch — let people jump straight to the Dashboard without finishing setup
+  const handleSkip = async () => {
+    setLoading(true);
+    try {
+      await base44.auth.updateMe({ onboarding_complete: true });
+      window.location.href = createPageUrl('Dashboard');
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6 pb-28">
       {/* Background */}
@@ -245,6 +257,15 @@ export default function Onboarding() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <button
+          type="button"
+          onClick={handleSkip}
+          disabled={loading}
+          className="block mx-auto mt-10 text-sm text-slate-500 hover:text-white underline underline-offset-4 transition-colors"
+        >
+          Skip for now — go to Dashboard
+        </button>
       </motion.div>
       <TalentHitch />
     </div>
