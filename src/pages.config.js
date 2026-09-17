@@ -47,19 +47,21 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Home from './pages/Home';
-import Onboarding from './pages/Onboarding';
-import Dashboard from './pages/Dashboard';
-import Discover from './pages/Discover';
-import MaybeList from './pages/MaybeList';
-import TalentProfile from './pages/TalentProfile';
-import TalentSetup from './pages/TalentSetup';
-import BookTalent from './pages/BookTalent';
-import Bookings from './pages/Bookings';
-import Messages from './pages/Messages';
-import Settings from './pages/Settings';
-import Verification from './pages/Verification';
-import WriteReview from './pages/WriteReview';
+import { lazy } from 'react';
+
+const Home = lazy(() => import('./pages/Home'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Discover = lazy(() => import('./pages/Discover'));
+const MaybeList = lazy(() => import('./pages/MaybeList'));
+const TalentProfile = lazy(() => import('./pages/TalentProfile'));
+const TalentSetup = lazy(() => import('./pages/TalentSetup'));
+const BookTalent = lazy(() => import('./pages/BookTalent'));
+const Bookings = lazy(() => import('./pages/Bookings'));
+const Messages = lazy(() => import('./pages/Messages'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Verification = lazy(() => import('./pages/Verification'));
+const WriteReview = lazy(() => import('./pages/WriteReview'));
 
 
 export const PAGES = {

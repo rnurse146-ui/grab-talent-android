@@ -4,25 +4,33 @@ import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import MobileTabBar from '@/components/MobileTabBar';
 import DesktopNavBar from '@/components/DesktopNavBar';
 import { resolveTab } from '@/lib/tabNavigation';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import BookingDetailsPage from './pages/BookingDetails';
-import TalentAvailabilityPage from './pages/TalentAvailability';
-import BookingHistoryPage from './pages/BookingHistory';
-import AccountSecurityPage from './pages/AccountSecurity';
-import PrivacyPolicyPage from './pages/PrivacyPolicy';
-import TermsOfServicePage from './pages/TermsOfService';
-import NotificationsPage from './pages/Notifications';
+
+// Page-level routes load lazily so each screen ships in its own bundle
+const PageNotFound = lazy(() => import('./lib/PageNotFound'));
+const Login = lazy(() => import('@/pages/Login'));
+const Register = lazy(() => import('@/pages/Register'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const BookingDetailsPage = lazy(() => import('./pages/BookingDetails'));
+const TalentAvailabilityPage = lazy(() => import('./pages/TalentAvailability'));
+const BookingHistoryPage = lazy(() => import('./pages/BookingHistory'));
+const AccountSecurityPage = lazy(() => import('./pages/AccountSecurity'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfService'));
+const NotificationsPage = lazy(() => import('./pages/Notifications'));
+
+const PageLoader = () => (
+  <div className="fixed inset-0 flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+  </div>
+);
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -101,7 +109,9 @@ const AnimatedApp = () => {
           transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
           className="w-full"
         >
-          <AppRoutes location={location} />
+          <Suspense fallback={<PageLoader />}>
+            <AppRoutes location={location} />
+          </Suspense>
         </motion.div>
       </AnimatePresence>
       <DesktopNavBar />
