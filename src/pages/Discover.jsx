@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
   X, Heart, Star, MapPin, Banknote, CheckCircle2,
-  Filter, ChevronRight, Loader2, List, Calendar, User, Zap
+  Filter, ChevronRight, Loader2, List, Calendar, User, Zap, Undo2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from '@/components/Logo';
@@ -49,6 +49,7 @@ export default function Discover() {
   const [maybeCount, setMaybeCount] = useState(0);
   const [eventDate, setEventDate] = useState('');
   const [lastPass, setLastPass] = useState(null);
+  const [passedCount, setPassedCount] = useState(0);
   const [showWelcome, setShowWelcome] = useState(true);
   const [welcomeStep, setWelcomeStep] = useState(1);
   const WELCOME_STEPS = 3;
@@ -89,6 +90,7 @@ export default function Discover() {
     const swipedSet = new Set(history.map(h => h.talent_profile_id));
     setSwipedIds(swipedSet);
     setMaybeCount(maybe.length);
+    setPassedCount(history.filter(h => h.action === 'pass').length);
     
     await loadTalents(swipedSet);
   };
@@ -163,8 +165,24 @@ export default function Discover() {
       setMaybeCount(prev => Math.max(0, prev - 1));
     }
     setSwipedIds(prev => { const next = new Set(prev); next.delete(lastPass.talent.id); return next; });
+    if (lastPass.wasPass) setPassedCount(prev => Math.max(0, prev - 1));
     setCurrentIndex(prev => prev - 1);
     setLastPass(null);
+  };
+
+  // Bring all previously rejected talent back into the deck so they can be seen again
+  const handleRestorePassed = async () => {
+    const passed = await base44.entities.SwipeHistory.filter({ seeker_id: user.id, action: 'pass' });
+    if (passed.length > 0) {
+      await base44.entities.SwipeHistory.deleteMany({ seeker_id: user.id, action: 'pass' });
+    }
+    const passedTalentIds = new Set(passed.map(h => h.talent_profile_id));
+    const nextSwiped = new Set(swipedIds);
+    passedTalentIds.forEach(id => nextSwiped.delete(id));
+    setSwipedIds(nextSwiped);
+    setPassedCount(0);
+    setLastPass(null);
+    await loadTalents(nextSwiped);
   };
 
   const handleDragEnd = (event, info) => {
@@ -203,7 +221,8 @@ export default function Discover() {
       setMaybeCount(prev => prev + 1);
     }
 
-    setLastPass({ talent, historyId: historyRecord.id, maybeId });
+    if (direction === 'left') setPassedCount(prev => prev + 1);
+    setLastPass({ talent, historyId: historyRecord.id, maybeId, wasPass: direction === 'left' });
     setSwipedIds(prev => new Set([...prev, talent.id]));
 
     setTimeout(() => {
@@ -662,6 +681,16 @@ export default function Discover() {
               <Button onClick={() => setShowFilters(true)} variant="outline" className="border-slate-700 bg-transparent text-white hover:bg-zinc-800">Change Filters</Button>
               <Link to={createPageUrl('MaybeList')}><Button className="bg-purple-600 hover:bg-purple-500">View Maybe List</Button></Link>
             </div>
+            {passedCount > 0 && (
+              <Button
+                onClick={handleRestorePassed}
+                variant="outline"
+                className="mt-3 border-zinc-700 bg-transparent text-white hover:bg-zinc-800"
+              >
+                <Undo2 className="w-4 h-4 mr-2" />
+                Bring back rejected talent ({passedCount})
+              </Button>
+            )}
           </div>
         ) : (
           <>
