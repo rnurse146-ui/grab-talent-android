@@ -60,36 +60,6 @@ https://grabtalent.base44.app
       return Response.json({ sent: true });
     }
 
-    if (kind === 'maybe_list') {
-      const talentProfileId = String(body?.talent_profile_id || '');
-      if (!talentProfileId) return Response.json({ error: 'talent_profile_id is required' }, { status: 400 });
-      // Only send when the caller actually shortlisted this talent
-      const saved = await base44.entities.MaybeList.filter({ seeker_id: user.id, talent_profile_id: talentProfileId });
-      if (saved.length === 0) return Response.json({ error: 'Forbidden' }, { status: 403 });
-
-      let profiles = [];
-      try { profiles = await base44.asServiceRole.entities.TalentProfile.filter({ id: talentProfileId }); } catch {}
-      if (profiles.length === 0) return Response.json({ error: 'Talent not found' }, { status: 404 });
-      const profile = profiles[0];
-
-      const talentEmail = await getTalentEmail(profile.user_id);
-      if (!talentEmail) return Response.json({ sent: false });
-
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        to: talentEmail,
-        subject: `⭐ You've been shortlisted on Grab Talent`,
-        body: `Hi ${profile.stage_name || 'there'},
-
-Good news — an event organizer browsing Grab Talent has shortlisted you and saved you to their Maybe List while they plan their event.
-
-When they're ready, they can book you in just a few taps. Keep your availability up to date so you don't miss out:
-https://grabtalent.base44.app
-
-— The Grab Talent Team`
-      });
-      return Response.json({ sent: true });
-    }
-
     return Response.json({ error: 'Unknown kind' }, { status: 400 });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

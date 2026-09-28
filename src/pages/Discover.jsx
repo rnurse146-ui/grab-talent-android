@@ -219,8 +219,6 @@ export default function Discover() {
       });
       maybeId = maybeRecord.id;
       setMaybeCount(prev => prev + 1);
-      // Email the talent in case they're not using the app — non-blocking so the swipe always goes through
-      base44.functions.invoke('notifyTalentByEmail', { kind: 'maybe_list', talent_profile_id: talent.id }).catch(() => {});
     }
 
     if (direction === 'left') setPassedCount(prev => prev + 1);
