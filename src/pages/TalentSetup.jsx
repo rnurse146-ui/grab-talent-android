@@ -12,6 +12,7 @@ import TalentHitch from '@/components/TalentHitch';
 import Logo from '@/components/Logo';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
 import CameraCapture from '@/components/CameraCapture';
+import { isVideoUrl, isAudioUrl } from '@/lib/mediaType';
 
 // Downscale large photos before upload — keeps setup uploads fast on mobile data
 function compressImage(file) {
@@ -397,10 +398,28 @@ export default function TalentSetup() {
                 </div>
               </div>
 
-              <div><Label className="text-slate-400">Gallery (up to 25)</Label>
+              <div><Label className="text-slate-400">Gallery — photos, videos & audio clips (up to 25)</Label>
+                <p className="text-xs text-slate-500 mt-1 mb-3">Add more clips of what you do — performances, sets, recordings. Mix photos, videos and audio freely.</p>
                 <div className="mt-3 grid grid-cols-4 gap-3">
-                  {formData.media_gallery.map((url, i) => (<div key={i} className="relative aspect-square rounded-lg overflow-hidden group"><img src={url} alt="" className="w-full h-full object-cover" /><button onClick={() => removeFromGallery(i)} className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center"><X className="w-4 h-4" /></button></div>))}
-                  {formData.media_gallery.length < 25 && (<label className="aspect-square rounded-lg bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center cursor-pointer hover:border-slate-600"><input type="file" accept="image/*,video/*" multiple onChange={handleGalleryUpload} className="hidden" /><Upload className="w-6 h-6 text-slate-600" /></label>)}
+                  {formData.media_gallery.map((url, i) => (
+                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden group bg-slate-900">
+                      {isVideoUrl(url) ? (
+                        <>
+                          <video src={url} muted playsInline preload="metadata" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30"><Video className="w-6 h-6 text-white" /></div>
+                        </>
+                      ) : isAudioUrl(url) ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-purple-900/60 to-slate-900">
+                          <Music className="w-6 h-6 text-purple-300" />
+                          <span className="text-[10px] text-slate-400">Audio</span>
+                        </div>
+                      ) : (
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      )}
+                      <button onClick={() => removeFromGallery(i)} className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center"><X className="w-4 h-4" /></button>
+                    </div>
+                  ))}
+                  {formData.media_gallery.length < 25 && (<label className="aspect-square rounded-lg bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center cursor-pointer hover:border-slate-600"><input type="file" accept="image/*,video/*,audio/*" multiple onChange={handleGalleryUpload} className="hidden" /><Upload className="w-6 h-6 text-slate-600" /></label>)}
                 </div>
               </div>
               <div className="p-4 rounded-xl bg-slate-900 border border-slate-800"><h3 className="font-medium mb-3 flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />Summary</h3><div className="text-sm text-slate-400 space-y-1"><p><span className="text-white">{formData.stage_name}</span> • {TALENT_CATEGORIES.find(c => c.value === formData.talent_category)?.label}</p><p>📍 {formData.location_city} • 💷 {[formData.hourly_rate && `£${formData.hourly_rate}/hr`, formData.evening_rate && `£${formData.evening_rate} evening`, formData.day_rate && `£${formData.day_rate} day`].filter(Boolean).join(' • ') || 'No rates set'}</p></div></div>

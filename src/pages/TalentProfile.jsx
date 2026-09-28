@@ -5,8 +5,9 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, MapPin, Banknote, CheckCircle2, Clock, Calendar, ChevronLeft, MessageSquare, Image, Loader2, Award, Eye, Pencil, Instagram, Facebook, Youtube, Globe } from 'lucide-react';
+import { Star, MapPin, Banknote, CheckCircle2, Clock, Calendar, ChevronLeft, MessageSquare, Image, Loader2, Award, Eye, Pencil, Instagram, Facebook, Youtube, Globe, Music, Play } from 'lucide-react';
 import TikTokIcon from '@/components/TikTokIcon';
+import { isVideoUrl, isAudioUrl } from '@/lib/mediaType';
 import AvailabilityMiniCalendar from '@/components/talent/AvailabilityMiniCalendar';
 import AvailabilityManager from '@/components/talent/AvailabilityManager';
 import ShareProfile from '@/components/talent/ShareProfile';
@@ -191,7 +192,23 @@ export default function TalentProfile() {
           <div className="mb-10">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2"><Image className="w-5 h-5 text-purple-400" />Gallery</h2>
             <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
-              {profile.media_gallery.map((url, i) => (<motion.div key={i} whileHover={{ scale: 1.02 }} className="aspect-square rounded-xl overflow-hidden cursor-pointer bg-slate-800" onClick={() => setSelectedImage(url)}><img src={url} alt="" className="w-full h-full object-cover" /></motion.div>))}
+              {profile.media_gallery.map((url, i) => (
+                <motion.div key={i} whileHover={{ scale: 1.02 }} className="relative aspect-square rounded-xl overflow-hidden cursor-pointer bg-slate-800" onClick={() => setSelectedImage(url)}>
+                  {isVideoUrl(url) ? (
+                    <>
+                      <video src={url} muted playsInline preload="metadata" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30"><Play className="w-8 h-8 text-white fill-white" /></div>
+                    </>
+                  ) : isAudioUrl(url) ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 bg-gradient-to-br from-purple-900/60 to-slate-800">
+                      <Music className="w-7 h-7 text-purple-300" />
+                      <span className="text-[10px] text-slate-400">Audio clip</span>
+                    </div>
+                  ) : (
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                  )}
+                </motion.div>
+              ))}
             </div>
           </div>
         )}
@@ -216,7 +233,20 @@ export default function TalentProfile() {
         </div>
       </div>
 
-      {selectedImage && (<div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6" onClick={() => setSelectedImage(null)}><img src={selectedImage} alt="" className="max-w-full max-h-full object-contain" /></div>)}
+      {selectedImage && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6" onClick={() => setSelectedImage(null)}>
+          {isVideoUrl(selectedImage) ? (
+            <video src={selectedImage} controls autoPlay className="max-w-full max-h-full" onClick={e => e.stopPropagation()} />
+          ) : isAudioUrl(selectedImage) ? (
+            <div className="w-full max-w-sm p-6 bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col items-center gap-4" onClick={e => e.stopPropagation()}>
+              <Music className="w-10 h-10 text-purple-400" />
+              <audio src={selectedImage} controls autoPlay className="w-full" />
+            </div>
+          ) : (
+            <img src={selectedImage} alt="" className="max-w-full max-h-full object-contain" />
+          )}
+        </div>
+      )}
     </div>
   );
 }
