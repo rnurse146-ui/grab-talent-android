@@ -67,7 +67,7 @@ export default function BookTalent() {
     e.preventDefault();
     setSubmitting(true);
     const pricing = calculatePricing();
-    await base44.entities.Booking.create({
+    const booking = await base44.entities.Booking.create({
       talent_profile_id: talent.id, seeker_id: user.id, talent_user_id: talent.user_id,
       event_name: formData.event_name, event_type: formData.event_type,
       event_date: formData.event_date ? format(formData.event_date, 'yyyy-MM-dd') : '',
@@ -86,6 +86,8 @@ export default function BookTalent() {
       body: `${user.full_name} requested you for "${formData.event_name}" in ${formData.venue_city}`,
       linkUrl: createPageUrl('Bookings')
     });
+    // Email the talent in case they're not using the app — non-blocking so the request always goes through
+    base44.functions.invoke('notifyTalentByEmail', { kind: 'booking_request', booking_id: booking.id }).catch(() => {});
     setSuccess(true);
     setSubmitting(false);
   };
