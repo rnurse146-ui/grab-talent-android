@@ -15,6 +15,7 @@ import TalentHitch from '@/components/TalentHitch';
 import PullToRefresh from '@/components/PullToRefresh';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
 import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
+import { rankTalents } from '@/lib/discoveryRanking';
 
 const TALENT_CATEGORIES = [
   { value: 'all', label: 'All Categories' },
@@ -92,10 +93,10 @@ export default function Discover() {
     setMaybeCount(maybe.length);
     setPassedCount(history.filter(h => h.action === 'pass').length);
     
-    await loadTalents(swipedSet);
+    await loadTalents(swipedSet, undefined, currentUser.preferred_city || '');
   };
 
-  const loadTalents = async (alreadySwiped = swipedIds, dateOverride = undefined) => {
+  const loadTalents = async (alreadySwiped = swipedIds, dateOverride = undefined, seekerCityOverride = '') => {
     setLoading(true);
     const activeDate = dateOverride !== undefined ? dateOverride : eventDate;
     
@@ -139,18 +140,14 @@ export default function Discover() {
       );
     }
 
-    // Prioritize last-minute-available talent when the event is within 7 days
-    if (activeDate) {
-      const daysUntil = Math.ceil((new Date(activeDate + 'T12:00:00') - new Date(new Date().toDateString())) / (1000 * 60 * 60 * 24));
-      if (daysUntil <= 7) {
-        filtered.sort((a, b) => {
-          const aLM = a.last_minute_available ? 1 : 0;
-          const bLM = b.last_minute_available ? 1 : 0;
-          if (bLM !== aLM) return bLM - aLM;
-          return (b.average_rating || 0) - (a.average_rating || 0);
-        });
-      }
-    }
+    // Rank the deck: quality score (rating, reviews, verification, profile
+    // video, completeness), local talent first when no city filter is set,
+    // last-minute boost for urgent events, plus a light per-session shuffle
+    const eventCity = filters.city || seekerCityOverride || user?.preferred_city || '';
+    const daysUntil = activeDate
+      ? Math.ceil((new Date(activeDate + 'T12:00:00') - new Date(new Date().toDateString())) / (1000 * 60 * 60 * 24))
+      : null;
+    filtered = rankTalents(filtered, { eventCity, daysUntilEvent: daysUntil });
 
     setTalents(filtered);
     setCurrentIndex(0);
