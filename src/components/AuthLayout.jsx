@@ -11,6 +11,12 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, childr
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
           {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
+          <p className="text-sm text-muted-foreground mt-3 max-w-xs mx-auto leading-relaxed">
+            Welcome to Grab Talent where talented people can find work and people hosting events can find people with talent with a swipe of their fingertips.
+          </p>
+          <p className="text-xs font-medium text-primary mt-2">
+            Aiming to become the Uber for Talent Hire for the entertainment industry.
+          </p>
         </div>
         <div className="bg-card rounded-2xl shadow-sm border border-border p-8">
           {children}
