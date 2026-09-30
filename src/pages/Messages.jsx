@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, Send, Loader2, MessageSquare, ArrowLeft, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { Send, Loader2, MessageSquare, ArrowLeft, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import Logo from '@/components/Logo';
 import HelpChat from '@/components/HelpChat';
@@ -302,11 +302,6 @@ export default function Messages() {
     <div className="h-screen md:h-[calc(100vh-3.5rem)] bg-black text-white flex flex-col overflow-hidden">
       {/* Top Nav */}
       <div className="flex items-center justify-between px-6 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] border-b border-zinc-800 bg-black shrink-0">
-        <Link to={createPageUrl('Dashboard')} className={showList ? 'hidden md:block' : undefined}>
-          <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white">
-            <ChevronLeft className="w-4 h-4 mr-1" />Back
-          </Button>
-        </Link>
         <div className="flex items-center gap-2">
           <Logo className="h-12 w-auto" variant="light" />
           {totalUnread > 0 && (
@@ -317,6 +312,7 @@ export default function Messages() {
         </div>
         <div className="w-16" />
       </div>
+      {/* Dashboard is reached via the bottom tab bar — no back button needed */}
 
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar — Conversations */}
