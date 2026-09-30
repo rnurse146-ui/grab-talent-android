@@ -11,6 +11,7 @@ export default function AvailabilityManager({ talentProfileId, talentUserId }) {
   const [blockedDates, setBlockedDates] = useState(new Set());
   const [bookingDates, setBookingDates] = useState(new Set());
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [rangeStart, setRangeStart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -35,11 +36,21 @@ export default function AvailabilityManager({ talentProfileId, talentUserId }) {
   const toggleDate = (day) => {
     const dateStr = format(day, 'yyyy-MM-dd');
     if (bookingDates.has(dateStr)) return;
-    setBlockedDates(prev => {
-      const next = new Set(prev);
-      if (next.has(dateStr)) next.delete(dateStr); else next.add(dateStr);
-      return next;
-    });
+    const next = new Set(blockedDates);
+    if (rangeStart && rangeStart !== dateStr) {
+      // Second tap: block the whole range between the first and this date
+      const [from, to] = rangeStart <= dateStr ? [rangeStart, dateStr] : [dateStr, rangeStart];
+      eachDayOfInterval({ start: new Date(from + 'T00:00:00'), end: new Date(to + 'T00:00:00') })
+        .forEach(d => next.add(format(d, 'yyyy-MM-dd')));
+      setRangeStart(null);
+    } else if (rangeStart === dateStr) {
+      next.delete(dateStr); // tap the same date again to unblock it
+      setRangeStart(null);
+    } else {
+      next.add(dateStr); // single tap blocks this day
+      setRangeStart(dateStr);
+    }
+    setBlockedDates(next);
     setHasChanges(true);
     setSaved(false);
   };
@@ -78,7 +89,8 @@ export default function AvailabilityManager({ talentProfileId, talentUserId }) {
       <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex gap-3">
         <Info className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
         <p className="text-sm text-slate-300">
-          <span className="text-blue-300 font-medium">Tap dates to block them.</span> Seekers only see talent available on their event date — keeping your calendar updated helps you get discovered.
+          <span className="text-blue-300 font-medium">Click to block the dates you're already booked — otherwise you'll be seen as fully available.</span>{' '}
+          Tap a second date to block the whole range in between. Seekers only see talent available on their event date.
         </p>
       </div>
 
@@ -93,7 +105,10 @@ export default function AvailabilityManager({ talentProfileId, talentUserId }) {
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-800">
           <button onClick={() => setCurrentMonth(m => subMonths(m, 1))} className="p-1 text-zinc-400 hover:text-white"><ChevronLeft className="w-5 h-5" /></button>
-          <h3 className="font-semibold">{format(currentMonth, 'MMMM yyyy')}</h3>
+          <div>
+            <h3 className="font-semibold">{format(currentMonth, 'MMMM yyyy')}</h3>
+            {rangeStart && <p className="text-xs text-orange-400">Now tap an end date to block the whole range</p>}
+          </div>
           <button onClick={() => setCurrentMonth(m => addMonths(m, 1))} className="p-1 text-zinc-400 hover:text-white"><ChevronRight className="w-5 h-5" /></button>
         </div>
 
@@ -111,6 +126,7 @@ export default function AvailabilityManager({ talentProfileId, talentUserId }) {
             const todayDay = isToday(day);
 
             let cls = 'aspect-square flex items-center justify-center rounded-xl text-sm font-medium transition-all select-none relative ';
+            if (rangeStart === dateStr) cls += 'ring-2 ring-orange-400 ';
             if (!inMonth) cls += 'opacity-20 cursor-default ';
             else if (isPastDay) cls += 'text-zinc-700 cursor-default ';
             else if (isBooked) cls += 'bg-purple-600/40 text-purple-300 border border-purple-500/50 cursor-not-allowed ';
