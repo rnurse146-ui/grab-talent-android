@@ -527,19 +527,33 @@ export default function Discover() {
         {showFilters && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="border-b border-zinc-800 overflow-hidden">
             <div className="p-5 space-y-5">
-              {/* Row 1: Category + City */}
-              <div className="grid sm:grid-cols-2 gap-4">
+              {/* Row 1: Categories (multi-select) + City */}
+              <div className="grid sm:grid-cols-2 gap-4 items-start">
                 <div>
-                  <label className="text-xs text-slate-400 mb-1 block">Category</label>
-                  <MobileSheetSelect
-                    value={filters.category}
-                    onChange={(v) => setFilters({...filters, category: v})}
-                    options={TALENT_CATEGORIES}
-                    placeholder="Category"
-                    title="Select Category"
-                    triggerClassName="bg-slate-900 border-slate-700"
-                    contentClassName="bg-slate-900 border-slate-700"
-                  />
+                  <label className="text-xs text-slate-400 mb-2 block">Categories — select as many as you like</label>
+                  <div className="flex flex-wrap gap-2">
+                    {TALENT_CATEGORIES.filter(c => c.value !== 'all').map(cat => {
+                      const active = filters.categories.includes(cat.value);
+                      return (
+                        <button
+                          key={cat.value}
+                          onClick={() => setFilters(prev => ({
+                            ...prev,
+                            categories: active
+                              ? prev.categories.filter(c => c !== cat.value)
+                              : [...prev.categories, cat.value]
+                          }))}
+                          className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-all ${
+                            active
+                              ? 'bg-purple-600 border-purple-500 text-white'
+                              : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block">City</label>
