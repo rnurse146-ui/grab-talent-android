@@ -68,6 +68,8 @@ const TALENT_CATEGORIES = [
   { value: 'live_painter', label: 'Live Painter', icon: '🖼️' },
   { value: 'photographer', label: 'Photographer', icon: '📸' },
   { value: 'lighting_specialist', label: 'Lighting Specialist', icon: '💡' },
+  { value: 'songwriter', label: 'Songwriter', icon: '✍️' },
+  { value: 'sound_engineer', label: 'Sound Engineer', icon: '🎚️' },
 ];
 
 export default function TalentSetup() {

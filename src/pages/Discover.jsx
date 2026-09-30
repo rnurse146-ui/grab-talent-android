@@ -37,6 +37,8 @@ const TALENT_CATEGORIES = [
   { value: 'caricature_artist', label: 'Caricature Artist' },
   { value: 'live_painter', label: 'Live Painter' },
   { value: 'lighting_specialist', label: 'Lighting Specialist' },
+  { value: 'songwriter', label: 'Songwriter' },
+  { value: 'sound_engineer', label: 'Sound Engineer' },
 ];
 
 export default function Discover() {
