@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { sanitizeText } from '../../shared/emailSanitize.ts';
 
 // Emails talent when they receive a new booking request or get shortlisted to
 // a Maybe List, so they hear about it even when not using the app.
@@ -37,20 +38,28 @@ export default async function(req) {
       const talentEmail = await getTalentEmail(booking.talent_user_id);
       if (!talentEmail) return Response.json({ sent: false });
 
+      // Booking fields are seeker-controlled and untrusted: never echo free-text
+      // (special requirements, phone) in mail sent under the platform's identity —
+      // point to the in-app booking instead, where it renders in a safe UI.
+      const eventName = sanitizeText(booking.event_name, 120) || 'Event';
+      const clientName = sanitizeText(booking.seeker_name, 100) || 'An event organizer';
+      const venue = sanitizeText([booking.venue_name, booking.venue_city].filter(Boolean).join(', '), 160);
+
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: talentEmail,
-        subject: `🎭 New Booking Request: ${booking.event_name || 'Event'} on ${formatDate(booking.event_date)}`,
+        subject: `🎭 New Booking Request: ${eventName} on ${formatDate(booking.event_date)}`,
         body: `Hi ${booking.talent_stage_name || 'there'},
 
 You've received a new booking request on Grab Talent!
 
-📅 Event: ${booking.event_name || 'Event'} (${(booking.event_type || 'event').replace(/_/g, ' ')})
+📅 Event: ${eventName} (${(booking.event_type || 'event').replace(/_/g, ' ')})
 🗓️ Date: ${formatDate(booking.event_date)}
 ⏰ Time: ${booking.start_time || 'TBD'} – ${booking.end_time || 'TBD'}${booking.duration_hours ? ` (${booking.duration_hours}h)` : ''}
-📍 Venue: ${[booking.venue_name, booking.venue_city].filter(Boolean).join(', ')}
+📍 Venue: ${venue}
 ${booking.total_price != null ? `💷 Total: £${booking.total_price} (your payout: £${booking.talent_payout})` : ''}
-👤 Client: ${booking.seeker_name || 'An event organizer'}${booking.seeker_phone ? ` (${booking.seeker_phone})` : ''}
-${booking.special_requirements ? `\n📝 Special Requirements: ${booking.special_requirements}` : ''}
+👤 Client: ${clientName}
+
+Special requirements and client contact details are only shown in the booking request in the app, never in this email.
 
 The client is waiting on your response — open Grab Talent to review the request and accept or decline it.
 https://grabtalent.base44.app

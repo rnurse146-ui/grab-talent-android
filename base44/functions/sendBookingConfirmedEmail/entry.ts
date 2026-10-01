@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { sanitizeText, icsEscape } from '../../shared/emailSanitize.ts';
 
 // Sends the "gig confirmed" email (with calendar invite) to the talent when a
 // booking is confirmed. Narrow operation: the recipient, subject and body are
@@ -39,6 +40,16 @@ export default async function(req) {
     const dtStart = icsDate ? `${icsDate}T${startTime}` : '';
     const dtEnd = icsDate ? `${icsDate}T${endTime}` : '';
     const uid = `grabtalent-${booking.id}@grabtalent.app`;
+    // All booking fields below are seeker-controlled and untrusted. Sanitize
+    // (control chars + URLs) and RFC 5545-escape so no injected properties or
+    // events can be added to the calendar invite.
+    const eventName = sanitizeText(booking.event_name, 120) || 'Gig';
+    const clientName = sanitizeText(booking.seeker_name, 100) || 'The client';
+    const clientPhone = sanitizeText(booking.seeker_phone, 30);
+    const venuePlain = sanitizeText([booking.venue_name, booking.venue_address, booking.venue_city].filter(Boolean).join(', '), 200);
+    const notesPlain = sanitizeText(booking.special_requirements, 300);
+    const location = icsEscape(venuePlain);
+    const notes = icsEscape(notesPlain);
     const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
@@ -49,9 +60,9 @@ export default async function(req) {
       `UID:${uid}`,
       `DTSTART:${dtStart}`,
       `DTEND:${dtEnd}`,
-      `SUMMARY:🎭 ${booking.event_name || 'Gig'} — ${booking.event_type?.replace(/_/g, ' ')}`,
-      `LOCATION:${[booking.venue_name, booking.venue_address, booking.venue_city].filter(Boolean).join(', ')}`,
-      `DESCRIPTION:Booked by ${booking.seeker_name}${booking.seeker_phone ? ` (${booking.seeker_phone})` : ''}. Payout: £${booking.talent_payout}.${booking.special_requirements ? ' Notes: ' + booking.special_requirements : ''}`,
+      `SUMMARY:${icsEscape(eventName)}`,
+      `LOCATION:${location}`,
+      `DESCRIPTION:Booked by ${icsEscape(clientName)}${clientPhone ? ` (${icsEscape(clientPhone)})` : ''}. Payout: £${booking.talent_payout}.${notes ? ' Notes: ' + notes : ''}`,
       `ORGANIZER:mailto:noreply@grabtalent.app`,
       `ATTENDEE:mailto:${talentEmail}`,
       'STATUS:CONFIRMED',
@@ -61,18 +72,18 @@ export default async function(req) {
 
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: talentEmail,
-      subject: `🎉 Confirmed Gig: ${booking.event_name || 'New Booking'} on ${eventDateFormatted}`,
+      subject: `🎉 Confirmed Gig: ${eventName} on ${eventDateFormatted}`,
       body: `Hi ${booking.talent_stage_name},
 
-Great news — you've been hired! ${booking.seeker_name} has confirmed their booking with you.
+Great news — you've been hired! ${clientName} has confirmed their booking with you.
 
-📅 Event: ${booking.event_name || 'Event'}
+📅 Event: ${eventName}
 🗓️ Date: ${eventDateFormatted}
 ⏰ Time: ${booking.start_time} – ${booking.end_time} (${booking.duration_hours}h)
-📍 Venue: ${booking.venue_name}, ${booking.venue_address}, ${booking.venue_city}
+📍 Venue: ${venuePlain}
 💷 Your Payout: £${booking.talent_payout}
-${booking.seeker_phone ? `📞 Client Phone: ${booking.seeker_phone}` : ''}
-${booking.special_requirements ? `\n📝 Special Requirements: ${booking.special_requirements}` : ''}
+${clientPhone ? `📞 Client Phone: ${clientPhone}` : ''}
+${notesPlain ? `\n📝 Special Requirements (written by the client): ${notesPlain}` : ''}
 
 📆 ADD TO YOUR CALENDAR
 Copy the text below, save it as a file called "gig.ics", then open it to add the event directly to your calendar app (works with Google Calendar, Apple Calendar, Outlook and more):
