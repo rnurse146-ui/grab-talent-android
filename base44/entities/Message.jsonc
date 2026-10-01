@@ -19,7 +19,7 @@
     },
     "content": {
       "type": "string",
-      "description": "Message content"
+      "description": "Message content \u2014 contact-info filtering is enforced by the sendMessage backend function"
     },
     "is_read": {
       "type": "boolean",
@@ -38,7 +38,9 @@
   ],
   "rls": {
     "create": {
-      "data.sender_id": "{{user.id}}"
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "read": {
       "$or": [
