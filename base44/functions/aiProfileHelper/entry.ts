@@ -28,7 +28,7 @@ export default async function(req: Request): Promise<Response> {
     ].filter(Boolean).join('\n');
 
     if (kind === 'specialties') {
-      const res = await base44.integrations.Core.InvokeLLM({
+      const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are helping a performer set up their profile on Grab Talent, a UK platform where event organisers (weddings, corporate events, clubs, birthdays, festivals) browse and book live performers.\n\nPerformer details:\n${context}\n\nSuggest 6 short specialties (skills, styles or signature offerings) tailored to their category. Each 1-4 words, specific and bookable (e.g. "Wedding first-dance sets", "80s disco sets", "Crowd hyping"). Do not repeat any current specialties.`,
         response_json_schema: {
           type: 'object',
@@ -42,7 +42,7 @@ export default async function(req: Request): Promise<Response> {
     const styleNote = body.current_bio
       ? `They already wrote a draft bio but want it punchier — improve on it while keeping any real facts:\n"""\n${body.current_bio}\n"""`
       : '';
-    const bio = await base44.integrations.Core.InvokeLLM({
+    const bio = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `You are an expert profile writer for Grab Talent, a UK platform where event organisers (weddings, corporate events, clubs, birthdays, festivals) browse and book live performers.\n\nPerformer details:\n${context}\n${styleNote}\n\nWrite a first-person bio that catches the eye of event organisers: confident, warm, charismatic and memorable — no clichés like "passionate about music". 60-90 words, plain text only (no emojis, no headings, no surrounding quotes). Mention their experience and city, and make the reader imagine their event with this performer. Do not invent specific venues, awards, celebrity names or statistics.`,
     });
     return Response.json({ bio: String(bio).trim() });

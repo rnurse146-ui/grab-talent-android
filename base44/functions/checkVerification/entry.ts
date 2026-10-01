@@ -1,25 +1,40 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { getOwnVerificationProfile } from '../../shared/verificationDocuments.ts';
 
-// AI identity check for the talent Verification page. The client uploads the
-// ID and selfie to PRIVATE storage and sends the file URIs here; this function
-// signs them server-side for the AI, runs the comparison, and — as the only
-// writer of the verification decision — stores the documents and the verified
-// badge on the talent profile. Clients can never grant is_verified.
+// Accept image bytes, NOT private-file references. Upload within this
+// authenticated operation so the documents have server-established ownership.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json();
-    const idUri = String(body?.id_uri || '');
-    const selfieUri = String(body?.selfie_uri || '');
-    if (!idUri || !selfieUri) return Response.json({ error: 'Both ID and selfie images are required' }, { status: 400 });
+    // A URI alone is not proof of file ownership. Reject the old JSON interface
+    // before any signing, AI access, or profile mutation.
+    if (!req.headers.get('content-type')?.toLowerCase().startsWith('multipart/form-data')) {
+      return Response.json({ error: 'Upload your ID and selfie images; file references are not accepted' }, { status: 400 });
+    }
+    const form = await req.formData();
+    const idFile = form.get('id_file');
+    const selfieFile = form.get('selfie_file');
+    const isImage = (file) => file instanceof File && file.size > 0 && file.size <= 10 * 1024 * 1024 &&
+      ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'].includes(file.type);
+    if (!isImage(idFile) || !isImage(selfieFile)) {
+      return Response.json({ error: 'Two image files are required (maximum 10 MB each)' }, { status: 400 });
+    }
+    const profile = await getOwnVerificationProfile(base44, user.id);
+    if (!profile) return Response.json({ error: 'Talent profile not found' }, { status: 404 });
 
-    const profiles = await base44.asServiceRole.entities.TalentProfile.filter({ user_id: user.id });
-    if (!profiles || profiles.length === 0) return Response.json({ error: 'Talent profile not found' }, { status: 404 });
+    // Only use storage URIs returned directly by our own authenticated upload.
+    const [idUpload, selfieUpload] = await Promise.all([
+      base44.asServiceRole.integrations.Core.UploadPrivateFile({ file: idFile }),
+      base44.asServiceRole.integrations.Core.UploadPrivateFile({ file: selfieFile })
+    ]);
+    const idUri = idUpload.file_uri;
+    const selfieUri = selfieUpload.file_uri;
+    if (!idUri || !selfieUri) throw new Error('Document upload failed');
 
-    // Sign the private documents so the AI can read them (server-side only)
+    // Sign only these newly uploaded documents (server-side only).
     const [idSigned, selfieSigned] = await Promise.all([
       base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: idUri }),
       base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: selfieUri })
@@ -48,9 +63,10 @@ export default async function(req) {
     // non-low confidence — two selfies or any non-ID images can never pass.
     const isAutoVerified = outcome.is_id_document === true && outcome.match && outcome.confidence !== 'low';
 
-    await base44.asServiceRole.entities.TalentProfile.update(profiles[0].id, {
+    await base44.asServiceRole.entities.TalentProfile.update(profile.id, {
       verification_id_url: idUri,
       verification_selfie_url: selfieUri,
+      verification_documents_owner_id: user.id,
       ...(isAutoVerified ? { is_verified: true } : {})
     });
 

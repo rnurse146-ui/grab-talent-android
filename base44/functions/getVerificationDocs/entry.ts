@@ -1,18 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { getOwnVerificationProfile, hasOwnedVerificationDocuments } from '../../shared/verificationDocuments.ts';
 
-// Returns short-lived signed URLs for the CALLER'S OWN verification documents.
-// Takes no parameters: it only ever signs the document URIs that the
-// checkVerification function stored on the caller's talent profile, so
-// documents belonging to other users can never be previewed. This keeps
-// CreateFileSignedUrl (and the raw storage URIs) out of client reach.
+// Sign only documents with server-established upload ownership.
+// No caller-provided URIs; legacy unproven document references are not signed.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const profiles = await base44.asServiceRole.entities.TalentProfile.filter({ user_id: user.id });
-    const profile = profiles && profiles[0];
+    const profile = await getOwnVerificationProfile(base44, user.id);
+    if (!hasOwnedVerificationDocuments(profile, user.id)) {
+      return Response.json({ id_url: '', selfie_url: '' });
+    }
 
     const sign = async (uri) => {
       if (!uri) return '';

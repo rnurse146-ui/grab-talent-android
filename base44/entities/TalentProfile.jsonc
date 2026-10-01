@@ -144,6 +144,29 @@
         }
       }
     },
+    "verification_documents_owner_id": {
+      "type": "string",
+      "description": "Server-only upload provenance: authenticated owner of the document bytes uploaded by checkVerification. Legacy URIs without this proof must not be signed.",
+      "rls": {
+        "read": {
+          "$or": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        },
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
+    },
     "average_rating": {
       "type": "number",
       "description": "Average rating from reviews \u2014 recomputed by the submitReview backend function",

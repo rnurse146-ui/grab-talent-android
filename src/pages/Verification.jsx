@@ -18,8 +18,10 @@ export default function Verification() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [idUri, setIdUri] = useState('');
-  const [selfieUri, setSelfieUri] = useState('');
+  const [idFile, setIdFile] = useState(null);
+  const [selfieFile, setSelfieFile] = useState(null);
+  const [verified, setVerified] = useState(false);
+  const [error, setError] = useState('');
   const [idPreview, setIdPreview] = useState('');
   const [selfiePreview, setSelfiePreview] = useState('');
   const [aiStatus, setAiStatus] = useState(null); // 'checking' | 'done'
@@ -43,40 +45,39 @@ export default function Verification() {
     setLoading(false);
   };
 
-  const handleIdUpload = async (e) => {
+  const handleIdUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
-    const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
-    setIdUri(file_uri);
+    setIdFile(file);
     setIdPreview(toLocalPreview(file));
-    setUploading(false);
+    setError('');
   };
 
-  const handleSelfieUpload = async (e) => {
+  const handleSelfieUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
-    const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
-    setSelfieUri(file_uri);
+    setSelfieFile(file);
     setSelfiePreview(toLocalPreview(file));
-    setUploading(false);
+    setError('');
   };
 
   const handleSubmit = async () => {
     setUploading(true);
     setAiStatus('checking');
-
-    // AI facial recognition comparison — the backend verifies and records the
-    // result (documents + verified badge) on the profile server-side
-    const res = await base44.functions.invoke('checkVerification', { id_uri: idUri, selfie_uri: selfieUri });
-    const result = res?.data?.result;
-
-    setAiResult(result);
-    setAiStatus('done');
-
-    setSubmitted(true);
-    setUploading(false);
+    setError('');
+    try {
+      // Send actual file bytes; only the server uploads and records trusted URIs.
+      const res = await base44.functions.invoke('checkVerification', { id_file: idFile, selfie_file: selfieFile });
+      setAiResult(res.data.result);
+      setVerified(res.data.verified === true);
+      setAiStatus('done');
+      setSubmitted(true);
+    } catch (e) {
+      setError(e.response?.data?.error || e.message || 'Verification failed. Please try again.');
+      setAiStatus(null);
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (loading) return (<div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>);
@@ -95,7 +96,7 @@ export default function Verification() {
   }
 
   if (submitted) {
-    const autoVerified = aiResult?.match && aiResult?.confidence !== 'low';
+    const autoVerified = verified;
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
         <div className="text-center max-w-md">
@@ -189,7 +190,8 @@ export default function Verification() {
             </div>
           )}
 
-          <Button onClick={handleSubmit} disabled={!idUri || !selfieUri || uploading} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
+          {error && <p role="alert" className="text-destructive text-sm">{error}</p>}
+          <Button onClick={handleSubmit} disabled={!idFile || !selfieFile || uploading} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
             {uploading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Analysing with AI...</> : <><Zap className="w-5 h-5 mr-2" />Verify with AI</>}
           </Button>
         </div>
