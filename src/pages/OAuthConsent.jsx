@@ -120,8 +120,17 @@ export default function OAuthConsent() {
         throw new Error("Could not complete authorization. Please try again.");
       }
       const data = await res.json();
-      window.location.href = data.redirect_url;
-      if (!/^https?:/i.test(data.redirect_url)) {
+      const redirect = String(data.redirect_url || '');
+      const schemeMatch = redirect.match(/^([a-z][a-z0-9+.-]*):/i);
+      const scheme = schemeMatch ? schemeMatch[1].toLowerCase() : '';
+      const isHttp = scheme === 'http' || scheme === 'https';
+      // Validate the scheme BEFORE navigating: script-bearing or unknown-scheme
+      // URLs must never reach location.href (DOM-XSS / open redirect).
+      const isSafe = isHttp || (
+        schemeMatch && !['javascript', 'data', 'vbscript', 'file'].includes(scheme)
+      );
+      if (isSafe) window.location.href = redirect;
+      if (!isHttp) {
         // Custom-scheme redirect (native AI clients, e.g. cursor://): browsers
         // may block or not visibly navigate, so show a terminal state instead
         // of an eternal spinner.

@@ -255,8 +255,6 @@ export default function Messages() {
       const res = await base44.functions.invoke('sendMessage', {
         conversation_id: activeConvId,
         receiver_id: conv.otherId,
-        sender_name: user.full_name,
-        receiver_name: conv.otherName,
         content
       });
       const created = res?.data?.message;

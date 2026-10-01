@@ -46,6 +46,14 @@ export default async function(req) {
       return Response.json({ error: 'You cannot message yourself' }, { status: 400 });
     }
 
+    // Identity is server-resolved, never taken from the request body — a caller
+    // cannot choose the display name a recipient sees.
+    const canonicalConversationId = [user.id, receiverId].sort().join('_');
+    if (conversationId !== canonicalConversationId) {
+      return Response.json({ error: 'conversation_id does not match this sender/receiver pair' }, { status: 400 });
+    }
+    const receiver = await base44.asServiceRole.entities.User.get(receiverId).catch(() => null);
+
     // Contact-info block: only shareable once a booking between these two users
     // is confirmed or completed through the platform.
     const reasons = containsContactInfo(content);
@@ -69,8 +77,8 @@ export default async function(req) {
       conversation_id: conversationId,
       sender_id: user.id,
       receiver_id: receiverId,
-      sender_name: String(body?.sender_name || user.full_name || 'User'),
-      receiver_name: String(body?.receiver_name || 'User'),
+      sender_name: String(user.full_name || 'User'),
+      receiver_name: String(receiver?.full_name || 'User'),
       content,
       is_read: false
     });

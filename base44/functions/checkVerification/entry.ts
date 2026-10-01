@@ -26,20 +26,27 @@ export default async function(req) {
     ]);
 
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: 'You are an AI identity verification system. The first image is a government-issued ID document, the second is a selfie. Compare the faces. Determine if they appear to be the same person based on facial features (eyes, nose, face shape, jawline). Allow for lighting/angle differences.',
+      prompt: 'You are an AI identity verification system. The first image should be a government-issued ID document (e.g. passport, driving licence or national ID card) and the second is a selfie. ' +
+        'Step 1: Determine whether the first image is actually a recognizable government-issued ID document — it must show an official document layout with a visible photograph, document type and identity details. If the first image is instead an ordinary photo, another selfie, a picture of a person, or anything that is not a genuine ID document, set is_id_document to false. ' +
+        'Step 2: If the first image is a genuine ID document, compare the face on the ID document with the face in the selfie. Determine if they appear to be the same person based on facial features (eyes, nose, face shape, jawline). Allow for lighting/angle differences. ' +
+        'Set match to true only if the first image is a genuine ID document AND the faces match.',
       file_urls: [idSigned.signed_url, selfieSigned.signed_url],
       response_json_schema: {
         type: 'object',
         properties: {
+          is_id_document: { type: 'boolean', description: 'Whether the first image is a genuine government-issued ID document' },
           match: { type: 'boolean' },
           confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
           reason: { type: 'string' }
-        }
+        },
+        required: ['is_id_document', 'match', 'confidence', 'reason']
       }
     });
 
-    const outcome = result || { match: false, confidence: 'low', reason: 'The AI could not complete the comparison.' };
-    const isAutoVerified = outcome.match && outcome.confidence !== 'low';
+    const outcome = result || { is_id_document: false, match: false, confidence: 'low', reason: 'The AI could not complete the comparison.' };
+    // Auto-verification requires a genuine ID document, a matching face, and
+    // non-low confidence — two selfies or any non-ID images can never pass.
+    const isAutoVerified = outcome.is_id_document === true && outcome.match && outcome.confidence !== 'low';
 
     await base44.asServiceRole.entities.TalentProfile.update(profiles[0].id, {
       verification_id_url: idUri,
