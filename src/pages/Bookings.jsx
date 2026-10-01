@@ -9,7 +9,6 @@ import { Calendar, ChevronLeft, Clock, MapPin, Loader2, CheckCircle2, XCircle, A
 import { format } from 'date-fns';
 import PageHeader from '@/components/PageHeader';
 import PullToRefresh from '@/components/PullToRefresh';
-import { createNotification } from '@/lib/notifications';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-yellow-500/20 text-yellow-400', icon: AlertCircle },
@@ -39,28 +38,9 @@ export default function Bookings() {
   };
 
   const handleStatusUpdate = async (bookingId, newStatus) => {
-    const booking = bookings.find(b => b.id === bookingId);
-    await base44.entities.Booking.update(bookingId, { status: newStatus });
+    // Status transitions are validated server-side; the other party is notified there
+    await base44.functions.invoke('updateBookingStatus', { booking_id: bookingId, status: newStatus });
     setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
-
-    // Tell the other party what happened
-    if (booking) {
-      const recipientId = booking.seeker_id === user?.id ? booking.talent_user_id : booking.seeker_id;
-      const statusMessages = {
-        accepted: 'was accepted',
-        declined: 'was declined',
-        confirmed: 'is confirmed',
-        cancelled: 'was cancelled',
-        completed: 'was marked complete'
-      };
-      await createNotification({
-        userId: recipientId,
-        type: 'booking',
-        title: 'Booking update',
-        body: `"${booking.event_name || 'Your event'}" ${statusMessages[newStatus] || 'was updated'}.`,
-        linkUrl: createPageUrl('Bookings')
-      });
-    }
   };
 
   const filteredBookings = bookings.filter(b => {

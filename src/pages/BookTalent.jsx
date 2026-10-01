@@ -11,7 +11,6 @@ import MobileSheetSelect from '@/components/MobileSheetSelect';
 import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, Banknote, Loader2, CheckCircle2, Star, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import PageHeader from '@/components/PageHeader';
-import { createNotification } from '@/lib/notifications';
 import { rateSummary, estimateBookingPrice } from '@/lib/talentPricing';
 
 const EVENT_TYPES = [
@@ -66,28 +65,16 @@ export default function BookTalent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const pricing = calculatePricing();
-    const booking = await base44.entities.Booking.create({
-      talent_profile_id: talent.id, seeker_id: user.id, talent_user_id: talent.user_id,
+    // Booking is created server-side: pricing is derived from the talent's stored rates
+    await base44.functions.invoke('createBooking', {
+      talent_profile_id: talent.id,
       event_name: formData.event_name, event_type: formData.event_type,
       event_date: formData.event_date ? format(formData.event_date, 'yyyy-MM-dd') : '',
-      start_time: formData.start_time, end_time: formData.end_time, duration_hours: pricing ? pricing.hours : null,
+      start_time: formData.start_time, end_time: formData.end_time,
       venue_name: formData.venue_name, venue_address: formData.venue_address, venue_city: formData.venue_city,
       special_requirements: formData.special_requirements,
-      base_price: pricing ? pricing.basePrice : null, commission_amount: pricing ? pricing.commission : null, total_price: pricing ? pricing.total : null, talent_payout: pricing ? pricing.basePrice : null,
-      status: 'pending', payment_status: 'pending',
-      seeker_name: user.full_name, seeker_phone: formData.seeker_phone,
-      talent_stage_name: talent.stage_name, talent_category: talent.talent_category
+      seeker_phone: formData.seeker_phone
     });
-    await createNotification({
-      userId: talent.user_id,
-      type: 'booking',
-      title: 'New booking request',
-      body: `${user.full_name} requested you for "${formData.event_name}" in ${formData.venue_city}`,
-      linkUrl: createPageUrl('Bookings')
-    });
-    // Email the talent in case they're not using the app — non-blocking so the request always goes through
-    base44.functions.invoke('notifyTalentByEmail', { kind: 'booking_request', booking_id: booking.id }).catch(() => {});
     setSuccess(true);
     setSubmitting(false);
   };

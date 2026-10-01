@@ -68,19 +68,47 @@
     },
     "base_price": {
       "type": "number",
-      "description": "Price before commission"
+      "description": "Price before commission",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
     },
     "commission_amount": {
       "type": "number",
-      "description": "11% platform commission"
+      "description": "11% platform commission",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
     },
     "total_price": {
       "type": "number",
-      "description": "Total amount paid by seeker"
+      "description": "Total amount paid by seeker",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
     },
     "talent_payout": {
       "type": "number",
-      "description": "Amount paid to talent (89%)"
+      "description": "Amount paid to talent (89%)",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
     },
     "status": {
       "type": "string",
@@ -94,7 +122,14 @@
         "no_show"
       ],
       "default": "pending",
-      "description": "Booking status"
+      "description": "Booking status",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
     },
     "payment_status": {
       "type": "string",
@@ -106,7 +141,14 @@
         "failed"
       ],
       "default": "pending",
-      "description": "Payment status. 'paid' = held by app. 'released' = sent to talent after arrival confirmed."
+      "description": "Payment status. 'paid' = held by app. 'released' = sent to talent after arrival confirmed.",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
     },
     "seeker_name": {
       "type": "string"

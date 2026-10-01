@@ -60,83 +60,43 @@ export default function BookingDetails() {
 
   const handleStatusUpdate = async (newStatus) => {
     setUpdating(true);
-    await base44.entities.Booking.update(booking.id, { status: newStatus });
-    setBooking(prev => ({ ...prev, status: newStatus }));
-
-    // Send email with calendar invite to talent when seeker confirms the booking
-    if (newStatus === 'confirmed') {
-      await base44.functions.invoke('sendBookingConfirmedEmail', { booking_id: booking.id });
-    }
-
+    // Status transitions are validated and applied server-side (role-checked)
+    const res = await base44.functions.invoke('updateBookingStatus', { booking_id: booking.id, status: newStatus });
+    setBooking(prev => ({ ...prev, status: res?.data?.booking?.status || newStatus }));
     setUpdating(false);
   };
 
   const handleAttendanceConfirm = async () => {
     if (attendanceInput.toLowerCase() !== 'confirm') return;
     setUpdating(true);
-    await base44.entities.Booking.update(booking.id, { status: 'completed' });
-    setBooking(prev => ({ ...prev, status: 'completed' }));
+    const res = await base44.functions.invoke('updateBookingStatus', { booking_id: booking.id, status: 'completed' });
+    setBooking(prev => ({ ...prev, status: res?.data?.booking?.status || 'completed' }));
+    setUpdating(false);
     setShowAttendanceModal(false);
     setAttendanceInput('');
-    setUpdating(false);
     setShowRatingPrompt(true);
   };
 
   const handleQuickRatingSubmit = async () => {
     if (!quickRating) return;
     setSubmittingRating(true);
-    await base44.entities.Review.create({
-      booking_id: booking.id,
-      talent_profile_id: booking.talent_profile_id,
-      reviewer_id: user.id,
-      reviewer_name: user.full_name,
-      rating: quickRating,
-      event_type: booking.event_type,
-      event_date: booking.event_date
-    });
-    const profiles = await base44.entities.TalentProfile.filter({ id: booking.talent_profile_id });
-    if (profiles.length > 0) {
-      const profile = profiles[0];
-      const newTotal = (profile.total_reviews || 0) + 1;
-      const newAvg = ((profile.average_rating || 0) * (profile.total_reviews || 0) + quickRating) / newTotal;
-      await base44.entities.TalentProfile.update(profile.id, { total_reviews: newTotal, average_rating: newAvg });
-    }
+    // Review validation and the talent's rating aggregates are handled server-side
+    await base44.functions.invoke('submitReview', { booking_id: booking.id, rating: quickRating });
     setRatingSubmitted(true);
     setSubmittingRating(false);
   };
 
   const handlePaymentRelease = async () => {
-    await base44.entities.Booking.update(booking.id, {
-      payment_status: 'released',
-      status: 'completed'
-    });
-    setBooking(prev => ({ ...prev, payment_status: 'released', status: 'completed' }));
+    // Escrow release is validated server-side (seeker-only, confirmed bookings only)
+    const res = await base44.functions.invoke('releasePayment', { booking_id: booking.id });
+    setBooking(prev => ({ ...prev, ...(res?.data?.booking || { payment_status: 'released', status: 'completed' }) }));
   };
 
   const handleTalentCancel = async () => {
     setUpdating(true);
-    await base44.entities.Booking.update(booking.id, { status: 'cancelled' });
-    setBooking(prev => ({ ...prev, status: 'cancelled' }));
-
-    // 3-strike rule: cancelling within 7 days of the event counts as a violation
-    if (booking.event_date) {
-      const eventDate = new Date(booking.event_date + 'T12:00:00');
-      const daysUntil = Math.ceil((eventDate - new Date(new Date().toDateString())) / (1000 * 60 * 60 * 24));
-      if (daysUntil <= 7) {
-        const profiles = await base44.entities.TalentProfile.filter({ id: booking.talent_profile_id });
-        if (profiles.length > 0) {
-          const profile = profiles[0];
-          const newStrikes = (profile.strikes_count || 0) + 1;
-          const updates = { strikes_count: newStrikes };
-          if (newStrikes >= 3) {
-            updates.account_suspended = true;
-            updates.is_available = false;
-          }
-          await base44.entities.TalentProfile.update(profile.id, updates);
-          setTalentProfile(prev => ({ ...prev, ...updates }));
-        }
-      }
-    }
+    // Cancellation and the 3-strike rule are applied server-side
+    const res = await base44.functions.invoke('updateBookingStatus', { booking_id: booking.id, status: 'cancelled' });
+    setBooking(prev => ({ ...prev, status: res?.data?.booking?.status || 'cancelled' }));
     setUpdating(false);
   };
 

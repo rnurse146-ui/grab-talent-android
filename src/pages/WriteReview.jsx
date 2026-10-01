@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ChevronLeft, Star, Loader2, CheckCircle2 } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
-import { createNotification } from '@/lib/notifications';
 
 export default function WriteReview() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -36,38 +35,9 @@ export default function WriteReview() {
   const handleSubmit = async () => {
     setSubmitting(true);
     
-    await base44.entities.Review.create({
-      booking_id: booking.id,
-      talent_profile_id: booking.talent_profile_id,
-      reviewer_id: user.id,
-      reviewer_name: user.full_name,
-      rating,
-      review_text: reviewText,
-      event_type: booking.event_type,
-      event_date: booking.event_date
-    });
-
-    await createNotification({
-      userId: booking.talent_user_id,
-      type: 'review',
-      title: `New ${rating}-star review`,
-      body: `${user.full_name} reviewed "${booking.event_name || 'your booking'}"`,
-      linkUrl: createPageUrl('Bookings')
-    });
-
-    // Update talent profile stats
-    const profiles = await base44.entities.TalentProfile.filter({ id: booking.talent_profile_id });
-    if (profiles.length > 0) {
-      const profile = profiles[0];
-      const newTotalReviews = (profile.total_reviews || 0) + 1;
-      const currentTotal = (profile.average_rating || 0) * (profile.total_reviews || 0);
-      const newAverage = (currentTotal + rating) / newTotalReviews;
-      
-      await base44.entities.TalentProfile.update(profile.id, {
-        total_reviews: newTotalReviews,
-        average_rating: newAverage
-      });
-    }
+    // Review is validated server-side; the talent's rating aggregates and the
+    // notification are handled there too
+    await base44.functions.invoke('submitReview', { booking_id: booking.id, rating, review_text: reviewText });
 
     setSuccess(true);
     setSubmitting(false);

@@ -202,7 +202,8 @@ export default function TalentSetup() {
     if (existingProfile) {
       savedProfile = await base44.entities.TalentProfile.update(existingProfile.id, profileData);
     } else {
-      savedProfile = await base44.entities.TalentProfile.create({ ...profileData, is_verified: false, average_rating: null, total_reviews: 0, total_bookings: 0 });
+      // Protected fields (is_verified, rating stats) come from schema defaults / backend only
+      savedProfile = await base44.entities.TalentProfile.create(profileData);
     }
     const profileId = savedProfile?.id || existingProfile?.id;
     window.location.href = profileId ? `/TalentProfile?id=${profileId}` : createPageUrl('Dashboard');

@@ -6,14 +6,27 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, Shield, Upload, Camera, CheckCircle2, Loader2, AlertCircle, Zap } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 
+// Private documents are shown via a short-lived signed URL; legacy public URLs pass through
+const toPreviewUrl = async (stored) => {
+  if (stored.startsWith('http')) return stored;
+  try {
+    const { signed_url } = await base44.integrations.Core.CreateFileSignedUrl({ file_uri: stored });
+    return signed_url;
+  } catch (e) {
+    return '';
+  }
+};
+
 export default function Verification() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [idUrl, setIdUrl] = useState('');
-  const [selfieUrl, setSelfieUrl] = useState('');
+  const [idUri, setIdUri] = useState('');
+  const [selfieUri, setSelfieUri] = useState('');
+  const [idPreview, setIdPreview] = useState('');
+  const [selfiePreview, setSelfiePreview] = useState('');
   const [aiStatus, setAiStatus] = useState(null); // 'checking' | 'done'
   const [aiResult, setAiResult] = useState(null);
 
@@ -25,8 +38,10 @@ export default function Verification() {
     const profiles = await base44.entities.TalentProfile.filter({ user_id: currentUser.id });
     if (profiles.length > 0) {
       setProfile(profiles[0]);
-      setIdUrl(profiles[0].verification_id_url || '');
-      setSelfieUrl(profiles[0].verification_selfie_url || '');
+      const storedId = profiles[0].verification_id_url || '';
+      const storedSelfie = profiles[0].verification_selfie_url || '';
+      if (storedId) setIdPreview(await toPreviewUrl(storedId));
+      if (storedSelfie) setSelfiePreview(await toPreviewUrl(storedSelfie));
     }
     setLoading(false);
   };
@@ -35,8 +50,9 @@ export default function Verification() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setIdUrl(file_url);
+    const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
+    setIdUri(file_uri);
+    setIdPreview(await toPreviewUrl(file_uri));
     setUploading(false);
   };
 
@@ -44,8 +60,9 @@ export default function Verification() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setSelfieUrl(file_url);
+    const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
+    setSelfieUri(file_uri);
+    setSelfiePreview(await toPreviewUrl(file_uri));
     setUploading(false);
   };
 
@@ -53,20 +70,13 @@ export default function Verification() {
     setUploading(true);
     setAiStatus('checking');
 
-    // AI facial recognition comparison
-    const res = await base44.functions.invoke('checkVerification', { id_url: idUrl, selfie_url: selfieUrl });
+    // AI facial recognition comparison — the backend verifies and records the
+    // result (documents + verified badge) on the profile server-side
+    const res = await base44.functions.invoke('checkVerification', { id_uri: idUri, selfie_uri: selfieUri });
     const result = res?.data?.result;
 
     setAiResult(result);
     setAiStatus('done');
-
-    const isAutoVerified = result.match && result.confidence !== 'low';
-
-    await base44.entities.TalentProfile.update(profile.id, {
-      verification_id_url: idUrl,
-      verification_selfie_url: selfieUrl,
-      ...(isAutoVerified ? { is_verified: true } : {})
-    });
 
     setSubmitted(true);
     setUploading(false);
@@ -130,9 +140,9 @@ export default function Verification() {
           <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
             <h3 className="font-semibold mb-2">1. Upload your ID</h3>
             <p className="text-zinc-400 text-sm mb-4">Upload a clear photo of your government-issued ID (passport, driver's license, etc.)</p>
-            {idUrl ? (
+            {idPreview ? (
               <div className="relative rounded-xl overflow-hidden bg-slate-800 aspect-video">
-                <img src={idUrl} alt="ID" className="w-full h-full object-cover" />
+                <img src={idPreview} alt="ID" className="w-full h-full object-cover" />
                 <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                   <input type="file" accept="image/*" onChange={handleIdUpload} className="hidden" />
                   <span className="text-sm">Change photo</span>
@@ -153,9 +163,9 @@ export default function Verification() {
           <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
             <h3 className="font-semibold mb-2">2. Take a selfie</h3>
             <p className="text-slate-400 text-sm mb-4">Take a clear photo of your face to match with your ID</p>
-            {selfieUrl ? (
+            {selfiePreview ? (
               <div className="relative rounded-xl overflow-hidden bg-slate-800 aspect-video">
-                <img src={selfieUrl} alt="Selfie" className="w-full h-full object-cover" />
+                <img src={selfiePreview} alt="Selfie" className="w-full h-full object-cover" />
                 <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                   <input type="file" accept="image/*" capture="user" onChange={handleSelfieUpload} className="hidden" />
                   <span className="text-sm">Retake photo</span>
@@ -182,7 +192,7 @@ export default function Verification() {
             </div>
           )}
 
-          <Button onClick={handleSubmit} disabled={!idUrl || !selfieUrl || uploading} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
+          <Button onClick={handleSubmit} disabled={!idUri || !selfieUri || uploading} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
             {uploading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Analysing with AI...</> : <><Zap className="w-5 h-5 mr-2" />Verify with AI</>}
           </Button>
         </div>
