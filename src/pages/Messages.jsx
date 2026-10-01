@@ -283,7 +283,7 @@ export default function Messages() {
         return { ...c, messages: msgs, lastMessage: msgs[msgs.length - 1] || c.lastMessage };
       }));
       setNewMessage(content);
-      setBlockedWarning('Message failed to send. Please try again.');
+      setBlockedWarning(e?.message || 'Message failed to send. Please try again.');
     } finally {
       setSending(false);
     }
