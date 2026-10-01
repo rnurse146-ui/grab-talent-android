@@ -6,16 +6,11 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, Shield, Upload, Camera, CheckCircle2, Loader2, AlertCircle, Zap } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 
-// Private documents are shown via a short-lived signed URL; legacy public URLs pass through
-const toPreviewUrl = async (stored) => {
-  if (stored.startsWith('http')) return stored;
-  try {
-    const { signed_url } = await base44.integrations.Core.CreateFileSignedUrl({ file_uri: stored });
-    return signed_url;
-  } catch (e) {
-    return '';
-  }
-};
+// Freshly uploaded documents are previewed locally (object URLs) — no server
+// signing in the browser. Previously stored documents are previewed only via
+// the getVerificationDocs backend function, which signs the caller's OWN
+// stored documents and never takes a URI from the client.
+const toLocalPreview = (file) => URL.createObjectURL(file);
 
 export default function Verification() {
   const [user, setUser] = useState(null);
@@ -38,10 +33,12 @@ export default function Verification() {
     const profiles = await base44.entities.TalentProfile.filter({ user_id: currentUser.id });
     if (profiles.length > 0) {
       setProfile(profiles[0]);
-      const storedId = profiles[0].verification_id_url || '';
-      const storedSelfie = profiles[0].verification_selfie_url || '';
-      if (storedId) setIdPreview(await toPreviewUrl(storedId));
-      if (storedSelfie) setSelfiePreview(await toPreviewUrl(storedSelfie));
+      if (!profiles[0].is_verified) {
+        // Server signs only the caller's own stored documents
+        const res = await base44.functions.invoke('getVerificationDocs');
+        setIdPreview(res?.data?.id_url || '');
+        setSelfiePreview(res?.data?.selfie_url || '');
+      }
     }
     setLoading(false);
   };
@@ -52,7 +49,7 @@ export default function Verification() {
     setUploading(true);
     const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
     setIdUri(file_uri);
-    setIdPreview(await toPreviewUrl(file_uri));
+    setIdPreview(toLocalPreview(file));
     setUploading(false);
   };
 
@@ -62,7 +59,7 @@ export default function Verification() {
     setUploading(true);
     const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
     setSelfieUri(file_uri);
-    setSelfiePreview(await toPreviewUrl(file_uri));
+    setSelfiePreview(toLocalPreview(file));
     setUploading(false);
   };
 

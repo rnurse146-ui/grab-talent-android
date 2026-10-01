@@ -100,8 +100,20 @@
     },
     "verification_id_url": {
       "type": "string",
-      "description": "Private storage URI of the uploaded ID (written only by the checkVerification function)",
+      "description": "Private storage URI of the uploaded ID (written only by the checkVerification function; readable only by the profile owner and admins)",
       "rls": {
+        "read": {
+          "$or": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        },
         "write": {
           "user_condition": {
             "role": "admin"
@@ -111,8 +123,20 @@
     },
     "verification_selfie_url": {
       "type": "string",
-      "description": "Private storage URI of the verification selfie (written only by the checkVerification function)",
+      "description": "Private storage URI of the verification selfie (written only by the checkVerification function; readable only by the profile owner and admins)",
       "rls": {
+        "read": {
+          "$or": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        },
         "write": {
           "user_condition": {
             "role": "admin"

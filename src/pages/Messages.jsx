@@ -250,15 +250,16 @@ export default function Messages() {
     setNewMessage('');
 
     try {
-      const created = await base44.entities.Message.create({
+      // Created through the backend function so the contact-info block is
+      // enforced server-side (direct entity writes are locked to admins)
+      const res = await base44.functions.invoke('sendMessage', {
         conversation_id: activeConvId,
-        sender_id: user.id,
         receiver_id: conv.otherId,
         sender_name: user.full_name,
         receiver_name: conv.otherName,
-        content,
-        is_read: false
+        content
       });
+      const created = res?.data?.message;
       // Swap the temp message for the persisted record
       setMessages(prev => prev.map(m => m.id === tempId ? created : m));
       setConversations(prev => prev.map(c => c.id === activeConvId
