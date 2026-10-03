@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { normalizeTime } from '../../shared/emailSanitize.ts';
 
 // Server-side booking creation. Pricing is always derived from the talent's
 // stored profile rates — client-supplied amounts are ignored.
@@ -23,6 +24,14 @@ export default async function(req) {
     // Price the booking server-side from the talent's rates
     const startTime = String(body?.start_time || '');
     const endTime = String(body?.end_time || '');
+    // Reject non-clock times and unknown event types up front
+    if ((startTime && !normalizeTime(startTime)) || (endTime && !normalizeTime(endTime))) {
+      return Response.json({ error: 'Start and end times must be in HH:MM format' }, { status: 400 });
+    }
+    const EVENT_TYPES = ['wedding', 'corporate', 'birthday', 'club', 'pub', 'festival', 'private_party', 'charity', 'other'];
+    if (body?.event_type && !EVENT_TYPES.includes(body.event_type)) {
+      return Response.json({ error: 'Invalid event type' }, { status: 400 });
+    }
     let pricing = null;
     if (startTime && endTime) {
       let hours = parseInt(endTime.split(':')[0]) - parseInt(startTime.split(':')[0]);
@@ -46,7 +55,7 @@ export default async function(req) {
       talent_user_id: talent.user_id,
       event_name: String(body?.event_name || ''),
       event_type: String(body?.event_type || ''),
-      event_date: String(body?.event_date || ''),
+      event_date: /^\d{4}-\d{2}-\d{2}$/.test(String(body?.event_date || '')) ? String(body.event_date) : '',
       start_time: startTime,
       end_time: endTime,
       venue_name: String(body?.venue_name || ''),

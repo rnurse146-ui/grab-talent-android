@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
-import { sanitizeText } from '../../shared/emailSanitize.ts';
+import { sanitizeText, normalizeTime } from '../../shared/emailSanitize.ts';
 
 // Emails talent when they receive a new booking request or get shortlisted to
 // a Maybe List, so they hear about it even when not using the app.
@@ -44,6 +44,9 @@ export default async function(req) {
       const eventName = sanitizeText(booking.event_name, 120) || 'Event';
       const clientName = sanitizeText(booking.seeker_name, 100) || 'An event organizer';
       const venue = sanitizeText([booking.venue_name, booking.venue_city].filter(Boolean).join(', '), 160);
+      const eventType = sanitizeText(booking.event_type, 40).replace(/_/g, ' ') || 'event';
+      const startT = normalizeTime(booking.start_time) || 'TBD';
+      const endT = normalizeTime(booking.end_time) || 'TBD';
 
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: talentEmail,
@@ -52,9 +55,9 @@ export default async function(req) {
 
 You've received a new booking request on Grab Talent!
 
-📅 Event: ${eventName} (${(booking.event_type || 'event').replace(/_/g, ' ')})
+📅 Event: ${eventName} (${eventType})
 🗓️ Date: ${formatDate(booking.event_date)}
-⏰ Time: ${booking.start_time || 'TBD'} – ${booking.end_time || 'TBD'}${booking.duration_hours ? ` (${booking.duration_hours}h)` : ''}
+⏰ Time: ${startT} – ${endT}${Number.isFinite(booking.duration_hours) ? ` (${booking.duration_hours}h)` : ''}
 📍 Venue: ${venue}
 ${booking.total_price != null ? `💷 Total: £${booking.total_price} (your payout: £${booking.talent_payout})` : ''}
 👤 Client: ${clientName}

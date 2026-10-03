@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
-import { sanitizeText, icsEscape } from '../../shared/emailSanitize.ts';
+import { sanitizeText, icsEscape, normalizeTime } from '../../shared/emailSanitize.ts';
 
 // Sends the "gig confirmed" email (with calendar invite) to the talent when a
 // booking is confirmed. Narrow operation: the recipient, subject and body are
@@ -20,6 +20,11 @@ export default async function(req) {
     if (booking.seeker_id !== user.id && booking.talent_user_id !== user.id) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
+    // Only a booking that has actually transitioned to 'confirmed' may be
+    // emailed — blocks direct re-invocation (spam) for arbitrary bookings.
+    if (booking.status !== 'confirmed') {
+      return Response.json({ error: 'Booking is not confirmed' }, { status: 403 });
+    }
 
     const talentUsers = await base44.asServiceRole.entities.User.filter({ id: booking.talent_user_id });
     if (talentUsers.length === 0 || !talentUsers[0].email) {
@@ -35,8 +40,12 @@ export default async function(req) {
     }
 
     const icsDate = booking.event_date ? booking.event_date.replace(/-/g, '') : '';
-    const startTime = booking.start_time ? booking.start_time.replace(':', '') + '00' : '090000';
-    const endTime = booking.end_time ? booking.end_time.replace(':', '') + '00' : '180000';
+    // Times are seeker-controlled: keep only valid HH:MM values, else a fixed
+    // default — never raw strings in the ICS DTSTART/DTEND lines.
+    const startT = normalizeTime(booking.start_time);
+    const endT = normalizeTime(booking.end_time);
+    const startTime = (startT ? startT.replace(':', '') : '0900') + '00';
+    const endTime = (endT ? endT.replace(':', '') : '1800') + '00';
     const dtStart = icsDate ? `${icsDate}T${startTime}` : '';
     const dtEnd = icsDate ? `${icsDate}T${endTime}` : '';
     const uid = `grabtalent-${booking.id}@grabtalent.app`;
@@ -79,7 +88,7 @@ Great news — you've been hired! ${clientName} has confirmed their booking with
 
 📅 Event: ${eventName}
 🗓️ Date: ${eventDateFormatted}
-⏰ Time: ${booking.start_time} – ${booking.end_time} (${booking.duration_hours}h)
+⏰ Time: ${startT || 'TBD'} – ${endT || 'TBD'}${Number.isFinite(booking.duration_hours) ? ` (${booking.duration_hours}h)` : ''}
 📍 Venue: ${venuePlain}
 💷 Your Payout: £${booking.talent_payout}
 ${clientPhone ? `📞 Client Phone: ${clientPhone}` : ''}

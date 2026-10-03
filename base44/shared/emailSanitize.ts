@@ -17,6 +17,19 @@ export function sanitizeText(value, maxLength = 200) {
     .slice(0, maxLength);
 }
 
+// Validates a seeker-supplied time string. Returns a canonical zero-padded
+// "HH:MM" (24h) string, or null when the value isn't a plain clock time —
+// callers must treat null as "not provided" and fall back to a fixed default.
+export function normalizeTime(value) {
+  if (value == null) return null;
+  const match = /^(\d{1,2}):(\d{2})$/.exec(String(value).trim());
+  if (!match) return null;
+  const h = Number(match[1]);
+  const m = Number(match[2]);
+  if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
 // Escapes a value for use inside an ICS property per RFC 5545. Input should
 // already be URL-free (sanitizeText); this preserves the escaping for
 // backslash, semicolon, comma and literal newlines.
