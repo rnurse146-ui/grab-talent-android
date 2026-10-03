@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
@@ -29,8 +29,10 @@ function Avatar({ name, photo, size = 10 }) {
 }
 
 export default function Messages() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const toUserId = urlParams.get('to');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const toUserId = searchParams.get('to');
+  // Mobile thread visibility is driven by the ?to= query param, so system back gestures work natively
+  const showList = !toUserId;
 
   const [user, setUser] = useState(null);
   const [conversations, setConversations] = useState([]);
@@ -39,7 +41,6 @@ export default function Messages() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [showList, setShowList] = useState(true); // mobile nav
   const [bookingVerified, setBookingVerified] = useState(false);
   const [blockedWarning, setBlockedWarning] = useState('');
   const messagesEndRef = useRef(null);
@@ -102,7 +103,6 @@ export default function Messages() {
 
     if (initialConv) {
       openConversation(initialConv, currentUser);
-      setShowList(false);
     }
 
     setLoading(false);
@@ -133,8 +133,8 @@ export default function Messages() {
   const openConversation = async (conv, currentUser) => {
     const cu = currentUser || userRef.current;
     setActiveConvId(conv.id);
-    setShowList(false);
-    setBlockedWarning('');
+    // Reflect the open thread in the URL so system back returns to the conversation list
+    setSearchParams({ to: conv.otherId });
     const sorted = [...conv.messages].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
     setMessages(sorted);
 
@@ -386,7 +386,7 @@ export default function Messages() {
             <>
               {/* Chat Header */}
               <div className="px-4 py-3 border-b border-zinc-800 flex items-center gap-3 shrink-0 bg-black/80 backdrop-blur-sm">
-                <button onClick={() => setShowList(true)} className="md:hidden text-slate-400 hover:text-white">
+                <button onClick={() => setSearchParams({})} className="md:hidden text-slate-400 hover:text-white">
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <Avatar name={activeConv.otherName} size={9} />

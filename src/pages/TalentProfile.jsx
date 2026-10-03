@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
@@ -19,6 +19,8 @@ export default function TalentProfile() {
   const profileId = urlParams.get('id');
   const eventDate = urlParams.get('event_date');
   const eventName = urlParams.get('event_name');
+
+  const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -67,7 +69,7 @@ export default function TalentProfile() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 md:top-14 z-10">
-        <Link to={createPageUrl('Dashboard')}><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20 font-semibold"><ChevronLeft className="w-4 h-4 mr-1" />Back to Dashboard</Button></Link>
+        <Button variant="outline" onClick={() => navigate(-1)} className="bg-white/10 border-white/30 text-white hover:bg-white/20 font-semibold"><ChevronLeft className="w-4 h-4 mr-1" />Back</Button>
         <Logo className="h-12 w-auto" variant="light" />
         {isOwner ? (<Link to={createPageUrl('TalentSetup') + '?edit=true'}><Button size="sm" className="bg-white text-black hover:bg-zinc-100">Edit Profile</Button></Link>) : (<div className="w-20" />)}
       </div>
