@@ -5,7 +5,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 // current status are allowed. Strikes, the confirmation email and
 // notifications are applied here — clients can never forge booking state.
 const SEEKER_TRANSITIONS = { pending: ['cancelled'], accepted: ['confirmed', 'cancelled'], confirmed: ['completed'] };
-const TALENT_TRANSITIONS = { pending: ['accepted', 'declined'], accepted: ['cancelled'], confirmed: ['completed', 'cancelled'] };
+// 'completed' is reserved for the seeker (arrival confirmation) — talent side only gets 'cancelled'
+const TALENT_TRANSITIONS = { pending: ['accepted', 'declined'], accepted: ['cancelled'], confirmed: ['cancelled'] };
 
 const STATUS_MESSAGES = {
   accepted: 'was accepted',
