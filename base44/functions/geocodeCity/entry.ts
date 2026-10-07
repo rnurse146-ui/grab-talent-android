@@ -7,15 +7,21 @@ export default async function(req) {
     if (!city || city.length > 100) {
       return Response.json({ error: 'Missing city' }, { status: 400 });
     }
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'GrabTalent/1.0 (talent discovery)', 'Accept-Language': 'en' },
-      signal: AbortSignal.timeout(8000)
-    });
+    // UK-first: prefer a GB match, fall back to a worldwide search
+    const base = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`;
+    const ua = { 'User-Agent': 'GrabTalent/1.0 (talent discovery)', 'Accept-Language': 'en' };
+    let res = await fetch(`${base}&countrycodes=gb`, { headers: ua, signal: AbortSignal.timeout(8000) });
     if (!res.ok) {
       return Response.json({ error: 'Geocoding service unavailable' }, { status: 502 });
     }
-    const data = await res.json();
+    let data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      res = await fetch(base, { headers: ua, signal: AbortSignal.timeout(8000) });
+      if (!res.ok) {
+        return Response.json({ error: 'Geocoding service unavailable' }, { status: 502 });
+      }
+      data = await res.json();
+    }
     if (!Array.isArray(data) || data.length === 0) {
       return Response.json({ lat: null, lng: null });
     }
