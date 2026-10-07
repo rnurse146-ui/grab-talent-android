@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import MobileTabBar from '@/components/MobileTabBar';
 import DesktopNavBar from '@/components/DesktopNavBar';
+import FloatingDiscoverButton from '@/components/FloatingDiscoverButton';
 import { resolveTab } from '@/lib/tabNavigation';
 
 // Page-level routes load lazily so each screen ships in its own bundle
@@ -120,6 +121,7 @@ const AnimatedApp = () => {
       </AnimatePresence>
       <DesktopNavBar />
       <MobileTabBar />
+      <FloatingDiscoverButton />
     </>
   );
 };
