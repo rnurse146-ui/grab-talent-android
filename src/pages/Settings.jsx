@@ -70,6 +70,13 @@ export default function Settings() {
 
   if (loading) return (<div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>);
 
+  // Talent accounts see their gigs; seeker accounts see who they hired; both see everything
+  const roleBookings = user?.user_type === 'talent'
+    ? bookings.filter(b => b.talent_user_id === user.id)
+    : user?.user_type === 'seeker'
+      ? bookings.filter(b => b.seeker_id === user.id)
+      : bookings;
+
   return (
     <div className="min-h-screen bg-black text-white">
       <PageHeader showBack={false} />
@@ -80,7 +87,7 @@ export default function Settings() {
         <ProfilePhotoCard user={user} onUpdate={setUser} />
 
         <div className="space-y-6">
-          <BookingCalendar bookings={bookings} />
+          <BookingCalendar bookings={roleBookings} />
           <BookingMessages user={user} />
           {user?.user_type !== 'talent' && <HiredTalentList user={user} bookings={bookings} />}
         </div>
