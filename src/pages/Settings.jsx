@@ -8,6 +8,10 @@ import { Label } from '@/components/ui/label';
 import { ChevronLeft, User, MapPin, Phone, LogOut, Loader2, Check, Trash2, AlertTriangle } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 import ChangePassword from '@/components/settings/ChangePassword';
+import ProfilePhotoCard from '@/components/settings/ProfilePhotoCard';
+import BookingCalendar from '@/components/settings/BookingCalendar';
+import HiredTalentList from '@/components/settings/HiredTalentList';
+import BookingMessages from '@/components/settings/BookingMessages';
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel,
@@ -22,6 +26,7 @@ export default function Settings() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [bookings, setBookings] = useState([]);
   const [formData, setFormData] = useState({ full_name: '', phone: '', preferred_city: '' });
 
   useEffect(() => { loadData(); }, []);
@@ -30,6 +35,11 @@ export default function Settings() {
     const currentUser = await base44.auth.me();
     setUser(currentUser);
     setFormData({ full_name: currentUser.full_name || '', phone: currentUser.phone || '', preferred_city: currentUser.preferred_city || '' });
+    const bookingPage = await base44.entities.Booking.filter(
+      { $or: [{ seeker_id: currentUser.id }, { talent_user_id: currentUser.id }] },
+      { sort: '-event_date', limit: 200 }
+    );
+    setBookings(bookingPage.items);
     setLoading(false);
   };
 
@@ -65,9 +75,17 @@ export default function Settings() {
       <PageHeader showBack={false} />
 
       <div className="max-w-lg mx-auto px-6 pt-8 pb-24 md:pb-8">
-        <h1 className="text-2xl font-bold mb-8">Settings</h1>
+        <h1 className="text-2xl font-bold mb-4">Settings</h1>
+
+        <ProfilePhotoCard user={user} onUpdate={setUser} />
 
         <div className="space-y-6">
+          <BookingCalendar bookings={bookings} />
+          <BookingMessages user={user} />
+          {user?.user_type !== 'talent' && <HiredTalentList user={user} bookings={bookings} />}
+        </div>
+
+        <div className="space-y-6 mt-6">
           <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
             <h2 className="font-semibold mb-4 flex items-center gap-2"><User className="w-4 h-4 text-purple-400" />Profile</h2>
             <div className="space-y-4">
