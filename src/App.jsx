@@ -27,6 +27,7 @@ const TermsOfServicePage = lazy(() => import('./pages/TermsOfService'));
 const NotificationsPage = lazy(() => import('./pages/Notifications'));
 const DiscoverPage = lazy(() => import('./pages/Discover'));
 const MaybeListPage = lazy(() => import('./pages/MaybeList'));
+const SettingsPage = lazy(() => import('./pages/Settings'));
 const TalentProfilePage = lazy(() => import('./pages/TalentProfile'));
 
 const PageLoader = () => (
@@ -138,6 +139,11 @@ const AppRoutes = ({ location }) => (
       <Route path="/TalentProfile" element={<LayoutWrapper currentPageName="TalentProfile"><TalentProfilePage /></LayoutWrapper>} />
       <Route path="/MaybeList" element={<LayoutWrapper currentPageName="MaybeList"><MaybeListPage /></LayoutWrapper>} />
 
+      {/* Guests hitting Settings are sent to the create-account page */}
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/register" replace />} />}>
+        <Route path="/Settings" element={<LayoutWrapper currentPageName="Settings"><SettingsPage /></LayoutWrapper>} />
+      </Route>
+
       {/* Authenticated app routes — gated by ProtectedRoute */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route path="/" element={
@@ -145,7 +151,7 @@ const AppRoutes = ({ location }) => (
             <MainPage />
           </LayoutWrapper>
         } />
-        {Object.entries(Pages).filter(([path]) => path !== 'Discover' && path !== 'TalentProfile' && path !== 'MaybeList').map(([path, Page]) => (
+        {Object.entries(Pages).filter(([path]) => path !== 'Discover' && path !== 'TalentProfile' && path !== 'MaybeList' && path !== 'Settings').map(([path, Page]) => (
           <Route
             key={path}
             path={`/${path}`}
