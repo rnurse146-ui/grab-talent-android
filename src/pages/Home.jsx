@@ -5,10 +5,12 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Search, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { enterGuestMode } = useAuth();
 
   useEffect(() => {
     (async () => {
@@ -24,6 +26,11 @@ export default function Home() {
   }, []);
 
   const handleLogin = () => base44.auth.redirectToLogin(createPageUrl('Dashboard'));
+
+  const handleGuest = () => {
+    enterGuestMode();
+    navigate('/Discover');
+  };
 
   if (loading) {
     return (
@@ -140,6 +147,14 @@ export default function Home() {
                 className="w-full px-5 py-3.5 rounded-xl bg-white text-black font-semibold hover:bg-gray-100 transition-all"
               >
                 Sign In / Sign Up with Email
+              </button>
+
+              {/* Guest browsing — no account needed until booking or messaging */}
+              <button
+                onClick={handleGuest}
+                className="w-full px-5 py-3.5 rounded-xl border border-white/30 bg-transparent text-white font-semibold hover:bg-white/10 transition-all"
+              >
+                Looking for Talent? Browse as a Guest
               </button>
 
               <p className="text-center text-white/50 text-xs pt-2">

@@ -11,6 +11,9 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
+  const [isGuest, setIsGuest] = useState(() => {
+    try { return localStorage.getItem('gt_guest') === '1'; } catch { return false; }
+  });
   const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
 
   useEffect(() => {
@@ -95,6 +98,8 @@ export const AuthProvider = ({ children }) => {
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
+      setIsGuest(false); // signing in ends guest browsing
+      try { localStorage.removeItem('gt_guest'); } catch {}
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
@@ -128,6 +133,11 @@ export const AuthProvider = ({ children }) => {
     base44.auth.redirectToLogin(window.location.href);
   };
 
+  const enterGuestMode = () => {
+    try { localStorage.setItem('gt_guest', '1'); } catch {}
+    setIsGuest(true);
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -136,6 +146,8 @@ export const AuthProvider = ({ children }) => {
       isLoadingPublicSettings,
       authError,
       appPublicSettings,
+      isGuest,
+      enterGuestMode,
       logout,
       navigateToLogin,
       checkAppState

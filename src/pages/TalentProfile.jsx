@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import GuestLoginPrompt from '@/components/GuestLoginPrompt';
+import { useAuth } from '@/lib/AuthContext';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
@@ -21,6 +23,8 @@ export default function TalentProfile() {
   const eventName = urlParams.get('event_name');
 
   const navigate = useNavigate();
+  const { isGuest } = useAuth();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const [profile, setProfile] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -70,7 +74,7 @@ export default function TalentProfile() {
     <div className="min-h-screen bg-black text-white">
       <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 md:top-14 z-10">
         <Button variant="outline" onClick={() => navigate(-1)} className="bg-white/10 border-white/30 text-white hover:bg-white/20 font-semibold"><ChevronLeft className="w-4 h-4 mr-1" />Back</Button>
-        <Logo className="h-12 w-auto" variant="light" />
+        <Link to={isGuest ? '/' : createPageUrl('Dashboard')}><Logo className="h-12 w-auto" variant="light" /></Link>
         {isOwner ? (<Link to={createPageUrl('TalentSetup') + '?edit=true'}><Button size="sm" className="bg-white text-black hover:bg-zinc-100">Edit Profile</Button></Link>) : (<div className="w-20" />)}
       </div>
 
@@ -170,8 +174,17 @@ export default function TalentProfile() {
             )}
             {!isOwner && (
               <div className="flex gap-3">
-                <Link to={createPageUrl('BookTalent') + `?talent_id=${profile.id}${eventDate ? '&event_date=' + eventDate : ''}${eventName ? '&event_name=' + encodeURIComponent(eventName) : ''}`}><Button size="lg" className="bg-white text-black hover:bg-zinc-100"><Calendar className="w-5 h-5 mr-2" />Book Now</Button></Link>
-                <Link to={createPageUrl('Messages') + `?to=${profile.user_id}`}><Button size="lg" variant="outline" className="border-zinc-700 bg-transparent"><MessageSquare className="w-5 h-5 mr-2" />Message</Button></Link>
+                {isGuest ? (
+                  <>
+                    <Button size="lg" onClick={() => setShowLoginPrompt(true)} className="bg-white text-black hover:bg-zinc-100"><Calendar className="w-5 h-5 mr-2" />Book Now</Button>
+                    <Button size="lg" variant="outline" onClick={() => setShowLoginPrompt(true)} className="border-zinc-700 bg-transparent"><MessageSquare className="w-5 h-5 mr-2" />Message</Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to={createPageUrl('BookTalent') + `?talent_id=${profile.id}${eventDate ? '&event_date=' + eventDate : ''}${eventName ? '&event_name=' + encodeURIComponent(eventName) : ''}`}><Button size="lg" className="bg-white text-black hover:bg-zinc-100"><Calendar className="w-5 h-5 mr-2" />Book Now</Button></Link>
+                    <Link to={createPageUrl('Messages') + `?to=${profile.user_id}`}><Button size="lg" variant="outline" className="border-zinc-700 bg-transparent"><MessageSquare className="w-5 h-5 mr-2" />Message</Button></Link>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -249,6 +262,8 @@ export default function TalentProfile() {
           )}
         </div>
       )}
+
+      <GuestLoginPrompt open={showLoginPrompt} onOpenChange={setShowLoginPrompt} />
     </div>
   );
 }

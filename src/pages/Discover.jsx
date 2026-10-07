@@ -12,6 +12,8 @@ import {
 import { Link } from 'react-router-dom';
 import Logo from '@/components/Logo';
 import TalentHitch from '@/components/TalentHitch';
+import GuestLoginPrompt from '@/components/GuestLoginPrompt';
+import { useAuth } from '@/lib/AuthContext';
 import PullToRefresh from '@/components/PullToRefresh';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
 import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
@@ -58,6 +60,8 @@ export default function Discover() {
   const [welcomeStep, setWelcomeStep] = useState(1);
   const WELCOME_STEPS = 3;
   const dragX = useRef(0);
+  const { isGuest } = useAuth();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const [filters, setFilters] = useState({
     categories: [],
@@ -84,19 +88,23 @@ export default function Discover() {
   }, []);
 
   const loadData = async () => {
-    const currentUser = await base44.auth.me();
+    // Guests browse the deck without an account — swipe history and Maybe List are skipped
+    const authed = await base44.auth.isAuthenticated();
+    let currentUser = null;
+    let swipedSet = new Set();
+    if (authed) {
+      currentUser = await base44.auth.me();
+      const [history, maybe] = await Promise.all([
+        base44.entities.SwipeHistory.filter({ seeker_id: currentUser.id }),
+        base44.entities.MaybeList.filter({ seeker_id: currentUser.id })
+      ]);
+      swipedSet = new Set(history.map(h => h.talent_profile_id));
+      setMaybeCount(maybe.length);
+      setPassedCount(history.filter(h => h.action === 'pass').length);
+    }
     setUser(currentUser);
-    
-    const [history, maybe] = await Promise.all([
-      base44.entities.SwipeHistory.filter({ seeker_id: currentUser.id }),
-      base44.entities.MaybeList.filter({ seeker_id: currentUser.id })
-    ]);
-    const swipedSet = new Set(history.map(h => h.talent_profile_id));
     setSwipedIds(swipedSet);
-    setMaybeCount(maybe.length);
-    setPassedCount(history.filter(h => h.action === 'pass').length);
-    
-    await loadTalents(swipedSet, undefined, currentUser.preferred_city || '');
+    await loadTalents(swipedSet, undefined, currentUser?.preferred_city || '');
   };
 
   const loadTalents = async (alreadySwiped = swipedIds, dateOverride = undefined, seekerCityOverride = '') => {
@@ -195,6 +203,7 @@ export default function Discover() {
   };
 
   const handleSwipe = async (direction) => {
+    if (isGuest) { setShowLoginPrompt(true); return; }
     if (!talents[currentIndex]) return;
     const talent = talents[currentIndex];
     setSwiping(direction);
@@ -247,7 +256,7 @@ export default function Discover() {
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black">
-        <Link to={createPageUrl('Dashboard')}>
+        <Link to={isGuest ? '/' : createPageUrl('Dashboard')}>
           <Logo className="h-12 w-auto" variant="light" />
         </Link>
         <span className="text-zinc-500 text-sm">{welcomeStep} / {WELCOME_STEPS}</span>
@@ -480,7 +489,7 @@ export default function Discover() {
           <p className="text-center text-zinc-600 text-xs mt-3">All filters are optional — skip to see everyone</p>
         </div>
       </div>
-      <TalentHitch />
+      {!isGuest && <TalentHitch />}
     </div>
   );
 
@@ -488,18 +497,24 @@ export default function Discover() {
     <PullToRefresh onRefresh={loadData} className="h-[100dvh] md:h-[calc(100dvh-3.5rem)] bg-black text-white">
       <div className="min-h-[100dvh] pb-28 text-white">
       <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 md:top-14 z-10">
-        <Link to={createPageUrl('Dashboard')}>
+        <Link to={isGuest ? '/' : createPageUrl('Dashboard')}>
           <Logo className="h-12 w-auto" variant="light" />
         </Link>
         <div className="flex items-center gap-2">
-          <Link to={createPageUrl('MaybeList')}>
-            <Button variant="outline" size="sm" className="border-zinc-700 bg-transparent relative">
-              <List className="w-4 h-4 mr-1" />Maybe List
-              {maybeCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-green-500 text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{maybeCount}</span>
-              )}
+          {isGuest ? (
+            <Button variant="outline" size="sm" onClick={() => setShowLoginPrompt(true)} className="border-zinc-700 bg-transparent">
+              Sign In
             </Button>
-          </Link>
+          ) : (
+            <Link to={createPageUrl('MaybeList')}>
+              <Button variant="outline" size="sm" className="border-zinc-700 bg-transparent relative">
+                <List className="w-4 h-4 mr-1" />Maybe List
+                {maybeCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-green-500 text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{maybeCount}</span>
+                )}
+              </Button>
+            </Link>
+          )}
           <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className={`relative bg-transparent ${activeFilterCount > 0 ? 'border-purple-500' : 'border-zinc-700'}`}>
             <Filter className="w-4 h-4 mr-2" />Filters
             {activeFilterCount > 0 && (
@@ -693,7 +708,7 @@ export default function Discover() {
             <p className="text-slate-400 mb-6">Check back later or adjust your filters</p>
             <div className="flex gap-3 justify-center">
               <Button onClick={() => setShowFilters(true)} variant="outline" className="border-slate-700 bg-transparent text-white hover:bg-zinc-800">Change Filters</Button>
-              <Link to={createPageUrl('MaybeList')}><Button className="bg-purple-600 hover:bg-purple-500">View Maybe List</Button></Link>
+              {!isGuest && <Link to={createPageUrl('MaybeList')}><Button className="bg-purple-600 hover:bg-purple-500">View Maybe List</Button></Link>}
             </div>
             {passedCount > 0 && (
               <Button
@@ -774,7 +789,10 @@ export default function Discover() {
               <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-red-500 hover:bg-red-500/20 transition-colors">
                 <X className="w-8 h-8 text-red-400" />
               </motion.button>
-              <Link to={createPageUrl('BookTalent') + `?talent_id=${currentTalent.id}${eventDate ? '&event_date=' + eventDate : ''}`}>
+              <Link
+                to={createPageUrl('BookTalent') + `?talent_id=${currentTalent.id}${eventDate ? '&event_date=' + eventDate : ''}`}
+                onClick={e => { if (isGuest) { e.preventDefault(); setShowLoginPrompt(true); } }}
+              >
                 <motion.button whileTap={{ scale: 0.9 }} className="w-12 h-12 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-white transition-colors">
                   <ChevronRight className="w-6 h-6 text-white" />
                 </motion.button>
@@ -799,8 +817,9 @@ export default function Discover() {
           </>
         )}
       </div>
-      <TalentHitch />
+      {!isGuest && <TalentHitch />}
       </div>
+      <GuestLoginPrompt open={showLoginPrompt} onOpenChange={setShowLoginPrompt} />
     </PullToRefresh>
   );
 }

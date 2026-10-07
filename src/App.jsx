@@ -25,6 +25,8 @@ const AccountSecurityPage = lazy(() => import('./pages/AccountSecurity'));
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfServicePage = lazy(() => import('./pages/TermsOfService'));
 const NotificationsPage = lazy(() => import('./pages/Notifications'));
+const DiscoverPage = lazy(() => import('./pages/Discover'));
+const TalentProfilePage = lazy(() => import('./pages/TalentProfile'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -130,6 +132,10 @@ const AppRoutes = ({ location }) => (
       <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
       <Route path="/terms-of-service" element={<TermsOfServicePage />} />
 
+      {/* Guest-browsable routes — viewing talent needs no account */}
+      <Route path="/Discover" element={<LayoutWrapper currentPageName="Discover"><DiscoverPage /></LayoutWrapper>} />
+      <Route path="/TalentProfile" element={<LayoutWrapper currentPageName="TalentProfile"><TalentProfilePage /></LayoutWrapper>} />
+
       {/* Authenticated app routes — gated by ProtectedRoute */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route path="/" element={
@@ -137,7 +143,7 @@ const AppRoutes = ({ location }) => (
             <MainPage />
           </LayoutWrapper>
         } />
-        {Object.entries(Pages).map(([path, Page]) => (
+        {Object.entries(Pages).filter(([path]) => path !== 'Discover' && path !== 'TalentProfile').map(([path, Page]) => (
           <Route
             key={path}
             path={`/${path}`}

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Compass, Calendar, MessageSquare, Settings as SettingsIcon, LayoutDashboard } from 'lucide-react';
+import { Compass, Calendar, MessageSquare, Settings as SettingsIcon, LayoutDashboard, LogIn } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { trackLocation, getTabLocation } from '@/lib/tabNavigation';
 
@@ -13,7 +13,7 @@ const TABS = [
 ];
 
 export default function MobileTabBar() {
-  const { isAuthenticated, isLoadingAuth } = useAuth();
+  const { isAuthenticated, isLoadingAuth, isGuest } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   // Per-tab scroll memory — preserves each tab's scroll height/state across switches
@@ -37,7 +37,35 @@ export default function MobileTabBar() {
     return () => clearTimeout(t);
   }, [location.pathname]);
 
-  if (isLoadingAuth || !isAuthenticated) return null;
+  if (isLoadingAuth) return null;
+
+  // Guest browsing: slim bar offering Discover and sign-in only
+  if (!isAuthenticated && isGuest) {
+    return (
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-black/95 backdrop-blur-md border-t border-zinc-800">
+        <div className="flex items-stretch justify-around px-2 h-16" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/Discover', { replace: true })}
+            className={`flex flex-col items-center justify-center gap-1 flex-1 text-[11px] font-medium ${activeTab === '/Discover' ? 'text-white' : 'text-zinc-500'}`}
+          >
+            <Compass className="w-5 h-5" />
+            <span>Discover</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/login?returnTo=%2FDiscover')}
+            className="flex flex-col items-center justify-center gap-1 flex-1 text-[11px] font-medium text-zinc-500"
+          >
+            <LogIn className="w-5 h-5" />
+            <span>Sign In</span>
+          </button>
+        </div>
+      </nav>
+    );
+  }
+
+  if (!isAuthenticated) return null;
 
   const handleTabTap = (e, to) => {
     e.preventDefault();
