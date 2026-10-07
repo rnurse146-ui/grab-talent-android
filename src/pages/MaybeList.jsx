@@ -5,22 +5,48 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Star, MapPin, Banknote, Trash2, Calendar, ChevronLeft, Loader2 } from 'lucide-react';
+import { Heart, Star, MapPin, Banknote, Trash2, Calendar, Loader2 } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
+import GuestLoginPrompt from '@/components/GuestLoginPrompt';
 import { toast } from '@/components/ui/use-toast';
+import { getGuestMaybes, removeGuestMaybe, clearGuestMaybes } from '@/lib/guestMaybeList';
 
 export default function MaybeList() {
-  const [user, setUser] = useState(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [maybeList, setMaybeList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
+  // Move any guest-saved talents into the signed-in user's Maybe List
+  const mergeGuestMaybes = async (currentUser) => {
+    const guestItems = getGuestMaybes();
+    if (guestItems.length === 0) return;
+    const existing = await base44.entities.MaybeList.filter({ seeker_id: currentUser.id });
+    const existingIds = new Set(existing.map(item => item.talent_profile_id));
+    const toCreate = guestItems
+      .filter(item => !existingIds.has(item.talent_profile_id))
+      .map(({ id, ...rest }) => ({ ...rest, seeker_id: currentUser.id }));
+    if (toCreate.length > 0) await base44.entities.MaybeList.bulkCreate(toCreate);
+    clearGuestMaybes();
+  };
+
   const loadData = async () => {
-    const currentUser = await base44.auth.me();
-    setUser(currentUser);
-    const list = await base44.entities.MaybeList.filter({ seeker_id: currentUser.id }, '-created_date');
-    setMaybeList(list);
+    let currentUser = null;
+    try {
+      if (await base44.auth.isAuthenticated()) currentUser = await base44.auth.me();
+    } catch {
+      currentUser = null;
+    }
+    if (currentUser) {
+      await mergeGuestMaybes(currentUser);
+      const page = await base44.entities.MaybeList.filter({ seeker_id: currentUser.id }, { sort: '-created_date' });
+      setMaybeList(page.items);
+    } else {
+      setIsGuest(true);
+      setMaybeList(getGuestMaybes());
+    }
     setLoading(false);
   };
 
@@ -28,7 +54,11 @@ export default function MaybeList() {
     const snapshot = maybeList;
     setMaybeList(prev => prev.filter(item => item.id !== id));
     try {
-      await base44.entities.MaybeList.delete(id);
+      if (isGuest) {
+        removeGuestMaybe(id);
+      } else {
+        await base44.entities.MaybeList.delete(id);
+      }
     } catch (e) {
       setMaybeList(snapshot);
       toast({ title: 'Could not remove', description: e.message || 'Please try again.', variant: 'destructive' });
@@ -37,7 +67,7 @@ export default function MaybeList() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <PageHeader backTo={createPageUrl('Dashboard')} />
+      <PageHeader backTo={isGuest ? createPageUrl('Discover') : createPageUrl('Dashboard')} />
 
       <div className="max-w-4xl mx-auto px-6 pt-8 pb-24 md:pb-8">
         <div className="flex items-center gap-3 mb-8">
@@ -49,6 +79,15 @@ export default function MaybeList() {
             <p className="text-slate-400 text-sm">{maybeList.length} saved talents</p>
           </div>
         </div>
+
+        {isGuest && maybeList.length > 0 && (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-zinc-900 border border-zinc-700 rounded-2xl p-4 mb-6">
+            <p className="text-zinc-300 text-sm flex-1">Create a free account to book these talents. Your list is saved on this device and moves into your account when you sign up.</p>
+            <Button onClick={() => setShowLoginPrompt(true)} size="sm" className="bg-white text-black hover:bg-zinc-100 shrink-0">
+              Sign Up Free
+            </Button>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-purple-500" /></div>
@@ -72,7 +111,7 @@ export default function MaybeList() {
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-purple-900 to-orange-900 flex items-center justify-center"><span className="text-4xl">🎭</span></div>
                   )}
-                  <button onClick={() => removeFromList(item.id)} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                  <button onClick={() => removeFromList(item.id)} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center hover:bg-red-600" aria-label="Remove from Maybe List">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -86,7 +125,11 @@ export default function MaybeList() {
                   </div>
                   <div className="flex gap-2">
                     <Link to={createPageUrl('TalentProfile') + `?id=${item.talent_profile_id}`} className="flex-1"><Button variant="outline" size="sm" className="w-full border-zinc-700 bg-transparent hover:bg-zinc-800">View Profile</Button></Link>
-                    <Link to={createPageUrl('BookTalent') + `?talent_id=${item.talent_profile_id}`}><Button size="sm" className="bg-white text-black hover:bg-zinc-100"><Calendar className="w-4 h-4" /></Button></Link>
+                    {isGuest ? (
+                      <Button size="sm" onClick={() => setShowLoginPrompt(true)} className="bg-white text-black hover:bg-zinc-100" aria-label="Book talent"><Calendar className="w-4 h-4" /></Button>
+                    ) : (
+                      <Link to={createPageUrl('BookTalent') + `?talent_id=${item.talent_profile_id}`}><Button size="sm" className="bg-white text-black hover:bg-zinc-100"><Calendar className="w-4 h-4" /></Button></Link>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -94,6 +137,8 @@ export default function MaybeList() {
           </div>
         )}
       </div>
+
+      <GuestLoginPrompt open={showLoginPrompt} onOpenChange={setShowLoginPrompt} />
     </div>
   );
 }

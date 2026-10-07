@@ -19,6 +19,7 @@ import MobileSheetSelect from '@/components/MobileSheetSelect';
 import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
 import { rankTalents } from '@/lib/discoveryRanking';
 import { normalizeCity, cityMatches, travelsTo, geocodeCityCached } from '@/lib/cityMatch';
+import { getGuestMaybes, addGuestMaybe } from '@/lib/guestMaybeList';
 
 const TALENT_CATEGORIES = [
   { value: 'all', label: 'All Categories' },
@@ -104,6 +105,8 @@ export default function Discover() {
       swipedSet = new Set(history.map(h => h.talent_profile_id));
       setMaybeCount(maybe.length);
       setPassedCount(history.filter(h => h.action === 'pass').length);
+    } else {
+      setMaybeCount(getGuestMaybes().length);
     }
     setUser(currentUser);
     setSwipedIds(swipedSet);
@@ -222,8 +225,12 @@ export default function Discover() {
   const handleSwipe = async (direction) => {
     if (!talents[currentIndex]) return;
     const talent = talents[currentIndex];
-    // Guests cycle the deck freely — swiping just advances, nothing is recorded
+    // Guests can build their Maybe List on this device — booking still needs an account
     if (isGuest) {
+      if (direction === 'right') {
+        addGuestMaybe(talent);
+        setMaybeCount(getGuestMaybes().length);
+      }
       setSwiping(direction);
       setTimeout(() => {
         setSwiping(null);
@@ -526,19 +533,18 @@ export default function Discover() {
           <Logo className="h-12 w-auto" variant="light" />
         </Link>
         <div className="flex items-center gap-2">
-          {isGuest ? (
+          <Link to={createPageUrl('MaybeList')}>
+            <Button variant="outline" size="sm" className="border-zinc-700 bg-transparent relative">
+              <List className="w-4 h-4 mr-1" />Maybe List
+              {maybeCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-green-500 text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{maybeCount}</span>
+              )}
+            </Button>
+          </Link>
+          {isGuest && (
             <Button variant="outline" size="sm" onClick={() => setShowLoginPrompt(true)} className="border-zinc-700 bg-transparent">
               Sign In
             </Button>
-          ) : (
-            <Link to={createPageUrl('MaybeList')}>
-              <Button variant="outline" size="sm" className="border-zinc-700 bg-transparent relative">
-                <List className="w-4 h-4 mr-1" />Maybe List
-                {maybeCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-green-500 text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{maybeCount}</span>
-                )}
-              </Button>
-            </Link>
           )}
           <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className={`relative bg-transparent ${activeFilterCount > 0 ? 'border-purple-500' : 'border-zinc-700'}`}>
             <Filter className="w-4 h-4 mr-2" />Filters
@@ -744,7 +750,7 @@ export default function Discover() {
             <p className="text-slate-400 mb-6">Check back later or adjust your filters</p>
             <div className="flex gap-3 justify-center">
               <Button onClick={() => setShowFilters(true)} variant="outline" className="border-slate-700 bg-transparent text-white hover:bg-zinc-800">Change Filters</Button>
-              {!isGuest && <Link to={createPageUrl('MaybeList')}><Button className="bg-purple-600 hover:bg-purple-500">View Maybe List</Button></Link>}
+              <Link to={createPageUrl('MaybeList')}><Button className="bg-purple-600 hover:bg-purple-500">View Maybe List</Button></Link>
             </div>
             {isGuest && talents.length > 0 && (
               <Button
