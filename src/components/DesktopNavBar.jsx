@@ -17,6 +17,7 @@ const TABS = [
 export default function DesktopNavBar() {
   const { isAuthenticated, isLoadingAuth, isGuest } = useAuth();
   const location = useLocation();
+  const activeTab = resolveTab(location.pathname);
 
   if (isLoadingAuth) return null;
 
@@ -43,8 +44,6 @@ export default function DesktopNavBar() {
   }
 
   if (!isAuthenticated) return null;
-
-  const activeTab = resolveTab(location.pathname);
 
   return (
     <nav className="hidden md:flex fixed top-0 inset-x-0 z-50 h-14 items-center gap-2 px-6 bg-black/95 backdrop-blur-md border-b border-zinc-800">
