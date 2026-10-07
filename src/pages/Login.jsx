@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
+import { LogIn, Mail, Lock, Loader2, Search } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import MicrosoftIcon from "@/components/MicrosoftIcon";
@@ -13,6 +14,8 @@ import AppleIcon from "@/components/AppleIcon";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { enterGuestMode } = useAuth();
   const [email, setEmail] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
   const [password, setPassword] = useState("");
@@ -55,6 +58,11 @@ export default function Login() {
   };
   const handleApple = () => {
     base44.auth.loginWithProvider("apple", returnTo);
+  };
+
+  const handleGuest = () => {
+    enterGuestMode();
+    navigate("/Discover");
   };
 
   return (
@@ -177,6 +185,24 @@ export default function Login() {
           )}
         </Button>
       </form>
+
+      {/* Guest browsing — no account needed until booking or messaging */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-card px-3 text-muted-foreground">Just looking for talent?</span>
+        </div>
+      </div>
+      <Button
+        variant="outline"
+        className="w-full h-12 text-sm font-medium"
+        onClick={handleGuest}
+      >
+        <Search className="w-5 h-5 mr-2" />
+        Browse as a Guest
+      </Button>
     </AuthLayout>
   );
 }
