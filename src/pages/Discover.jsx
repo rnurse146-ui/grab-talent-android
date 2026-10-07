@@ -220,9 +220,17 @@ export default function Discover() {
   };
 
   const handleSwipe = async (direction) => {
-    if (isGuest) { setShowLoginPrompt(true); return; }
     if (!talents[currentIndex]) return;
     const talent = talents[currentIndex];
+    // Guests cycle the deck freely — swiping just advances, nothing is recorded
+    if (isGuest) {
+      setSwiping(direction);
+      setTimeout(() => {
+        setSwiping(null);
+        setCurrentIndex(prev => prev + 1);
+      }, 300);
+      return;
+    }
     setSwiping(direction);
 
     const historyRecord = await base44.entities.SwipeHistory.create({
@@ -738,6 +746,15 @@ export default function Discover() {
               <Button onClick={() => setShowFilters(true)} variant="outline" className="border-slate-700 bg-transparent text-white hover:bg-zinc-800">Change Filters</Button>
               {!isGuest && <Link to={createPageUrl('MaybeList')}><Button className="bg-purple-600 hover:bg-purple-500">View Maybe List</Button></Link>}
             </div>
+            {isGuest && talents.length > 0 && (
+              <Button
+                onClick={() => setCurrentIndex(0)}
+                variant="outline"
+                className="mt-3 border-zinc-700 bg-transparent text-white hover:bg-zinc-800"
+              >
+                Start Over
+              </Button>
+            )}
             {passedCount > 0 && (
               <Button
                 onClick={handleRestorePassed}
