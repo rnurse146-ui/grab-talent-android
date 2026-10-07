@@ -83,11 +83,29 @@ export default function Login() {
         </>
       }
     >
-      <Button
-        variant="outline"
-        className="w-full h-12 text-sm font-medium mb-3"
-        onClick={handleGoogle}
-      >
+    {/* Guest browsing — no account needed until booking or messaging */}
+    <div className="relative my-6">
+      <div className="absolute inset-0 flex items-center">
+        <div className="w-full border-t border-border" />
+      </div>
+      <div className="relative flex justify-center text-xs uppercase">
+        <span className="bg-card px-3 text-muted-foreground">Just looking for talent?</span>
+      </div>
+    </div>
+    <Button
+      variant="outline"
+      className="w-full h-12 text-sm font-medium mb-6"
+      onClick={handleGuest}
+    >
+      <Search className="w-5 h-5 mr-2" />
+      Browse as a Guest
+    </Button>
+
+    <Button
+      variant="outline"
+      className="w-full h-12 text-sm font-medium mb-3"
+      onClick={handleGoogle}
+    >
         <GoogleIcon className="w-5 h-5 mr-2" />
         Continue with Google
       </Button>
@@ -186,23 +204,6 @@ export default function Login() {
         </Button>
       </form>
 
-      {/* Guest browsing — no account needed until booking or messaging */}
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">Just looking for talent?</span>
-        </div>
-      </div>
-      <Button
-        variant="outline"
-        className="w-full h-12 text-sm font-medium"
-        onClick={handleGuest}
-      >
-        <Search className="w-5 h-5 mr-2" />
-        Browse as a Guest
-      </Button>
     </AuthLayout>
   );
 }
