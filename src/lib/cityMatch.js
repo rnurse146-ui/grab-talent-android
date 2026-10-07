@@ -30,6 +30,15 @@ export function cityMatches(talent, normCity, rawCity) {
   return normalizeCity(tc) === normCity;
 }
 
+// True when the talent's home coordinates fall inside the searched area's
+// bounding box — this is what makes county/region searches (e.g. "Kent")
+// find talent based in any town within that area, in any country
+export function inSearchArea(talent, geo) {
+  if (!geo || !geo.bbox || talent.lat == null || talent.lng == null) return false;
+  const { south, north, west, east } = geo.bbox;
+  return talent.lat >= south && talent.lat <= north && talent.lng >= west && talent.lng <= east;
+}
+
 // Great-circle distance in miles
 export function haversineMiles(lat1, lng1, lat2, lng2) {
   const toRad = (d) => (d * Math.PI) / 180;
@@ -57,7 +66,10 @@ export async function geocodeCityCached(city) {
   if (geoCache.has(key)) return geoCache.get(key);
   try {
     const res = await base44.functions.invoke('geocodeCity', { city });
-    const geo = res.data?.lat != null ? { lat: res.data.lat, lng: res.data.lng } : null;
+    const d = res.data;
+    const geo = d?.lat != null
+      ? { lat: d.lat, lng: d.lng, bbox: d.bbox || null }
+      : null;
     geoCache.set(key, geo);
     return geo;
   } catch (e) {

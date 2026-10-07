@@ -25,10 +25,16 @@ export default async function(req) {
     if (!Array.isArray(data) || data.length === 0) {
       return Response.json({ lat: null, lng: null });
     }
+    // boundingbox = [south, north, west, east] — lets county/region searches
+    // match every talent based anywhere inside the area, not just near its centre
+    const bb = Array.isArray(data[0].boundingbox) ? data[0].boundingbox.map(Number) : null;
     return Response.json({
       lat: parseFloat(data[0].lat),
       lng: parseFloat(data[0].lon),
-      display_name: data[0].display_name
+      display_name: data[0].display_name,
+      bbox: bb && bb.length === 4 && bb.every(n => Number.isFinite(n))
+        ? { south: bb[0], north: bb[1], west: bb[2], east: bb[3] }
+        : null
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

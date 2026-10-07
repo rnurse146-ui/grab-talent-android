@@ -18,7 +18,7 @@ import PullToRefresh from '@/components/PullToRefresh';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
 import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
 import { rankTalents } from '@/lib/discoveryRanking';
-import { normalizeCity, cityMatches, travelsTo, geocodeCityCached } from '@/lib/cityMatch';
+import { normalizeCity, cityMatches, travelsTo, inSearchArea, geocodeCityCached } from '@/lib/cityMatch';
 import { getGuestMaybes, addGuestMaybe } from '@/lib/guestMaybeList';
 
 const TALENT_CATEGORIES = [
@@ -153,8 +153,12 @@ export default function Discover() {
     // with a fallback banner when nobody is based in the searched city
     if (filters.city) {
       const raw = filters.city.trim();
-      const local = filtered.filter(t => cityMatches(t, normalizeCity(raw), raw));
       const geo = await geocodeCityCached(raw);
+      // Local = text match (city/town) or home coordinates inside the searched
+      // area (county/region); everyone else within their travel radius follows
+      const local = filtered.filter(t =>
+        cityMatches(t, normalizeCity(raw), raw) || inSearchArea(t, geo)
+      );
       const travelers = filtered.filter(t => !local.includes(t) && travelsTo(t, geo));
       filtered = [...local, ...travelers];
       setTravelIds(new Set(travelers.map(t => t.id)));
