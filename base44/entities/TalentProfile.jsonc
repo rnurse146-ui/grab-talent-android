@@ -86,6 +86,14 @@
       "type": "number",
       "description": "How far willing to travel in miles"
     },
+    "lat": {
+      "type": "number",
+      "description": "Rough latitude of location_city \u2014 set by the geocodeCity function when the profile is saved"
+    },
+    "lng": {
+      "type": "number",
+      "description": "Rough longitude of location_city \u2014 set by the geocodeCity function when the profile is saved"
+    },
     "is_verified": {
       "type": "boolean",
       "default": false,

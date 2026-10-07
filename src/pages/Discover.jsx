@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
   X, Heart, Star, MapPin, Banknote, CheckCircle2,
-  Filter, ChevronRight, Loader2, List, Calendar, User, Zap, Undo2
+  Filter, ChevronRight, Loader2, List, Calendar, User, Zap, Undo2, Car
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from '@/components/Logo';
@@ -18,6 +18,7 @@ import PullToRefresh from '@/components/PullToRefresh';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
 import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
 import { rankTalents } from '@/lib/discoveryRanking';
+import { normalizeCity, cityMatches, travelsTo, geocodeCityCached } from '@/lib/cityMatch';
 
 const TALENT_CATEGORIES = [
   { value: 'all', label: 'All Categories' },
@@ -62,6 +63,8 @@ export default function Discover() {
   const dragX = useRef(0);
   const { isGuest } = useAuth();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [travelIds, setTravelIds] = useState(new Set());
+  const [travelInfo, setTravelInfo] = useState(null);
 
   const [filters, setFilters] = useState({
     categories: [],
@@ -142,7 +145,21 @@ export default function Discover() {
         return value != null && (!min || value >= min) && (!max || value <= max);
       });
     }
-    if (filters.city) filtered = filtered.filter(t => t.location_city?.toLowerCase().includes(filters.city.toLowerCase()));
+    // Smart city matching: London boroughs count as London, and talent within
+    // their travel radius of the event city joins the deck after locals —
+    // with a fallback banner when nobody is based in the searched city
+    if (filters.city) {
+      const raw = filters.city.trim();
+      const local = filtered.filter(t => cityMatches(t, normalizeCity(raw), raw));
+      const geo = await geocodeCityCached(raw);
+      const travelers = filtered.filter(t => !local.includes(t) && travelsTo(t, geo));
+      filtered = [...local, ...travelers];
+      setTravelIds(new Set(travelers.map(t => t.id)));
+      setTravelInfo(travelers.length > 0 ? { city: raw, count: travelers.length, fallback: local.length === 0 } : null);
+    } else {
+      setTravelIds(new Set());
+      setTravelInfo(null);
+    }
     if (filters.minRating) filtered = filtered.filter(t => (t.average_rating || 0) >= parseFloat(filters.minRating));
     if (filters.verifiedOnly) filtered = filtered.filter(t => t.is_verified === true);
     if (filters.equipment.length > 0) {
@@ -541,6 +558,17 @@ export default function Discover() {
         }
       </div>
 
+      {travelInfo && (
+        <div className="flex items-center gap-2 mx-6 my-2 rounded-xl border border-purple-500/40 bg-purple-500/10 px-4 py-2.5 text-xs text-purple-200">
+          <Car className="w-4 h-4 shrink-0" />
+          <span>
+            {travelInfo.fallback
+              ? `No talent based in ${travelInfo.city} right now — showing ${travelInfo.count} performer${travelInfo.count === 1 ? '' : 's'} who travel there.`
+              : `Also showing ${travelInfo.count} performer${travelInfo.count === 1 ? '' : 's'} who travel to ${travelInfo.city}.`}
+          </span>
+        </div>
+      )}
+
       <AnimatePresence>
         {showFilters && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="border-b border-zinc-800 overflow-hidden">
@@ -763,6 +791,9 @@ export default function Discover() {
                       <p className="text-purple-300 text-sm font-medium capitalize mb-3">{currentTalent.talent_category?.replace(/_/g, ' ')}</p>
                       <div className="flex flex-wrap gap-2 mb-3">
                         <Badge variant="secondary" className="bg-white/20 text-white"><MapPin className="w-3 h-3 mr-1" />{currentTalent.location_city}</Badge>
+                        {travelIds.has(currentTalent.id) && travelInfo && (
+                          <Badge variant="secondary" className="bg-purple-500/30 text-purple-200"><Car className="w-3 h-3 mr-1" />Travels to {travelInfo.city}</Badge>
+                        )}
                         <Badge variant="secondary" className="bg-white/20 text-white"><Banknote className="w-3 h-3 mr-1" />{rateSummary(currentTalent) || 'POA'}</Badge>
                         {currentTalent.average_rating && (
                           <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300"><Star className="w-3 h-3 mr-1 fill-yellow-300" />{currentTalent.average_rating.toFixed(1)}</Badge>

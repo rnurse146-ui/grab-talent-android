@@ -198,6 +198,14 @@ export default function TalentSetup() {
   const handleSubmit = async () => {
     setLoading(true);
     const profileData = { ...formData, user_id: user.id, hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null, evening_rate: formData.evening_rate ? parseFloat(formData.evening_rate) : null, day_rate: formData.day_rate ? parseFloat(formData.day_rate) : null, minimum_hours: parseInt(formData.minimum_hours), location_radius: parseInt(formData.location_radius), experience_years: formData.experience_years ? parseInt(formData.experience_years) : null, last_minute_available: !!formData.last_minute_available, is_available: true };
+    // Best-effort geocoding — lets the talent show up for nearby event-city searches
+    const needsGeo = formData.location_city && (!existingProfile || existingProfile.location_city !== formData.location_city || existingProfile.lat == null);
+    if (needsGeo) {
+      try {
+        const geoRes = await base44.functions.invoke('geocodeCity', { city: formData.location_city });
+        if (geoRes.data?.lat != null) { profileData.lat = geoRes.data.lat; profileData.lng = geoRes.data.lng; }
+      } catch (e) { /* geocoding is optional — save continues without it */ }
+    }
     let savedProfile;
     if (existingProfile) {
       savedProfile = await base44.entities.TalentProfile.update(existingProfile.id, profileData);
