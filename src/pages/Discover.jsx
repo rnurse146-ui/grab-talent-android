@@ -539,10 +539,10 @@ export default function Discover() {
         </Link>
         <div className="flex items-center gap-2">
           <Link to={createPageUrl('MaybeList')}>
-            <Button variant="outline" size="sm" className="border-zinc-700 bg-transparent relative">
-              <List className="w-4 h-4 mr-1" />Maybe List
+            <Button size="sm" className="bg-green-500 hover:bg-green-400 text-black font-bold relative">
+              <Heart className="w-4 h-4 mr-1 fill-black" />Maybe List
               {maybeCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-green-500 text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{maybeCount}</span>
+                <span className="ml-1 bg-black text-green-400 text-xs font-bold px-1.5 py-0.5 rounded-full min-w-5">{maybeCount}</span>
               )}
             </Button>
           </Link>
@@ -844,21 +844,29 @@ export default function Discover() {
               </motion.div>
             </AnimatePresence>
 
-            <div className="flex items-center gap-6 mt-8">
-              <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-red-500 hover:bg-red-500/20 transition-colors">
-                <X className="w-8 h-8 text-red-400" />
-              </motion.button>
+            <div className="flex items-center gap-5 mt-8">
+              <div className="flex flex-col items-center gap-1.5">
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('left')} className="w-14 h-14 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-red-500 hover:bg-red-500/20 transition-colors">
+                  <X className="w-7 h-7 text-red-400" />
+                </motion.button>
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Nope</span>
+              </div>
               <Link
                 to={createPageUrl('BookTalent') + `?talent_id=${currentTalent.id}${eventDate ? '&event_date=' + eventDate : ''}`}
                 onClick={e => { if (isGuest) { e.preventDefault(); setShowLoginPrompt(true); } }}
+                className="flex flex-col items-center gap-1.5"
               >
                 <motion.button whileTap={{ scale: 0.9 }} className="w-12 h-12 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-white transition-colors">
                   <ChevronRight className="w-6 h-6 text-white" />
                 </motion.button>
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Hire</span>
               </Link>
-              <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('right')} className="w-16 h-16 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-green-500 hover:bg-green-500/20 transition-colors">
-                <Heart className="w-8 h-8 text-green-400" />
-              </motion.button>
+              <div className="flex flex-col items-center gap-1.5">
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('right')} className="w-20 h-20 rounded-full bg-green-500 border-4 border-green-400 shadow-[0_0_30px_rgba(34,197,94,0.5)] flex items-center justify-center hover:bg-green-400 transition-colors">
+                  <Heart className="w-10 h-10 text-black fill-black" />
+                </motion.button>
+                <span className="text-[11px] font-bold uppercase tracking-wide text-green-400">Maybe</span>
+              </div>
             </div>
             {/* Undo button */}
             {lastPass && (
