@@ -6,7 +6,8 @@ import { createPageUrl } from '@/utils';
 import { categoryLabel } from '@/lib/categoryLabel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Star, MapPin, Banknote, Trash2, Calendar, Loader2 } from 'lucide-react';
+import { Heart, Star, MapPin, Banknote, Trash2, Calendar, Loader2, Scale } from 'lucide-react';
+import CompareView from '@/components/maybe/CompareView';
 import PageHeader from '@/components/PageHeader';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
 import { toast } from '@/components/ui/use-toast';
@@ -17,6 +18,21 @@ export default function MaybeList() {
   const [maybeList, setMaybeList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [compareMode, setCompareMode] = useState(false);
+
+  const selectedItems = maybeList.filter(item => selectedIds.includes(item.id));
+
+  const toggleSelect = (item) => {
+    setSelectedIds(prev => {
+      if (prev.includes(item.id)) return prev.filter(id => id !== item.id);
+      if (prev.length >= 3) {
+        toast({ title: 'Compare up to 3', description: 'Deselect one talent before adding another.' });
+        return prev;
+      }
+      return [...prev, item.id];
+    });
+  };
 
   useEffect(() => { loadData(); }, []);
 
@@ -64,6 +80,7 @@ export default function MaybeList() {
       setMaybeList(snapshot);
       toast({ title: 'Could not remove', description: e.message || 'Please try again.', variant: 'destructive' });
     }
+    setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
   };
 
   return (
@@ -79,7 +96,22 @@ export default function MaybeList() {
             <h1 className="text-2xl font-bold">Maybe List</h1>
             <p className="text-slate-400 text-sm">{maybeList.length} saved talents</p>
           </div>
+          {!loading && maybeList.length >= 2 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCompareMode(true)}
+              disabled={selectedIds.length < 2}
+              className="ml-auto shrink-0 border-zinc-700 bg-transparent hover:bg-zinc-800 disabled:opacity-50"
+              title={selectedIds.length < 2 ? 'Select 2–3 talents to compare' : undefined}
+            >
+              <Scale className="w-4 h-4 mr-1" />Compare{selectedIds.length > 0 ? ` (${selectedIds.length})` : ''}
+            </Button>
+          )}
         </div>
+        {selectedIds.length > 0 && !compareMode && (
+          <p className="text-xs text-zinc-500 -mt-6 mb-6">Tap the scales on {selectedIds.length < 2 ? 'one more talent' : 'more talents to compare up to 3'}, then hit Compare.</p>
+        )}
 
         {isGuest && maybeList.length > 0 && (
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-zinc-900 border border-zinc-700 rounded-2xl p-4 mb-6">
@@ -102,10 +134,18 @@ export default function MaybeList() {
             <p className="text-zinc-500 text-xs mb-6">💡 Tip: use Filters in Discover to narrow talent by price, location and rating first.</p>
             <Link to={createPageUrl('Discover')}><Button className="bg-white text-black hover:bg-zinc-100">Discover Talent</Button></Link>
           </div>
+        ) : compareMode && selectedItems.length >= 2 ? (
+          <CompareView
+            items={selectedItems}
+            onExit={() => setCompareMode(false)}
+            isGuest={isGuest}
+            onLoginPrompt={() => setShowLoginPrompt(true)}
+            onDeselect={(id) => setSelectedIds(prev => prev.filter(selectedId => selectedId !== id))}
+          />
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {maybeList.map((item, index) => (
-              <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden group">
+              <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className={`bg-zinc-900 rounded-2xl border overflow-hidden group ${selectedIds.includes(item.id) ? 'border-purple-500' : 'border-zinc-800'}`}>
                 <div className="relative aspect-square">
                   {item.talent_photo ? (
                     <img src={item.talent_photo} alt={item.talent_stage_name} className="w-full h-full object-cover" />
@@ -114,6 +154,13 @@ export default function MaybeList() {
                   )}
                   <button onClick={() => removeFromList(item.id)} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center hover:bg-red-600" aria-label="Remove from Maybe List">
                     <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => toggleSelect(item)}
+                    className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center ${selectedIds.includes(item.id) ? 'bg-purple-600' : 'bg-black/60 hover:bg-purple-600'}`}
+                    aria-label="Select to compare"
+                  >
+                    <Scale className="w-4 h-4" />
                   </button>
                 </div>
                 <div className="p-4">
