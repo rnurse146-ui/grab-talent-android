@@ -4,7 +4,7 @@ import { Compass } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 // Pages where the floating button would be redundant or intrusive
-const HIDDEN_PATHS = ['/Discover', '/login', '/register', '/forgot-password', '/reset-password'];
+const HIDDEN_PATHS = ['/Discover', '/Messages', '/login', '/register', '/forgot-password', '/reset-password'];
 
 // Always-visible floating shortcut to the Discover deck, on mobile and desktop
 export default function FloatingDiscoverButton() {
