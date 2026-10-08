@@ -42,8 +42,8 @@ export default function MobileTabBar() {
   // Guest browsing: slim bar offering Discover and sign-in only
   if (!isAuthenticated && isGuest) {
     return (
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-black/95 backdrop-blur-md border-t border-zinc-800">
-        <div className="flex items-stretch justify-around px-2 h-16" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-black border-t border-zinc-800" style={{ transform: 'translateZ(0)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="flex items-stretch justify-around px-2 h-16">
           <button
             type="button"
             onClick={() => navigate('/Discover', { replace: true })}
@@ -90,8 +90,8 @@ export default function MobileTabBar() {
   };
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-black/95 backdrop-blur-md border-t border-zinc-800">
-      <div className="flex items-stretch justify-around px-2 h-16" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-black border-t border-zinc-800" style={{ transform: 'translateZ(0)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <div className="flex items-stretch justify-around px-2 h-16">
         {TABS.map(({ to, label, Icon }) => {
           const isActive = to === activeTab;
           return (
