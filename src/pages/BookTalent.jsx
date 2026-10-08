@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
-import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, Banknote, Loader2, CheckCircle2, Star, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, Banknote, Loader2, CheckCircle2, Star, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import PageHeader from '@/components/PageHeader';
 import { rateSummary, estimateBookingPrice } from '@/lib/talentPricing';
@@ -39,6 +39,22 @@ export default function BookTalent() {
   const initialDate = prefillDate ? new Date(prefillDate + 'T12:00:00') : null;
   const [formData, setFormData] = useState({ event_name: '', event_type: '', event_date: initialDate, start_time: '', end_time: '', venue_name: '', venue_address: '', venue_city: '', special_requirements: '', seeker_phone: '' });
   const [calendarMonth, setCalendarMonth] = useState(initialDate || new Date());
+  const [maybeTalents, setMaybeTalents] = useState([]); // id -> stage name from the user's Maybe List
+  const [maybeConflicts, setMaybeConflicts] = useState([]); // Maybe List talents already booked on the selected date
+
+  const checkMaybeConflicts = async (user, date, maybeItems = maybeTalents) => {
+    setMaybeConflicts([]);
+    if (!date) return;
+    const page = await base44.entities.Booking.filter(
+      { seeker_id: user.id, event_date: format(date, 'yyyy-MM-dd') },
+      { fields: ['talent_profile_id', 'talent_stage_name', 'status'] }
+    );
+    const active = page.items.filter(b => ['pending', 'accepted', 'confirmed'].includes(b.status));
+    const conflicts = active
+      .filter(b => maybeItems.some(m => m.talent_profile_id === b.talent_profile_id))
+      .map(b => b.talent_stage_name || 'a saved talent');
+    setMaybeConflicts(conflicts);
+  };
 
   useEffect(() => { loadData(); }, [talentId]);
 
@@ -46,10 +62,16 @@ export default function BookTalent() {
     const currentUser = await base44.auth.me();
     setUser(currentUser);
     setFormData(prev => ({ ...prev, seeker_phone: currentUser.phone || '' }));
+    const maybePage = await base44.entities.MaybeList.filter(
+      { seeker_id: currentUser.id },
+      { fields: ['talent_profile_id', 'talent_stage_name'] }
+    );
+    setMaybeTalents(maybePage.items);
     if (talentId) {
       const profiles = await base44.entities.TalentProfile.filter({ id: talentId });
       if (profiles.length > 0) setTalent(profiles[0]);
     }
+    if (initialDate) await checkMaybeConflicts(currentUser, initialDate, maybePage.items);
     setLoading(false);
   };
 
@@ -137,7 +159,7 @@ export default function BookTalent() {
               <Calendar
                 mode="single"
                 selected={formData.event_date}
-                onSelect={(date) => setFormData({...formData, event_date: date})}
+                onSelect={(date) => { setFormData({...formData, event_date: date}); checkMaybeConflicts(user, date); }}
                 month={calendarMonth}
                 onMonthChange={setCalendarMonth}
                 disabled={(date) => date < new Date()}
@@ -145,6 +167,23 @@ export default function BookTalent() {
               />
             </div>
           </div>
+
+          {maybeConflicts.length > 0 && (
+            <div className="p-4 rounded-2xl bg-amber-950/40 border border-amber-600/50">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-amber-200 text-sm">Already booked that evening</p>
+                  <p className="text-xs text-amber-200/80 mt-1 leading-relaxed">
+                    {maybeConflicts.length === 1
+                      ? `${maybeConflicts[0]} is on your Maybe List and already has a booking on this date.`
+                      : `${maybeConflicts.join(', ')} are on your Maybe List and already have bookings on this date.`}
+                  </p>
+                  <p className="text-xs text-amber-200/60 mt-1">Check your Bookings before hiring two people for the same slot.</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div><Label className="text-zinc-400">Start Time</Label><Input type="time" value={formData.start_time} onChange={(e) => setFormData({...formData, start_time: e.target.value})} className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
