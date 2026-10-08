@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { sanitizeText, normalizeTime } from '../../shared/emailSanitize.ts';
+import { buildBookingIcs, toBase64Utf8 } from '../../shared/calendarInvite.ts';
 
 // Emails talent when they receive a new booking request or get shortlisted to
 // a Maybe List, and emails the seeker when the talent accepts or declines a
@@ -99,9 +100,17 @@ https://grabtalent.base44.app
       const endT = normalizeTime(booking.end_time) || 'TBD';
 
       if (response === 'accepted') {
+        // The date is now real for the client: attach a calendar invite so it
+        // lands in their Google / Apple / Outlook calendar in one tap.
+        const { icsContent, filename: icsFilename } = buildBookingIcs(booking, {
+          method: 'PUBLISH',
+          status: 'TENTATIVE',
+          description: `${talentName} accepted your booking request. Confirm in Grab Talent to lock the date in.`
+        });
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: seekerEmail,
           subject: `✅ ${talentName} accepted your booking request: ${eventName}`,
+          attachments: [{ filename: icsFilename, content: toBase64Utf8(icsContent) }],
           body: `Hi ${seekerName},
 
 Great news — ${talentName} has ACCEPTED your booking request on Grab Talent!
@@ -110,6 +119,8 @@ Great news — ${talentName} has ACCEPTED your booking request on Grab Talent!
 🗓️ Date: ${formatDate(booking.event_date)}
 ⏰ Time: ${startT} – ${endT}
 📍 Venue: ${venue}
+
+A calendar invite is attached so you can add the date to your calendar app (Google, Apple, Outlook and more) while you wait for the date to be locked in.
 
 Next step: open Grab Talent and confirm the booking to lock the date in.
 

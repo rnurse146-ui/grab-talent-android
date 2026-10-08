@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
-import { sanitizeText, icsEscape, normalizeTime } from '../../shared/emailSanitize.ts';
+import { sanitizeText, normalizeTime } from '../../shared/emailSanitize.ts';
+import { buildBookingIcs, toBase64Utf8 } from '../../shared/calendarInvite.ts';
 
 // Sends the "gig confirmed" email (with calendar invite) to the talent when a
 // booking is confirmed. Narrow operation: the recipient, subject and body are
@@ -39,49 +40,28 @@ export default async function(req) {
       } catch { eventDateFormatted = 'TBD'; }
     }
 
-    const icsDate = booking.event_date ? booking.event_date.replace(/-/g, '') : '';
     // Times are seeker-controlled: keep only valid HH:MM values, else a fixed
     // default — never raw strings in the ICS DTSTART/DTEND lines.
     const startT = normalizeTime(booking.start_time);
     const endT = normalizeTime(booking.end_time);
-    const startTime = (startT ? startT.replace(':', '') : '0900') + '00';
-    const endTime = (endT ? endT.replace(':', '') : '1800') + '00';
-    const dtStart = icsDate ? `${icsDate}T${startTime}` : '';
-    const dtEnd = icsDate ? `${icsDate}T${endTime}` : '';
-    const uid = `grabtalent-${booking.id}@grabtalent.app`;
-    // All booking fields below are seeker-controlled and untrusted. Sanitize
-    // (control chars + URLs) and RFC 5545-escape so no injected properties or
-    // events can be added to the calendar invite.
+    // All booking fields are seeker-controlled and untrusted: sanitizeText,
+    // icsEscape and fixed-format times in the shared builder keep no injected
+    // properties or events from being added to the calendar invite.
     const eventName = sanitizeText(booking.event_name, 120) || 'Gig';
     const clientName = sanitizeText(booking.seeker_name, 100) || 'The client';
     const clientPhone = sanitizeText(booking.seeker_phone, 30);
     const venuePlain = sanitizeText([booking.venue_name, booking.venue_address, booking.venue_city].filter(Boolean).join(', '), 200);
     const notesPlain = sanitizeText(booking.special_requirements, 300);
-    const location = icsEscape(venuePlain);
-    const notes = icsEscape(notesPlain);
-    const icsContent = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//Grab Talent//EN',
-      'CALSCALE:GREGORIAN',
-      'METHOD:REQUEST',
-      'BEGIN:VEVENT',
-      `UID:${uid}`,
-      `DTSTART:${dtStart}`,
-      `DTEND:${dtEnd}`,
-      `SUMMARY:${icsEscape(eventName)}`,
-      `LOCATION:${location}`,
-      `DESCRIPTION:Booked by ${icsEscape(clientName)}${clientPhone ? ` (${icsEscape(clientPhone)})` : ''}. Payout: £${booking.talent_payout}.${notes ? ' Notes: ' + notes : ''}`,
-      `ORGANIZER:mailto:noreply@grabtalent.app`,
-      `ATTENDEE:mailto:${talentEmail}`,
-      'STATUS:CONFIRMED',
-      'END:VEVENT',
-      'END:VCALENDAR'
-    ].join('\r\n');
+    const { icsContent, filename: icsFilename } = buildBookingIcs(booking, {
+      method: 'REQUEST',
+      attendeeEmail: talentEmail,
+      description: `Booked by ${clientName}${clientPhone ? ` (${clientPhone})` : ''}.${booking.talent_payout != null ? ` Payout: £${booking.talent_payout}.` : ''}${notesPlain ? ` Notes: ${notesPlain}` : ''}`
+    });
 
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: talentEmail,
       subject: `🎉 Confirmed Gig: ${eventName} on ${eventDateFormatted}`,
+      attachments: [{ filename: icsFilename, content: toBase64Utf8(icsContent) }],
       body: `Hi ${booking.talent_stage_name},
 
 Great news — you've been hired! ${clientName} has confirmed their booking with you.
@@ -94,12 +74,7 @@ Great news — you've been hired! ${clientName} has confirmed their booking with
 ${clientPhone ? `📞 Client Phone: ${clientPhone}` : ''}
 ${notesPlain ? `\n📝 Special Requirements (written by the client): ${notesPlain}` : ''}
 
-📆 ADD TO YOUR CALENDAR
-Copy the text below, save it as a file called "gig.ics", then open it to add the event directly to your calendar app (works with Google Calendar, Apple Calendar, Outlook and more):
-
---- COPY FROM HERE ---
-${icsContent}
---- COPY TO HERE ---
+The calendar invite is attached — open it to add the gig straight to your calendar app (Google Calendar, Apple Calendar, Outlook and more all support it).
 
 Log in to Grab Talent to view full booking details and message your client.
 

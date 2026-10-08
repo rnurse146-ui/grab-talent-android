@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import {
   ChevronLeft, Calendar, Clock, MapPin, Banknote,
   Loader2, CheckCircle2, XCircle, AlertCircle,
-  MessageSquare, Star, User, Phone, CalendarX, ShieldCheck
+  MessageSquare, Star, User, Phone, CalendarX, ShieldCheck, CalendarPlus
 } from 'lucide-react';
+import { downloadBookingIcs } from '@/lib/calendarInvite';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import PageHeader from '@/components/PageHeader';
@@ -295,6 +296,13 @@ export default function BookingDetails() {
                 Message {isSeeker ? booking.talent_stage_name : booking.seeker_name}
               </Button>
             </Link>
+          )}
+
+          {['accepted', 'confirmed', 'completed'].includes(booking.status) && booking.event_date && (
+            <Button onClick={() => downloadBookingIcs(booking)} variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:text-white">
+              <CalendarPlus className="w-4 h-4 mr-2" />
+              Add to Calendar (Google / Apple / Outlook)
+            </Button>
           )}
 
           {isTalent && booking.event_date && (
