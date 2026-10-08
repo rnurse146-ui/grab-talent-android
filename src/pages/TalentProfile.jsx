@@ -139,7 +139,7 @@ export default function TalentProfile() {
               </div>
             </div>
             <div className="flex flex-wrap gap-4 mb-6">
-              <div className="flex items-center gap-2 text-slate-300"><MapPin className="w-4 h-4 text-slate-500" />{profile.location_city}<span className="text-slate-500">({profile.location_radius} mile radius)</span></div>
+              <div className="flex items-center gap-2 text-slate-300"><MapPin className="w-4 h-4 text-slate-500" />{profile.location_city}<span className="text-slate-500">{profile.location_radius >= 25000 ? '(Available worldwide)' : `(${profile.location_radius} mile radius)`}</span></div>
               {profile.hourly_rate != null && (<div className="flex items-center gap-2 text-slate-300"><Banknote className="w-4 h-4 text-slate-500" />£{profile.hourly_rate}/hour</div>)}
               {profile.evening_rate != null && (<div className="flex items-center gap-2 text-slate-300"><Clock className="w-4 h-4 text-slate-500" />£{profile.evening_rate} evening rate</div>)}
               {profile.day_rate != null && (<div className="flex items-center gap-2 text-slate-300"><Calendar className="w-4 h-4 text-slate-500" />£{profile.day_rate} day rate</div>)}

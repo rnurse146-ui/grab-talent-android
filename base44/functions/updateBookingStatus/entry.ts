@@ -70,6 +70,13 @@ export default async function(req) {
       } catch (e) {}
     }
 
+    // Talent accepting or declining emails the seeker (best-effort)
+    if (isTalent && (newStatus === 'accepted' || newStatus === 'declined')) {
+      try {
+        await base44.functions.invoke('notifyTalentByEmail', { kind: 'booking_response', booking_id: bookingId, response: newStatus });
+      } catch (e) {}
+    }
+
     // Tell the other party what happened
     try {
       const recipientId = isSeeker ? booking.talent_user_id : booking.seeker_id;
