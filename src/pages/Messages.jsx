@@ -9,6 +9,8 @@ import { format, isToday, isYesterday } from 'date-fns';
 import Logo from '@/components/Logo';
 import { containsContactInfo } from '@/lib/messageFilter';
 import PullToRefresh from '@/components/PullToRefresh';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { createNotification } from '@/lib/notifications';
 
 function formatTime(dateStr) {
@@ -42,6 +44,7 @@ export default function Messages() {
   const [sending, setSending] = useState(false);
   const [bookingVerified, setBookingVerified] = useState(false);
   const [blockedWarning, setBlockedWarning] = useState('');
+  const isMobile = useIsMobile();
   const messagesEndRef = useRef(null);
   const activeConvIdRef = useRef(null);
   const userRef = useRef(null);
@@ -297,7 +300,7 @@ export default function Messages() {
 
   return (
     <>
-    <div className="h-screen md:h-[calc(100vh-3.5rem)] bg-black text-white flex flex-col overflow-hidden">
+    <div className="h-[100dvh] md:h-[calc(100dvh-3.5rem)] bg-black text-white flex flex-col overflow-hidden">
       {/* Top Nav */}
       <div className="flex items-center justify-between px-6 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] border-b border-zinc-800 bg-black shrink-0">
         <div className="flex items-center gap-2">
@@ -318,6 +321,16 @@ export default function Messages() {
           w-full md:w-80 border-r border-zinc-800 flex flex-col shrink-0
           ${showList ? 'flex' : 'hidden md:flex'}
         `}>
+          <AnimatePresence initial={false} mode="wait">
+            {(showList || !isMobile) && (
+            <motion.div
+              key="conv-list"
+              initial={isMobile ? { opacity: 0, x: -32 } : false}
+              animate={{ opacity: 1, x: 0 }}
+              exit={isMobile ? { opacity: 0, x: -32 } : undefined}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="flex flex-col flex-1 min-h-0"
+            >
           <div className="px-4 py-3 border-b border-zinc-800">
             <h2 className="font-semibold text-base flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-purple-400" />
@@ -377,10 +390,23 @@ export default function Messages() {
               </div>
             )}
           </PullToRefresh>
+            </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Chat Area */}
         <div className={`flex-1 flex flex-col overflow-hidden ${showList ? 'hidden md:flex' : 'flex'}`}>
+          <AnimatePresence initial={false} mode="wait">
+            {(!showList || !isMobile) && (
+            <motion.div
+              key="chat-panel"
+              initial={isMobile ? { opacity: 0, x: 32 } : false}
+              animate={{ opacity: 1, x: 0 }}
+              exit={isMobile ? { opacity: 0, x: 32 } : undefined}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="flex flex-col flex-1 min-h-0"
+            >
           {activeConv ? (
             <>
               {/* Chat Header */}
@@ -396,7 +422,7 @@ export default function Messages() {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+              <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-3">
                 {messages.length === 0 && (
                   <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-2">
                     <MessageSquare className="w-8 h-8 text-slate-700" />
@@ -478,6 +504,9 @@ export default function Messages() {
               </div>
             </div>
           )}
+            </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
