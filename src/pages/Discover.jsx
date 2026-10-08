@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
+import { categoryLabel } from '@/lib/categoryLabel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -29,7 +30,7 @@ const TALENT_CATEGORIES = [
   { value: 'singer', label: 'Singer' },
   { value: 'magician', label: 'Magician' },
   { value: 'comedian', label: 'Comedian' },
-  { value: 'photographer', label: 'Photographer' },
+  { value: 'photographer', label: 'Photography / Videography' },
   { value: 'guitarist', label: 'Guitarist' },
   { value: 'pianist', label: 'Pianist' },
   { value: 'saxophonist', label: 'Saxophonist' },
@@ -815,7 +816,7 @@ export default function Discover() {
                     )}
                     <div className="absolute bottom-0 left-0 right-0 p-5">
                       <h2 className="text-2xl font-bold mb-1">{currentTalent.stage_name}</h2>
-                      <p className="text-purple-300 text-sm font-medium capitalize mb-3">{currentTalent.talent_category?.replace(/_/g, ' ')}</p>
+                      <p className="text-purple-300 text-sm font-medium capitalize mb-3">{categoryLabel(currentTalent.talent_category)}</p>
                       <div className="flex flex-wrap gap-2 mb-3">
                         <Badge variant="secondary" className="bg-white/20 text-white"><MapPin className="w-3 h-3 mr-1" />{currentTalent.location_city}</Badge>
                         {travelIds.has(currentTalent.id) && travelInfo && (

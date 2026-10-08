@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
+import { categoryLabel } from '@/lib/categoryLabel';
 import { useAuth } from '@/lib/AuthContext';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
@@ -135,7 +136,7 @@ export default function TalentProfile() {
                   <h1 className="text-3xl font-bold">{profile.stage_name}</h1>
                   {profile.is_verified && (<Badge className="bg-green-500 text-white"><CheckCircle2 className="w-3 h-3 mr-1" />Verified</Badge>)}
                 </div>
-                <p className="text-zinc-400 text-lg capitalize">{profile.talent_category?.replace(/_/g, ' ')}</p>
+                <p className="text-zinc-400 text-lg capitalize">{categoryLabel(profile.talent_category)}</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-4 mb-6">

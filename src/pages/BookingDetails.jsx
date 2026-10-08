@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
+import { categoryLabel } from '@/lib/categoryLabel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -153,7 +154,7 @@ export default function BookingDetails() {
             <div>
               <p className="font-semibold">{isSeeker ? booking.talent_stage_name : booking.seeker_name}</p>
               <p className="text-sm text-purple-400 capitalize">
-                {isSeeker ? booking.talent_category?.replace(/_/g, ' ') : 'Event Organiser'}
+                {isSeeker ? categoryLabel(booking.talent_category) : 'Event Organiser'}
               </p>
             </div>
           </div>

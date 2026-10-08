@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
+import { categoryLabel } from '@/lib/categoryLabel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -109,7 +110,7 @@ export default function BookTalent() {
           </div>
           <div>
             <h2 className="font-semibold text-lg">{talent.stage_name}</h2>
-            <p className="text-zinc-400 text-sm capitalize">{talent.talent_category?.replace(/_/g, ' ')}</p>
+            <p className="text-zinc-400 text-sm capitalize">{categoryLabel(talent.talent_category)}</p>
             <div className="flex items-center gap-3 text-sm text-zinc-400 mt-1">
               <span>{rateSummary(talent) || 'Pricing on request'}</span><span>•</span><span>Min {talent.minimum_hours}h</span>
               {talent.average_rating && (<><span>•</span><span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />{talent.average_rating.toFixed(1)}</span></>)}

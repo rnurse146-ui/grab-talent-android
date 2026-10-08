@@ -66,7 +66,7 @@ const TALENT_CATEGORIES = [
   { value: 'comedian', label: 'Comedian', icon: '😂' },
   { value: 'pyrotechnics', label: 'Pyrotechnics', icon: '🎆' },
   { value: 'live_painter', label: 'Live Painter', icon: '🖼️' },
-  { value: 'photographer', label: 'Photographer', icon: '📸' },
+  { value: 'photographer', label: 'Photography / Videography', icon: '📸' },
   { value: 'lighting_specialist', label: 'Lighting Specialist', icon: '💡' },
   { value: 'songwriter', label: 'Songwriter', icon: '✍️' },
   { value: 'sound_engineer', label: 'Sound Engineer', icon: '🎚️' },

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { createPageUrl } from '@/utils';
+import { categoryLabel } from '@/lib/categoryLabel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
@@ -138,7 +139,7 @@ export default function SeekerDashboard({ user, recentBookings, maybeList }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{item.talent_stage_name}</p>
-                      <p className="text-xs text-zinc-500 capitalize">{item.talent_category?.replace(/_/g, ' ')}</p>
+                      <p className="text-xs text-zinc-500 capitalize">{categoryLabel(item.talent_category)}</p>
                     </div>
                   </div>
                 </Link>
