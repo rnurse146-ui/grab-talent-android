@@ -19,7 +19,7 @@ export default function FloatingDiscoverButton() {
     <Link
       to="/Discover"
       aria-label="Go to Discover"
-      className="fab-bottom fixed right-4 md:right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg shadow-purple-600/40 hover:bg-purple-500 active:scale-95 transition-transform"
+      className="fab-bottom fixed right-4 md:right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg shadow-purple-600/40 hover:bg-purple-500 active:scale-95 transition-transform"
     >
       <Compass className="w-6 h-6" />
     </Link>

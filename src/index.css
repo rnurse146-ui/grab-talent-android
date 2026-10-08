@@ -157,7 +157,10 @@
     user-select: text !important;
   }
 
-  /* Floating helpers sit above the tab bar and system gesture area on mobile */
+  /* Floating helpers sit above the tab bar (4rem tall + the phone's safe-area
+     inset) and the system gesture area. On mobile the bar grows by the
+     safe-area inset, so these offsets grow by it too — otherwise the bar
+     slides up over the floating buttons. */
   .fab-bottom {
     bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
@@ -166,10 +169,10 @@
   }
   @media (max-width: 767px) {
     .fab-bottom {
-      bottom: calc(5.25rem + env(safe-area-inset-bottom));
+      bottom: calc(5rem + env(safe-area-inset-bottom));
     }
     .fab-panel-bottom {
-      bottom: calc(9.75rem + env(safe-area-inset-bottom));
+      bottom: calc(9rem + env(safe-area-inset-bottom));
     }
   }
 }
