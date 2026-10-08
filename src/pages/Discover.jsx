@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from '@/components/Logo';
-import TalentHitch from '@/components/TalentHitch';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
 import { useAuth } from '@/lib/AuthContext';
 import PullToRefresh from '@/components/PullToRefresh';
@@ -526,7 +525,6 @@ export default function Discover() {
           <p className="text-center text-zinc-600 text-xs mt-3">All filters are optional — skip to see everyone</p>
         </div>
       </div>
-      {!isGuest && <TalentHitch />}
     </div>
   );
 
@@ -884,7 +882,6 @@ export default function Discover() {
           </>
         )}
       </div>
-      {!isGuest && <TalentHitch />}
       </div>
       <GuestLoginPrompt open={showLoginPrompt} onOpenChange={setShowLoginPrompt} />
     </PullToRefresh>

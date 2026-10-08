@@ -12,6 +12,7 @@ import ProfilePhotoCard from '@/components/settings/ProfilePhotoCard';
 import BookingCalendar from '@/components/settings/BookingCalendar';
 import HiredTalentList from '@/components/settings/HiredTalentList';
 import BookingMessages from '@/components/settings/BookingMessages';
+import HelpSection from '@/components/settings/HelpSection';
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel,
@@ -90,6 +91,7 @@ export default function Settings() {
           <BookingCalendar bookings={roleBookings} />
           <BookingMessages user={user} />
           {user?.user_type !== 'talent' && <HiredTalentList user={user} bookings={bookings} />}
+          <HelpSection />
         </div>
 
         <div className="space-y-6 mt-6">

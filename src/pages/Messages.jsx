@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Send, Loader2, MessageSquare, ArrowLeft, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import Logo from '@/components/Logo';
-import HelpChat from '@/components/HelpChat';
 import { containsContactInfo } from '@/lib/messageFilter';
 import PullToRefresh from '@/components/PullToRefresh';
 import { createNotification } from '@/lib/notifications';
@@ -482,7 +481,6 @@ export default function Messages() {
         </div>
       </div>
     </div>
-    <HelpChat />
     </>
   );
 }

@@ -9,7 +9,6 @@ import {
   Sparkles, Search, Star, ChevronRight, ChevronLeft,
   MapPin, Check
 } from 'lucide-react';
-import TalentHitch from '@/components/TalentHitch';
 
 export default function Onboarding() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -267,7 +266,6 @@ export default function Onboarding() {
           Skip for now — go to Dashboard
         </button>
       </motion.div>
-      <TalentHitch />
     </div>
   );
 }

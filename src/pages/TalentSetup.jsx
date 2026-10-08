@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ChevronRight, ChevronLeft, Camera, Upload, Music, Star, Banknote, Check, X, Loader2, Zap, Share2, Eye, Video, Sparkles } from 'lucide-react';
-import TalentHitch from '@/components/TalentHitch';
 import Logo from '@/components/Logo';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
 import CameraCapture from '@/components/CameraCapture';
@@ -456,7 +455,6 @@ export default function TalentSetup() {
         </AnimatePresence>
       </motion.div>
       <CameraCapture open={showCamera !== null} mode={showCamera || 'video'} onClose={() => setShowCamera(null)} onCapture={handleCameraCapture} />
-      <TalentHitch />
     </div>
   );
 }

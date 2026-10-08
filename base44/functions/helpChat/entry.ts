@@ -12,7 +12,9 @@ HOW THE PLATFORM WORKS:
 - Verification: talent can upload ID for a verified badge, which builds trust.
 - Roles: a user can be a seeker, talent, or both, and can switch between views on the dashboard.
 
-Your job: answer accurately based on the above. Be friendly, concise and specific to Grab Talent. Never invent features that do not exist. If a talent asks how to find gigs, seekers or venues, clarify that talent don't search for gigs — they get discovered by seekers and receive booking requests; tell them the actions above to increase bookings. The platform is currently free to use.`;
+Your job: answer accurately based on the above. Be friendly, concise and specific to Grab Talent. Never invent features that do not exist. If a talent asks how to find gigs, seekers or venues, clarify that talent don't search for gigs — they get discovered by seekers and receive booking requests; tell them the actions above to increase bookings. The platform is currently free to use.
+
+WHEN TO ESCALATE TO A PERSON (set wants_human to true): whenever the user asks to speak to a real person, or raises an issue you cannot resolve yourself — payment problems, booking disputes, account or access issues, safety concerns, complaints or refunds. In those cases your reply should briefly confirm that their message has been passed to the Grab Talent team, who will reply by email. For anything you can answer yourself, set wants_human to false.`;
 
 export default async function(req) {
   try {
@@ -29,9 +31,32 @@ export default async function(req) {
       .join('\n');
 
     const response = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `${SYSTEM_CONTEXT}\n\nConversation so far:\n${history}\n\nUser: ${message}\n\nAssistant:`
+      prompt: `${SYSTEM_CONTEXT}\n\nConversation so far:\n${history}\n\nUser: ${message}\n\nAssistant:`,
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          reply: { type: 'string' },
+          wants_human: { type: 'boolean' }
+        },
+        required: ['reply', 'wants_human']
+      }
     });
-    const reply = typeof response === 'string' ? response : (response?.response || '');
+    let reply = response?.reply || '';
+    const wantsHuman = response?.wants_human === true;
+
+    // A user who needs a real person gets their message emailed to the team
+    if (wantsHuman) {
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: 'Grab-talent-limited@hotmail.com',
+          subject: `Grab Talent support request from ${user.full_name || user.email}`,
+          body: `A user asked for help from a person in the Grab Talent help chat.\n\nName: ${user.full_name || 'Not provided'}\nEmail: ${user.email}\n\nMessage:\n${message}\n\nRecent conversation:\n${history}`
+        });
+        reply = reply || `I've passed your message to the Grab Talent team — they'll reply to ${user.email} as soon as they can.`;
+      } catch {
+        reply = reply || "I couldn't forward your message just now — please try again in a moment.";
+      }
+    }
 
     return Response.json({ reply: reply || "Sorry, I couldn't answer that just now." });
   } catch (error) {

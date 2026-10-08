@@ -7,8 +7,6 @@ import Logo from '@/components/Logo';
 import { Link } from 'react-router-dom';
 import SeekerDashboard from '@/components/dashboard/SeekerDashboard';
 import TalentDashboard from '@/components/dashboard/TalentDashboard';
-import HelpChat from '@/components/HelpChat';
-import TalentHitch from '@/components/TalentHitch';
 import NotificationBell from '@/components/NotificationBell';
 
 export default function Dashboard() {
@@ -135,8 +133,6 @@ export default function Dashboard() {
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-zinc-500">
         © {new Date().getFullYear()} Grab Talent. All rights reserved. · <Link to="/privacy-policy" className="text-zinc-400 hover:text-white hover:underline">Privacy Policy</Link>
       </footer>
-      <HelpChat />
-      <TalentHitch />
     </div>
   );
 }
