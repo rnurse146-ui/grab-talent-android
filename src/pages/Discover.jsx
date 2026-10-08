@@ -305,8 +305,8 @@ export default function Discover() {
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-lg mx-auto px-6 py-8">
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="max-w-lg mx-auto px-6 pt-8 pb-32 md:pb-8">
 
           <AnimatePresence mode="wait">
 
