@@ -99,9 +99,8 @@ export default function Messages() {
         initialConv = { id: newConvId, otherId: toUserId, otherName: 'User', messages: [], unread: 0, lastMessage: null };
         setConversations(prev => [initialConv, ...prev]);
       }
-    } else if (convList.length > 0) {
-      initialConv = convList[0];
     }
+    // No ?to= param → land on the conversation list, not the most recent chat
 
     if (initialConv) {
       openConversation(initialConv, currentUser);
