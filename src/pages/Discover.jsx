@@ -75,6 +75,7 @@ export default function Discover() {
     city: '',
     minRating: '',
     verifiedOnly: false,
+    lastMinuteOnly: false,
     equipment: []
   });
   // How many filters differ from the default — shown as a badge on the Filters button
@@ -85,6 +86,7 @@ export default function Discover() {
     (filters.maxPrice ? 1 : 0) +
     (filters.minRating ? 1 : 0) +
     (filters.verifiedOnly ? 1 : 0) +
+    (filters.lastMinuteOnly ? 1 : 0) +
     (filters.equipment.length > 0 ? 1 : 0);
 
   useEffect(() => {
@@ -183,6 +185,14 @@ export default function Discover() {
       ? Math.ceil((new Date(activeDate + 'T12:00:00') - new Date(new Date().toDateString())) / (1000 * 60 * 60 * 24))
       : null;
     filtered = rankTalents(filtered, { eventCity, daysUntilEvent: daysUntil });
+
+    // Ticked "last minute": performers open to short-notice bookings lead the deck
+    if (filters.lastMinuteOnly) {
+      filtered = [
+        ...filtered.filter(t => t.last_minute_available === true),
+        ...filtered.filter(t => t.last_minute_available !== true)
+      ];
+    }
 
     setTalents(filtered);
     setCurrentIndex(0);
@@ -372,6 +382,24 @@ export default function Discover() {
                     ) : (
                       <p className="text-xs text-red-400 mt-1">Required — we need your event date to check talent availability</p>
                     )}
+                  </div>
+                  <div
+                    onClick={() => setFilters(f => ({ ...f, lastMinuteOnly: !f.lastMinuteOnly }))}
+                    className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                      filters.lastMinuteOnly ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-700 bg-zinc-900 hover:border-zinc-500'
+                    }`}
+                  >
+                    <div>
+                      <p className="font-bold text-white">⚡ Looking for someone last minute</p>
+                      <p className="text-sm text-zinc-400 mt-1">Only show performers available at short notice</p>
+                    </div>
+                    <div className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ml-4 ${
+                      filters.lastMinuteOnly ? 'bg-orange-500' : 'bg-zinc-700'
+                    }`}>
+                      <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        filters.lastMinuteOnly ? 'translate-x-6' : 'translate-x-0.5'
+                      }`} />
+                    </div>
                   </div>
                   <div>
                     <label className="text-sm font-semibold text-white mb-2 block">📍 Event City</label>
@@ -575,6 +603,13 @@ export default function Discover() {
         }
       </div>
 
+      {filters.lastMinuteOnly && (
+        <div className="flex items-center gap-2 mx-6 mt-2 rounded-xl border border-orange-500/40 bg-orange-500/10 px-4 py-2.5 text-xs text-orange-200">
+          <Zap className="w-4 h-4 shrink-0 fill-orange-300" />
+          <span className="font-medium">Looking for someone last minute — performers available at short notice are shown first.</span>
+        </div>
+      )}
+
       {travelInfo && (
         <div className="flex items-center gap-2 mx-6 my-2 rounded-xl border border-purple-500/40 bg-purple-500/10 px-4 py-2.5 text-xs text-purple-200">
           <Car className="w-4 h-4 shrink-0" />
@@ -675,6 +710,21 @@ export default function Discover() {
                 <label className="text-sm text-slate-300">Verified performers only</label>
               </div>
 
+              {/* Last-minute toggle */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setFilters({...filters, lastMinuteOnly: !filters.lastMinuteOnly})}
+                  className={`w-11 h-6 rounded-full transition-colors ${
+                    filters.lastMinuteOnly ? 'bg-orange-500' : 'bg-slate-700'
+                  } relative`}
+                >
+                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                    filters.lastMinuteOnly ? 'translate-x-5' : 'translate-x-0.5'
+                  }`} />
+                </button>
+                <label className="text-sm text-slate-300">⚡ Looking for someone last minute</label>
+              </div>
+
               {/* Equipment */}
               <div>
                 <label className="text-xs text-slate-400 mb-2 block">Performer must provide equipment</label>
@@ -714,7 +764,7 @@ export default function Discover() {
                 <Button onClick={applyFilters} className="flex-1 bg-purple-600 hover:bg-purple-500">Apply Filters</Button>
                 <Button
                   onClick={() => {
-                    setFilters({ categories: [], maxPrice: '', minPrice: '', budgetBasis: 'hourly', city: '', minRating: '', verifiedOnly: false, equipment: [] });
+                    setFilters({ categories: [], maxPrice: '', minPrice: '', budgetBasis: 'hourly', city: '', minRating: '', verifiedOnly: false, lastMinuteOnly: false, equipment: [] });
                     setShowFilters(false);
                     loadTalents(swipedIds);
                   }}
