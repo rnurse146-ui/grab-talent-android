@@ -25,6 +25,7 @@ const TALENT_CATEGORIES = [
   { value: 'all', label: 'All Categories' },
   { value: 'dj', label: 'DJ' },
   { value: 'dancer', label: 'Dancer' },
+  { value: 'choreographer', label: 'Choreographer' },
   { value: 'band', label: 'Band' },
   { value: 'singer', label: 'Singer' },
   { value: 'magician', label: 'Magician' },

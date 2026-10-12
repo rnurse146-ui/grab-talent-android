@@ -57,6 +57,7 @@ const TALENT_CATEGORIES = [
   { value: 'cello_player', label: 'Cello Player', icon: '🎻' },
   { value: 'rapper', label: 'Rapper', icon: '🎤' },
   { value: 'magician', label: 'Magician', icon: '🎩' },
+  { value: 'choreographer', label: 'Choreographer', icon: '🩰' },
   { value: 'circus_performer', label: 'Circus Performer', icon: '🎪' },
   { value: 'vr_artist', label: 'VR Artist', icon: '🥽' },
   { value: 'fortune_teller', label: 'Fortune Teller', icon: '🔮' },
