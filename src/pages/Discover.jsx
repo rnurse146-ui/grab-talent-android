@@ -186,12 +186,9 @@ export default function Discover() {
       : null;
     filtered = rankTalents(filtered, { eventCity, daysUntilEvent: daysUntil });
 
-    // Ticked "last minute": performers open to short-notice bookings lead the deck
+    // Ticked "last minute": only performers open to short-notice bookings are shown
     if (filters.lastMinuteOnly) {
-      filtered = [
-        ...filtered.filter(t => t.last_minute_available === true),
-        ...filtered.filter(t => t.last_minute_available !== true)
-      ];
+      filtered = filtered.filter(t => t.last_minute_available === true);
     }
 
     setTalents(filtered);
@@ -391,7 +388,7 @@ export default function Discover() {
                   >
                     <div>
                       <p className="font-bold text-white">⚡ Looking for someone last minute</p>
-                      <p className="text-sm text-zinc-400 mt-1">Only show performers available at short notice</p>
+                      <p className="text-sm text-zinc-400 mt-1">Only performers available at short notice</p>
                     </div>
                     <div className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ml-4 ${
                       filters.lastMinuteOnly ? 'bg-orange-500' : 'bg-zinc-700'
@@ -606,7 +603,7 @@ export default function Discover() {
       {filters.lastMinuteOnly && (
         <div className="flex items-center gap-2 mx-6 mt-2 rounded-xl border border-orange-500/40 bg-orange-500/10 px-4 py-2.5 text-xs text-orange-200">
           <Zap className="w-4 h-4 shrink-0 fill-orange-300" />
-          <span className="font-medium">Looking for someone last minute — performers available at short notice are shown first.</span>
+          <span className="font-medium">Looking for someone last minute — only performers available at short notice are shown.</span>
         </div>
       )}
 
