@@ -104,7 +104,13 @@ export default function Discover() {
         base44.entities.SwipeHistory.filter({ seeker_id: currentUser.id }),
         base44.entities.MaybeList.filter({ seeker_id: currentUser.id })
       ]);
-      swipedSet = new Set(history.map(h => h.talent_profile_id));
+      // Only passes stay blocked: talents still on the Maybe List are excluded
+      // separately, and stale "maybe" history (removed talent) is ignored so
+      // they resurface in the deck
+      swipedSet = new Set([
+        ...history.filter(h => h.action === 'pass').map(h => h.talent_profile_id),
+        ...maybe.map(m => m.talent_profile_id)
+      ]);
       setMaybeCount(maybe.length);
       setPassedCount(history.filter(h => h.action === 'pass').length);
     } else {
