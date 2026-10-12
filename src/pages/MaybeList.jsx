@@ -15,6 +15,7 @@ import { getGuestMaybes, removeGuestMaybe, clearGuestMaybes } from '@/lib/guestM
 
 export default function MaybeList() {
   const [isGuest, setIsGuest] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [maybeList, setMaybeList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -57,6 +58,7 @@ export default function MaybeList() {
       currentUser = null;
     }
     if (currentUser) {
+      setCurrentUser(currentUser);
       await mergeGuestMaybes(currentUser);
       const page = await base44.entities.MaybeList.filter({ seeker_id: currentUser.id }, { sort: '-created_date' });
       setMaybeList(page.items);
@@ -75,6 +77,11 @@ export default function MaybeList() {
         removeGuestMaybe(id);
       } else {
         await base44.entities.MaybeList.delete(id);
+        // Recycle: clear the swipe record so the talent reappears in the Discover deck
+        await base44.entities.SwipeHistory.deleteMany({
+          seeker_id: currentUser.id,
+          talent_profile_id: maybeList.find(item => item.id === id)?.talent_profile_id
+        });
       }
     } catch (e) {
       setMaybeList(snapshot);
