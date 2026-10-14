@@ -20,10 +20,12 @@ function formatTime(dateStr) {
   return format(d, 'dd MMM');
 }
 
+const AVATAR_SIZES = { 7: 'w-7 h-7', 9: 'w-9 h-9', 10: 'w-10 h-10' };
+
 function Avatar({ name, photo, size = 10 }) {
   const initials = name?.charAt(0)?.toUpperCase() || '?';
   return (
-    <div className={`w-${size} h-${size} rounded-full bg-gradient-to-br from-purple-600/40 to-orange-600/40 border border-slate-700 flex items-center justify-center text-sm font-semibold shrink-0 overflow-hidden`}>
+    <div className={`${AVATAR_SIZES[size] || 'w-10 h-10'} rounded-full bg-gradient-to-br from-purple-600/40 to-orange-600/40 border border-slate-700 flex items-center justify-center text-sm font-semibold shrink-0 overflow-hidden`}>
       {photo ? <img src={photo} alt={name} className="w-full h-full object-cover" /> : initials}
     </div>
   );
@@ -96,7 +98,14 @@ export default function Messages() {
       initialConv = convList.find(c => c.otherId === toUserId);
       if (!initialConv) {
         const newConvId = [currentUser.id, toUserId].sort().join('_');
-        initialConv = { id: newConvId, otherId: toUserId, otherName: 'User', messages: [], unread: 0, lastMessage: null };
+        // Resolve the other person's name from their talent profile so a new
+        // chat never opens as "User"
+        let otherName = 'User';
+        try {
+          const profiles = await base44.entities.TalentProfile.filter({ user_id: toUserId }, '', 1);
+          if (profiles.items?.[0]?.stage_name) otherName = profiles.items[0].stage_name;
+        } catch (e) { /* keep fallback */ }
+        initialConv = { id: newConvId, otherId: toUserId, otherName, messages: [], unread: 0, lastMessage: null };
         setConversations(prev => [initialConv, ...prev]);
       }
     }

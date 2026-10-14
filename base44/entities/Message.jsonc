@@ -17,6 +17,10 @@
     "sender_name": {
       "type": "string"
     },
+    "receiver_name": {
+      "type": "string",
+      "description": "Display name of the receiver, written by the sendMessage backend function so conversation lists show real names"
+    },
     "content": {
       "type": "string",
       "description": "Message content \u2014 contact-info filtering is enforced by the sendMessage backend function"

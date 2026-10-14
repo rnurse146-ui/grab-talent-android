@@ -30,7 +30,7 @@ const TALENT_CATEGORIES = [
   { value: 'singer', label: 'Singer' },
   { value: 'magician', label: 'Magician' },
   { value: 'comedian', label: 'Comedian' },
-  { value: 'photographer', label: 'Photography / Videography' },
+  { value: 'photographer', label: 'Photography / Filmmaker' },
   { value: 'guitarist', label: 'Guitarist' },
   { value: 'pianist', label: 'Pianist' },
   { value: 'saxophonist', label: 'Saxophonist' },
