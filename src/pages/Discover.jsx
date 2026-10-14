@@ -240,6 +240,15 @@ export default function Discover() {
     await loadTalents(nextSwiped);
   };
 
+  // Rewind the deck by up to 3 performers to review them again — every press
+  // goes back another 3, unlimited times
+  const rewindThree = () => {
+    if (talents.length === 0) return;
+    setLastPass(null);
+    setSwiping(null);
+    setCurrentIndex(prev => Math.max(0, prev - 3));
+  };
+
   const handleDragEnd = (event, info) => {
     const threshold = 80;
     if (info.offset.x > threshold) {
@@ -844,6 +853,16 @@ export default function Discover() {
                 Start Over
               </Button>
             )}
+            {talents.length > 0 && (
+              <Button
+                onClick={() => setCurrentIndex(Math.max(0, talents.length - 3))}
+                variant="outline"
+                className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800"
+              >
+                <Undo2 className="w-4 h-4 mr-2" />
+                Go back and review last 3
+              </Button>
+            )}
             {passedCount > 0 && (
               <Button
                 onClick={handleRestorePassed}
@@ -923,6 +942,12 @@ export default function Discover() {
             </AnimatePresence>
 
             <div className="flex items-center gap-5 mt-8">
+              <div className="flex flex-col items-center gap-1.5">
+                <motion.button whileTap={{ scale: 0.9 }} onClick={rewindThree} disabled={currentIndex === 0} className="w-12 h-12 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-purple-500 hover:bg-purple-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  <Undo2 className="w-5 h-5 text-purple-400" />
+                </motion.button>
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Back 3</span>
+              </div>
               <div className="flex flex-col items-center gap-1.5">
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('left')} className="w-14 h-14 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-red-500 hover:bg-red-500/20 transition-colors">
                   <X className="w-7 h-7 text-red-400" />
