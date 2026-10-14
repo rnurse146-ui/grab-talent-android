@@ -67,6 +67,8 @@ export default function Discover() {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [travelIds, setTravelIds] = useState(new Set());
   const [travelInfo, setTravelInfo] = useState(null);
+  const [hiddenLocals, setHiddenLocals] = useState(0);
+  const maybeIdsRef = useRef(new Set());
 
   const [filters, setFilters] = useState({
     categories: [],
@@ -112,6 +114,7 @@ export default function Discover() {
         ...history.filter(h => h.action === 'pass').map(h => h.talent_profile_id),
         ...maybe.map(m => m.talent_profile_id)
       ]);
+      maybeIdsRef.current = new Set(maybe.map(m => m.talent_profile_id));
       setMaybeCount(maybe.length);
       setPassedCount(history.filter(h => h.action === 'pass').length);
     } else {
@@ -165,16 +168,21 @@ export default function Discover() {
       const geo = await geocodeCityCached(raw);
       // Local = text match (city/town) or home coordinates inside the searched
       // area (county/region); everyone else within their travel radius follows
-      const local = filtered.filter(t =>
-        cityMatches(t, normalizeCity(raw), raw) || inSearchArea(t, geo)
-      );
+      const cityMatchesTalent = (t) => cityMatches(t, normalizeCity(raw), raw) || inSearchArea(t, geo);
+      const local = filtered.filter(cityMatchesTalent);
       const travelers = filtered.filter(t => !local.includes(t) && travelsTo(t, geo));
       filtered = [...local, ...travelers];
       setTravelIds(new Set(travelers.map(t => t.id)));
       setTravelInfo(travelers.length > 0 ? { city: raw, count: travelers.length, fallback: local.length === 0 } : null);
+      // Locals hidden by earlier passes — surfaced in a banner with a restore action
+      const passedLocalCount = allTalents.filter(t =>
+        cityMatchesTalent(t) && alreadySwiped.has(t.id) && !maybeIdsRef.current.has(t.id)
+      ).length;
+      setHiddenLocals(passedLocalCount);
     } else {
       setTravelIds(new Set());
       setTravelInfo(null);
+      setHiddenLocals(0);
     }
     if (filters.minRating) filtered = filtered.filter(t => (t.average_rating || 0) >= parseFloat(filters.minRating));
     if (filters.verifiedOnly) filtered = filtered.filter(t => t.is_verified === true);
@@ -622,6 +630,18 @@ export default function Discover() {
               ? `No talent based in ${travelInfo.city} right now — showing ${travelInfo.count} performer${travelInfo.count === 1 ? '' : 's'} who travel there.`
               : `Also showing ${travelInfo.count} performer${travelInfo.count === 1 ? '' : 's'} who travel to ${travelInfo.city}.`}
           </span>
+        </div>
+      )}
+
+      {filters.city && !loading && hiddenLocals > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mx-6 my-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-xs text-zinc-300">
+          <Undo2 className="w-4 h-4 shrink-0 text-zinc-500" />
+          <span className="flex-1 min-w-[10rem]">
+            {hiddenLocals} performer{hiddenLocals === 1 ? '' : 's'} based in {filters.city.trim()} {hiddenLocals === 1 ? 'is' : 'are'} hidden because you passed on {hiddenLocals === 1 ? 'them' : 'them'} earlier.
+          </span>
+          <button onClick={handleRestorePassed} className="underline text-white font-medium shrink-0">
+            Bring back
+          </button>
         </div>
       )}
 
