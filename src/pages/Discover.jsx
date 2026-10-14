@@ -67,7 +67,6 @@ export default function Discover() {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [travelIds, setTravelIds] = useState(new Set());
   const [travelInfo, setTravelInfo] = useState(null);
-  const maybeIdsRef = useRef(new Set());
 
   const [filters, setFilters] = useState({
     categories: [],
@@ -108,14 +107,9 @@ export default function Discover() {
         base44.entities.SwipeHistory.filter({ seeker_id: currentUser.id }),
         base44.entities.MaybeList.filter({ seeker_id: currentUser.id })
       ]);
-      // Only passes stay blocked: talents still on the Maybe List are excluded
-      // separately, and stale "maybe" history (removed talent) is ignored so
-      // they resurface in the deck
-      swipedSet = new Set([
-        ...history.filter(h => h.action === 'pass').map(h => h.talent_profile_id),
-        ...maybe.map(m => m.talent_profile_id)
-      ]);
-      maybeIdsRef.current = new Set(maybe.map(m => m.talent_profile_id));
+      // Only passes stay blocked: talents on the Maybe List keep showing in the
+      // deck (unless they're unavailable on the event date, filtered later)
+      swipedSet = new Set(history.filter(h => h.action === 'pass').map(h => h.talent_profile_id));
       setMaybeCount(maybe.length);
       setPassedCount(history.filter(h => h.action === 'pass').length);
     } else {
@@ -134,10 +128,10 @@ export default function Discover() {
     
     const allTalents = await base44.entities.TalentProfile.filter(query, '-average_rating', 200);
     
-    // The Maybe List always stays hidden; passed talent is filtered out after
-    // location matching so a city search can still surface it
+    // Maybe List talent stays in the deck — being on the list doesn't block a
+    // booking, and the date check below already removes anyone booked/unavailable
     let localIds = new Set();
-    let filtered = allTalents.filter(t => !maybeIdsRef.current.has(t.id));
+    let filtered = allTalents;
 
     if (filters.categories.length > 0) {
       filtered = filtered.filter(t => filters.categories.includes(t.talent_category));
