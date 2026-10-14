@@ -128,7 +128,7 @@ export default function Discover() {
     
     let query = { is_available: true };
     
-    const allTalents = await base44.entities.TalentProfile.filter(query, '-average_rating', 50);
+    const allTalents = await base44.entities.TalentProfile.filter(query, '-average_rating', 200);
     
     let filtered = allTalents.filter(t => !alreadySwiped.has(t.id));
 

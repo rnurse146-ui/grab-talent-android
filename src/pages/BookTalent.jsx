@@ -41,6 +41,8 @@ export default function BookTalent() {
   const [calendarMonth, setCalendarMonth] = useState(initialDate || new Date());
   const [maybeTalents, setMaybeTalents] = useState([]); // id -> stage name from the user's Maybe List
   const [maybeConflicts, setMaybeConflicts] = useState([]); // Maybe List talents already booked on the selected date
+  const [unavailableDates, setUnavailableDates] = useState(new Set()); // dates this talent has blocked / is booked
+  const [submitError, setSubmitError] = useState('');
 
   const checkMaybeConflicts = async (user, date, maybeItems = maybeTalents) => {
     setMaybeConflicts([]);
@@ -70,6 +72,14 @@ export default function BookTalent() {
     if (talentId) {
       const profiles = await base44.entities.TalentProfile.filter({ id: talentId });
       if (profiles.length > 0) setTalent(profiles[0]);
+      // Block dates the talent has marked unavailable or is already booked on
+      const availability = await base44.entities.TalentAvailability.filter({ talent_profile_id: talentId });
+      const blocked = new Set();
+      availability.forEach(rec => {
+        (rec.blocked_dates || []).forEach(d => blocked.add(d));
+        (rec.booking_dates || []).forEach(d => blocked.add(d));
+      });
+      setUnavailableDates(blocked);
     }
     if (initialDate) await checkMaybeConflicts(currentUser, initialDate, maybePage.items);
     setLoading(false);
@@ -88,18 +98,24 @@ export default function BookTalent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    // Booking is created server-side: pricing is derived from the talent's stored rates
-    await base44.functions.invoke('createBooking', {
-      talent_profile_id: talent.id,
-      event_name: formData.event_name, event_type: formData.event_type,
-      event_date: formData.event_date ? format(formData.event_date, 'yyyy-MM-dd') : '',
-      start_time: formData.start_time, end_time: formData.end_time,
-      venue_name: formData.venue_name, venue_address: formData.venue_address, venue_city: formData.venue_city,
-      special_requirements: formData.special_requirements,
-      seeker_phone: formData.seeker_phone
-    });
-    setSuccess(true);
-    setSubmitting(false);
+    setSubmitError('');
+    try {
+      // Booking is created server-side: pricing is derived from the talent's stored rates
+      await base44.functions.invoke('createBooking', {
+        talent_profile_id: talent.id,
+        event_name: formData.event_name, event_type: formData.event_type,
+        event_date: formData.event_date ? format(formData.event_date, 'yyyy-MM-dd') : '',
+        start_time: formData.start_time, end_time: formData.end_time,
+        venue_name: formData.venue_name, venue_address: formData.venue_address, venue_city: formData.venue_city,
+        special_requirements: formData.special_requirements,
+        seeker_phone: formData.seeker_phone
+      });
+      setSuccess(true);
+    } catch (err) {
+      setSubmitError(err.message || 'Could not send your booking request. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) return (<div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>);
@@ -162,7 +178,7 @@ export default function BookTalent() {
                 onSelect={(date) => { setFormData({...formData, event_date: date}); checkMaybeConflicts(user, date); }}
                 month={calendarMonth}
                 onMonthChange={setCalendarMonth}
-                disabled={(date) => date < new Date()}
+                disabled={(date) => date < new Date() || unavailableDates.has(format(date, 'yyyy-MM-dd'))}
                 className="rounded-xl border border-zinc-800 bg-zinc-900 p-3"
               />
             </div>
@@ -213,6 +229,9 @@ export default function BookTalent() {
 
           {!pricing && (
             <p className="text-xs text-amber-400 -mt-2">{talent.stage_name} hasn't set a bookable rate yet — send your request and they'll confirm the price with you.</p>
+          )}
+          {submitError && (
+            <p className="text-sm text-red-400 bg-red-950/40 border border-red-700/40 rounded-xl px-4 py-3">{submitError}</p>
           )}
           <Button type="submit" disabled={submitting || !formData.event_date} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
             {submitting ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Sending...</> : 'Send Booking Request'}

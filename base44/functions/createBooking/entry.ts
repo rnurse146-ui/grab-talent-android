@@ -21,6 +21,17 @@ export default async function(req) {
     }
     if (!talent) return Response.json({ error: 'Talent not found' }, { status: 404 });
 
+    // Reject bookings on dates the talent has blocked or is already booked on
+    const eventDateStr = String(body?.event_date || '');
+    if (/^\d{4}-\d{2}-\d{2}$/.test(eventDateStr)) {
+      const availability = await base44.asServiceRole.entities.TalentAvailability.filter({ talent_profile_id: talent.id });
+      const records = Array.isArray(availability) ? availability : (availability.items || []);
+      const blocked = new Set(records.flatMap(rec => [...(rec.blocked_dates || []), ...(rec.booking_dates || [])]));
+      if (blocked.has(eventDateStr)) {
+        return Response.json({ error: 'This talent is not available on your chosen date. Please pick another date.' }, { status: 409 });
+      }
+    }
+
     // Price the booking server-side from the talent's rates
     const startTime = String(body?.start_time || '');
     const endTime = String(body?.end_time || '');

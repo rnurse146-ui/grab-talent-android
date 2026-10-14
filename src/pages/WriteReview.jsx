@@ -16,6 +16,7 @@ export default function WriteReview() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
@@ -34,13 +35,17 @@ export default function WriteReview() {
 
   const handleSubmit = async () => {
     setSubmitting(true);
-    
-    // Review is validated server-side; the talent's rating aggregates and the
-    // notification are handled there too
-    await base44.functions.invoke('submitReview', { booking_id: booking.id, rating, review_text: reviewText });
-
-    setSuccess(true);
-    setSubmitting(false);
+    setSubmitError('');
+    try {
+      // Review is validated server-side; the talent's rating aggregates and the
+      // notification are handled there too
+      await base44.functions.invoke('submitReview', { booking_id: booking.id, rating, review_text: reviewText });
+      setSuccess(true);
+    } catch (err) {
+      setSubmitError(err.message || 'Could not submit your review. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) return (<div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>);
@@ -108,6 +113,10 @@ export default function WriteReview() {
               className="bg-zinc-800 border-zinc-700 h-32"
             />
           </div>
+
+          {submitError && (
+            <p className="text-sm text-red-400 bg-red-950/40 border border-red-700/40 rounded-xl px-4 py-3">{submitError}</p>
+          )}
 
           <Button onClick={handleSubmit} disabled={!rating || submitting} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
             {submitting ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Submitting...</> : 'Submit Review'}

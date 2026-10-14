@@ -17,6 +17,7 @@ const STATUS_CONFIG = {
   completed: { label: 'Completed', color: 'bg-purple-500/20 text-purple-400', icon: CheckCircle2 },
   declined: { label: 'Declined', color: 'bg-red-500/20 text-red-400', icon: XCircle },
   cancelled: { label: 'Cancelled', color: 'bg-slate-500/20 text-slate-400', icon: XCircle },
+  no_show: { label: 'No Show', color: 'bg-orange-500/20 text-orange-400', icon: XCircle },
 };
 
 export default function Bookings() {
@@ -113,7 +114,7 @@ export default function Bookings() {
                   {booking.status === 'confirmed' && (
                     <div className="flex gap-2 pt-3 border-t border-zinc-800">
                       <Link to={createPageUrl('Messages') + `?to=${isMyBooking ? booking.talent_user_id : booking.seeker_id}`}><Button variant="outline" className="border-zinc-700" size="sm">Message</Button></Link>
-                      {!isMyBooking && (<Button onClick={() => handleStatusUpdate(booking.id, 'completed')} className="bg-white text-black hover:bg-zinc-100" size="sm">Mark Complete</Button>)}
+                      {isMyBooking && (<Button onClick={() => handleStatusUpdate(booking.id, 'completed')} className="bg-white text-black hover:bg-zinc-100" size="sm">Mark Complete</Button>)}
                     </div>
                   )}
                   {isMyBooking && booking.status === 'completed' && (
