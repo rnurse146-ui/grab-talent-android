@@ -18,7 +18,7 @@ import PullToRefresh from '@/components/PullToRefresh';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
 import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
 import { rankTalents } from '@/lib/discoveryRanking';
-import { normalizeCity, cityMatches, travelsTo, inSearchArea, geocodeCityCached } from '@/lib/cityMatch';
+import { normalizeCity, cityMatches, travelsTo, inSearchArea, haversineMiles, geocodeCityCached } from '@/lib/cityMatch';
 import { getGuestMaybes, addGuestMaybe } from '@/lib/guestMaybeList';
 
 const TALENT_CATEGORIES = [
@@ -78,7 +78,8 @@ export default function Discover() {
     minRating: '',
     verifiedOnly: false,
     lastMinuteOnly: false,
-    equipment: []
+    equipment: [],
+    maxDistance: 'any'
   });
   // How many filters differ from the default — shown as a badge on the Filters button
   const activeFilterCount =
@@ -89,7 +90,8 @@ export default function Discover() {
     (filters.minRating ? 1 : 0) +
     (filters.verifiedOnly ? 1 : 0) +
     (filters.lastMinuteOnly ? 1 : 0) +
-    (filters.equipment.length > 0 ? 1 : 0);
+    (filters.equipment.length > 0 ? 1 : 0) +
+    (filters.maxDistance !== 'any' ? 1 : 0);
 
   useEffect(() => {
     loadData();
@@ -134,6 +136,7 @@ export default function Discover() {
     
     // The Maybe List always stays hidden; passed talent is filtered out after
     // location matching so a city search can still surface it
+    let localIds = new Set();
     let filtered = allTalents.filter(t => !maybeIdsRef.current.has(t.id));
 
     if (filters.categories.length > 0) {
@@ -171,8 +174,15 @@ export default function Discover() {
       // area (county/region); everyone else within their travel radius follows
       const cityMatchesTalent = (t) => cityMatches(t, normalizeCity(raw), raw) || inSearchArea(t, geo);
       const local = filtered.filter(cityMatchesTalent);
-      const travelers = filtered.filter(t => !local.includes(t) && travelsTo(t, geo));
+      const maxDist = filters.maxDistance !== 'any' ? parseFloat(filters.maxDistance) : null;
+      const travelers = filtered.filter(t =>
+        !local.includes(t) && travelsTo(t, geo) &&
+        // Distance filter: only talent whose home is within the chosen distance
+        (maxDist == null || !geo || (t.lat != null && t.lng != null &&
+          haversineMiles(t.lat, t.lng, geo.lat, geo.lng) <= maxDist))
+      );
       filtered = [...local, ...travelers];
+      localIds = new Set(local.map(t => t.id));
       setTravelIds(new Set(travelers.map(t => t.id)));
       setTravelInfo(travelers.length > 0 ? { city: raw, count: travelers.length, fallback: local.length === 0 } : null);
     } else {
@@ -196,7 +206,7 @@ export default function Discover() {
     const daysUntil = activeDate
       ? Math.ceil((new Date(activeDate + 'T12:00:00') - new Date(new Date().toDateString())) / (1000 * 60 * 60 * 24))
       : null;
-    filtered = rankTalents(filtered, { eventCity, daysUntilEvent: daysUntil });
+    filtered = rankTalents(filtered, { eventCity, daysUntilEvent: daysUntil, topIds: [...localIds] });
 
     // Ticked "last minute": only performers open to short-notice bookings are shown
     if (filters.lastMinuteOnly) {
@@ -665,6 +675,23 @@ export default function Discover() {
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block">City</label>
                   <Input value={filters.city} onChange={(e) => setFilters({...filters, city: e.target.value})} placeholder="Any location" className="bg-slate-900 border-slate-700" />
+                  <label className="text-xs text-slate-400 mb-1 mt-3 block">Distance from event city</label>
+                  <MobileSheetSelect
+                    value={filters.maxDistance}
+                    onChange={(v) => setFilters({...filters, maxDistance: v})}
+                    options={[
+                      { value: 'any', label: 'Any distance' },
+                      { value: '10', label: 'Within 10 miles' },
+                      { value: '25', label: 'Within 25 miles' },
+                      { value: '50', label: 'Within 50 miles' },
+                      { value: '100', label: 'Within 100 miles' },
+                    ]}
+                    placeholder="Any distance"
+                    title="Travel Distance"
+                    triggerClassName="bg-slate-900 border-slate-700"
+                    contentClassName="bg-slate-900 border-slate-700"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Talent based in the event city always shows first</p>
                 </div>
               </div>
 
@@ -773,7 +800,7 @@ export default function Discover() {
                 <Button onClick={applyFilters} className="flex-1 bg-purple-600 hover:bg-purple-500">Apply Filters</Button>
                 <Button
                   onClick={() => {
-                    setFilters({ categories: [], maxPrice: '', minPrice: '', budgetBasis: 'hourly', city: '', minRating: '', verifiedOnly: false, lastMinuteOnly: false, equipment: [] });
+                    setFilters({ categories: [], maxPrice: '', minPrice: '', budgetBasis: 'hourly', city: '', minRating: '', verifiedOnly: false, lastMinuteOnly: false, equipment: [], maxDistance: 'any' });
                     setShowFilters(false);
                     loadTalents(swipedIds);
                   }}

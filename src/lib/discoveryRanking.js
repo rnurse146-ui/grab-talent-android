@@ -40,8 +40,11 @@ export function discoverScore(talent, { eventCity = '', daysUntilEvent = null } 
 }
 
 export function rankTalents(talents, options = {}) {
+  // Talent actually based in the searched city (topIds) always ranks above
+  // everyone else, including performers who merely travel there
+  const top = new Set(options.topIds || []);
   return talents
-    .map((t) => ({ t, score: discoverScore(t, options) + Math.random() * 3 }))
+    .map((t) => ({ t, score: discoverScore(t, options) + (top.has(t.id) ? 25 : 0) + Math.random() * 3 }))
     .sort((a, b) => b.score - a.score)
     .map(({ t }) => t);
 }
