@@ -85,7 +85,7 @@ export default function TalentSetup() {
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profileVideo, setProfileVideo] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState({ stage_name: '', talent_category: '', bio: '', hourly_rate: '', evening_rate: '', day_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [], last_minute_available: false, social_links: { instagram: '', tiktok: '', facebook: '', youtube: '', website: '' } });
+  const [formData, setFormData] = useState({ stage_name: '', talent_category: '', talent_categories: [], bio: '', hourly_rate: '', evening_rate: '', day_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [], last_minute_available: false, social_links: { instagram: '', tiktok: '', facebook: '', youtube: '', website: '' } });
   const [specialtyInput, setSpecialtyInput] = useState('');
 
   useEffect(() => { loadUser(); }, []);
@@ -97,7 +97,7 @@ export default function TalentSetup() {
     if (profiles.length > 0) {
       const profile = profiles[0];
       setExistingProfile(profile);
-      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', evening_rate: profile.evening_rate?.toString() || '', day_rate: profile.day_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', profile_video: profile.profile_video || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [], last_minute_available: profile.last_minute_available || false, social_links: { instagram: profile.social_links?.instagram || '', tiktok: profile.social_links?.tiktok || '', facebook: profile.social_links?.facebook || '', youtube: profile.social_links?.youtube || '', website: profile.social_links?.website || '' } });
+      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', talent_categories: profile.talent_categories?.length ? profile.talent_categories : (profile.talent_category ? [profile.talent_category] : []), bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', evening_rate: profile.evening_rate?.toString() || '', day_rate: profile.day_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', profile_video: profile.profile_video || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [], last_minute_available: profile.last_minute_available || false, social_links: { instagram: profile.social_links?.instagram || '', tiktok: profile.social_links?.tiktok || '', facebook: profile.social_links?.facebook || '', youtube: profile.social_links?.youtube || '', website: profile.social_links?.website || '' } });
       setProfileVideo(profile.profile_video || null);
       setProfilePhoto(profile.profile_photo);
     } else if (currentUser.preferred_city) {
@@ -170,7 +170,7 @@ export default function TalentSetup() {
   const [aiSpecLoading, setAiSpecLoading] = useState(false);
   const aiProfileContext = () => ({
     stage_name: formData.stage_name,
-    category_label: TALENT_CATEGORIES.find(c => c.value === formData.talent_category)?.label || '',
+    category_label: formData.talent_categories.map(v => TALENT_CATEGORIES.find(c => c.value === v)?.label || v).join(', '),
     experience_years: formData.experience_years,
     location_city: formData.location_city,
     hourly_rate: formData.hourly_rate,
@@ -197,7 +197,7 @@ export default function TalentSetup() {
 
   const handleSubmit = async () => {
     setLoading(true);
-    const profileData = { ...formData, user_id: user.id, hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null, evening_rate: formData.evening_rate ? parseFloat(formData.evening_rate) : null, day_rate: formData.day_rate ? parseFloat(formData.day_rate) : null, minimum_hours: parseInt(formData.minimum_hours), location_radius: parseInt(formData.location_radius), experience_years: formData.experience_years ? parseInt(formData.experience_years) : null, last_minute_available: !!formData.last_minute_available, is_available: true };
+    const profileData = { ...formData, talent_category: formData.talent_categories[0] || '', user_id: user.id, hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null, evening_rate: formData.evening_rate ? parseFloat(formData.evening_rate) : null, day_rate: formData.day_rate ? parseFloat(formData.day_rate) : null, minimum_hours: parseInt(formData.minimum_hours), location_radius: parseInt(formData.location_radius), experience_years: formData.experience_years ? parseInt(formData.experience_years) : null, last_minute_available: !!formData.last_minute_available, is_available: true };
     // Best-effort geocoding — lets the talent show up for nearby event-city searches
     const needsGeo = formData.location_city && (!existingProfile || existingProfile.location_city !== formData.location_city || existingProfile.lat == null);
     if (needsGeo) {
@@ -254,20 +254,36 @@ export default function TalentSetup() {
               <div className="text-center mb-6"><Music className="w-10 h-10 text-orange-400 mx-auto mb-3" /><h2 className="text-xl font-semibold">Basic Info</h2></div>
               <div className="space-y-4">
                 <div><Label className="text-slate-400">Stage Name</Label><Input value={formData.stage_name} onChange={(e) => setFormData({ ...formData, stage_name: e.target.value })} placeholder="e.g. DJ Shadow" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
-                <div><Label className="text-slate-400">Category</Label>
-                  <MobileSheetSelect
-                    value={formData.talent_category}
-                    onChange={(value) => setFormData({ ...formData, talent_category: value })}
-                    options={TALENT_CATEGORIES}
-                    placeholder="Select category"
-                    title="Select Category"
-                    triggerClassName="bg-slate-900 border-slate-800 h-12 mt-2"
-                    contentClassName="bg-slate-900 border-slate-800 max-h-64"
-                  />
+                <div><Label className="text-slate-400">Categories</Label>
+                  <p className="text-xs text-slate-500 mt-1 mb-2">Select everything you do — you can be discovered in each one.</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {TALENT_CATEGORIES.map(cat => {
+                      const active = formData.talent_categories.includes(cat.value);
+                      return (
+                        <button
+                          key={cat.value}
+                          type="button"
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            talent_categories: active
+                              ? prev.talent_categories.filter(c => c !== cat.value)
+                              : [...prev.talent_categories, cat.value]
+                          }))}
+                          className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all ${
+                            active
+                              ? 'bg-orange-600 border-orange-500 text-white'
+                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600'
+                          }`}
+                        >
+                          {cat.icon} {cat.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div><Label className="text-slate-400">Years of Experience</Label><Input type="number" value={formData.experience_years} onChange={(e) => setFormData({ ...formData, experience_years: e.target.value })} placeholder="e.g. 5" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
               </div>
-              <div className="flex justify-end pt-4"><Button onClick={() => setStep(2)} disabled={!formData.stage_name || !formData.talent_category} className="bg-gradient-to-r from-orange-600 to-orange-500">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
+              <div className="flex justify-end pt-4"><Button onClick={() => setStep(2)} disabled={!formData.stage_name || formData.talent_categories.length === 0} className="bg-gradient-to-r from-orange-600 to-orange-500">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
             </motion.div>
           )}
 
@@ -434,7 +450,7 @@ export default function TalentSetup() {
                   {formData.media_gallery.length < 25 && (<label className="aspect-square rounded-lg bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center cursor-pointer hover:border-slate-600"><input type="file" accept="image/*,video/*,audio/*" multiple onChange={handleGalleryUpload} className="hidden" /><Upload className="w-6 h-6 text-slate-600" /></label>)}
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800"><h3 className="font-medium mb-3 flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />Summary</h3><div className="text-sm text-slate-400 space-y-1"><p><span className="text-white">{formData.stage_name}</span> • {TALENT_CATEGORIES.find(c => c.value === formData.talent_category)?.label}</p><p>📍 {formData.location_city} • 💷 {[formData.hourly_rate && `£${formData.hourly_rate}/hr`, formData.evening_rate && `£${formData.evening_rate} evening`, formData.day_rate && `£${formData.day_rate} day`].filter(Boolean).join(' • ') || 'No rates set'}</p></div></div>
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800"><h3 className="font-medium mb-3 flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />Summary</h3><div className="text-sm text-slate-400 space-y-1"><p><span className="text-white">{formData.stage_name}</span> • {formData.talent_categories.map(v => TALENT_CATEGORIES.find(c => c.value === v)?.label || v).join(', ')}</p><p>📍 {formData.location_city} • 💷 {[formData.hourly_rate && `£${formData.hourly_rate}/hr`, formData.evening_rate && `£${formData.evening_rate} evening`, formData.day_rate && `£${formData.day_rate} day`].filter(Boolean).join(' • ') || 'No rates set'}</p></div></div>
               <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(3)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={() => setStep(5)} disabled={!formData.profile_photo && !profileVideo} className="flex-1 bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
             </motion.div>
           )}

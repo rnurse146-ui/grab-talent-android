@@ -42,7 +42,14 @@
         "photographer",
         "lighting_specialist"
       ],
-      "description": "Type of talent"
+      "description": "Primary talent category \u2014 kept as the first of talent_categories for compatibility"
+    },
+    "talent_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "All categories this talent can be found under \u2014 the primary category is first. Discovery matches against this list, falling back to talent_category for older records."
     },
     "bio": {
       "type": "string",

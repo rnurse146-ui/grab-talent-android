@@ -135,7 +135,10 @@ export default function Discover() {
     let filtered = allTalents;
 
     if (filters.categories.length > 0) {
-      filtered = filtered.filter(t => filters.categories.includes(t.talent_category));
+      filtered = filtered.filter(t => {
+        const cats = t.talent_categories?.length ? t.talent_categories : [t.talent_category];
+        return filters.categories.some(c => cats.includes(c));
+      });
     }
 
     // Filter by availability date
@@ -914,7 +917,10 @@ export default function Discover() {
                     )}
                     <div className="absolute bottom-0 left-0 right-0 p-5">
                       <h2 className="text-2xl font-bold mb-1">{currentTalent.stage_name}</h2>
-                      <p className="text-purple-300 text-sm font-medium capitalize mb-3">{categoryLabel(currentTalent.talent_category)}</p>
+                      <p className="text-purple-300 text-sm font-medium capitalize mb-3">
+                        {categoryLabel(currentTalent.talent_categories?.[0] || currentTalent.talent_category)}
+                        {currentTalent.talent_categories?.length > 1 && <span className="text-zinc-400"> +{currentTalent.talent_categories.length - 1} more</span>}
+                      </p>
                       <div className="flex flex-wrap gap-2 mb-3">
                         <Badge variant="secondary" className="bg-white/20 text-white"><MapPin className="w-3 h-3 mr-1" />{currentTalent.location_city}</Badge>
                         {travelIds.has(currentTalent.id) && travelInfo && (
