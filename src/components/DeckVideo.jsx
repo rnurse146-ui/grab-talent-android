@@ -15,12 +15,31 @@ export default function DeckVideo({ src, poster }) {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    let soundBlocked = false;
+    // Browsers block autoplay-with-sound until the visitor has tapped the
+    // site once — on the first interaction, unmute automatically
+    const unmuteOnFirstInteraction = () => {
+      window.removeEventListener('pointerdown', unmuteOnFirstInteraction);
+      window.removeEventListener('keydown', unmuteOnFirstInteraction);
+      if (soundBlocked && videoRef.current) {
+        videoRef.current.muted = false;
+        setMuted(false);
+        videoRef.current.play().catch(() => {});
+      }
+    };
     video.play().catch(() => {
       // Sound autoplay blocked — retry muted so the video still plays
+      soundBlocked = true;
       video.muted = true;
       setMuted(true);
       video.play().catch(() => {});
+      window.addEventListener('pointerdown', unmuteOnFirstInteraction);
+      window.addEventListener('keydown', unmuteOnFirstInteraction);
     });
+    return () => {
+      window.removeEventListener('pointerdown', unmuteOnFirstInteraction);
+      window.removeEventListener('keydown', unmuteOnFirstInteraction);
+    };
   }, [src]);
 
   const toggleMute = (e) => {
