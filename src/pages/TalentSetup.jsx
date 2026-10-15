@@ -367,12 +367,17 @@ export default function TalentSetup() {
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, location_radius: prev.location_radius === '25000' ? '25' : '25000' }))}
-                    className={`flex items-center gap-2 mt-2 text-sm transition-colors ${formData.location_radius === '25000' ? 'text-orange-400' : 'text-slate-400 hover:text-white'}`}
+                    className={`w-full flex items-center gap-3 mt-3 px-4 py-3.5 rounded-2xl border-2 text-sm font-semibold transition-all text-left ${
+                      formData.location_radius === '25000'
+                        ? 'bg-orange-500/10 border-orange-500 text-white'
+                        : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500'
+                    }`}
                   >
-                    <span className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${formData.location_radius === '25000' ? 'bg-orange-600 border-orange-500' : 'border-slate-600'}`}>
-                      {formData.location_radius === '25000' && <Check className="w-3.5 h-3.5 text-white" />}
+                    <span className="text-xl">✈️</span>
+                    <span className="flex-1">I'll go anywhere — no distance limit</span>
+                    <span className={`w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${formData.location_radius === '25000' ? 'bg-orange-600 border-orange-500' : 'border-slate-600'}`}>
+                      {formData.location_radius === '25000' && <Check className="w-4 h-4 text-white" />}
                     </span>
-                    I'll go anywhere — no distance limit
                   </button></div>
               </div>
 
