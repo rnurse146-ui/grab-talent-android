@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from '@/components/Logo';
+import DeckVideo from '@/components/DeckVideo';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
 import { useAuth } from '@/lib/AuthContext';
 import PullToRefresh from '@/components/PullToRefresh';
@@ -897,7 +898,7 @@ export default function Discover() {
                 <div className="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl">
                   <div className="relative aspect-[3/4]">
                     {currentTalent.profile_video && currentTalent.profile_video.match(/\.(mp4|mov|webm)/i) ? (
-                      <video src={currentTalent.profile_video} autoPlay muted loop playsInline className="w-full h-full object-cover" poster={currentTalent.profile_photo || undefined} />
+                      <DeckVideo src={currentTalent.profile_video} poster={currentTalent.profile_photo} />
                     ) : currentTalent.profile_photo ? (
                       <img src={currentTalent.profile_photo} alt={currentTalent.stage_name} className="w-full h-full object-cover" />
                     ) : (
