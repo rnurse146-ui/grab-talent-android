@@ -933,6 +933,9 @@ export default function Discover() {
                         {currentTalent.last_minute_available && (
                           <Badge variant="secondary" className="bg-orange-500/30 text-orange-200"><Zap className="w-3 h-3 mr-1 fill-orange-300" />Last-minute</Badge>
                         )}
+                        {currentTalent.location_radius >= 25000 && (
+                          <Badge variant="secondary" className="bg-blue-500/30 text-blue-200"><Car className="w-3 h-3 mr-1" />Travels anywhere</Badge>
+                        )}
                       </div>
                       {currentTalent.bio && (<p className="text-sm text-slate-300 line-clamp-2">{currentTalent.bio}</p>)}
                       <Link

@@ -363,7 +363,17 @@ export default function TalentSetup() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div><Label className="text-slate-400">Min Hours</Label><MobileSheetSelect value={formData.minimum_hours} onChange={(value) => setFormData({ ...formData, minimum_hours: value })} options={[1,2,3,4,5,6].map(h => ({ value: h.toString(), label: `${h}h` }))} title="Minimum Hours" triggerClassName="bg-slate-900 border-slate-800 h-12 mt-2" contentClassName="bg-slate-900 border-slate-800" /></div>
                 <div><Label className="text-slate-400">City</Label><Input value={formData.location_city} onChange={(e) => setFormData({ ...formData, location_city: e.target.value })} placeholder="London" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
-                <div><Label className="text-slate-400">Travel Radius</Label><MobileSheetSelect value={formData.location_radius} onChange={(value) => setFormData({ ...formData, location_radius: value })} options={[...[10,25,50,100,200,500,1000].map(r => ({ value: r.toString(), label: `${r} miles` })), { value: '25000', label: 'Worldwide — anywhere' }]} title="Travel Radius" triggerClassName="bg-slate-900 border-slate-800 h-12 mt-2" contentClassName="bg-slate-900 border-slate-800" /></div>
+                <div><Label className="text-slate-400">Travel Radius</Label><MobileSheetSelect value={formData.location_radius} onChange={(value) => setFormData({ ...formData, location_radius: value })} options={[...[10,25,50,100,200,500,1000].map(r => ({ value: r.toString(), label: `${r} miles` })), { value: '25000', label: 'Worldwide — anywhere' }]} title="Travel Radius" triggerClassName="bg-slate-900 border-slate-800 h-12 mt-2" contentClassName="bg-slate-900 border-slate-800" />
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, location_radius: prev.location_radius === '25000' ? '25' : '25000' }))}
+                    className={`flex items-center gap-2 mt-2 text-sm transition-colors ${formData.location_radius === '25000' ? 'text-orange-400' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    <span className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${formData.location_radius === '25000' ? 'bg-orange-600 border-orange-500' : 'border-slate-600'}`}>
+                      {formData.location_radius === '25000' && <Check className="w-3.5 h-3.5 text-white" />}
+                    </span>
+                    I'll go anywhere — no distance limit
+                  </button></div>
               </div>
 
               <div
