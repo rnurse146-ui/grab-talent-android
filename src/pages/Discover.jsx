@@ -932,9 +932,9 @@ export default function Discover() {
                       <Link
                         to={`/TalentProfile?id=${currentTalent.id}${eventDate ? '&event_date=' + eventDate : ''}`}
                         onClick={e => e.stopPropagation()}
-                        className="mt-3 inline-flex items-center gap-1.5 text-xs text-white/70 hover:text-white border border-white/20 hover:border-white/50 rounded-full px-3 py-1.5 transition-colors backdrop-blur-sm"
+                        className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-black bg-white hover:bg-zinc-200 rounded-full px-5 py-2.5 shadow-lg transition-colors"
                       >
-                        <User className="w-3 h-3" /> View full profile
+                        <User className="w-4 h-4" /> View full profile
                       </Link>
                     </div>
                   </div>
