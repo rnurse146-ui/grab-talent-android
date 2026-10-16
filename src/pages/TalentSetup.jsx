@@ -70,6 +70,8 @@ const TALENT_CATEGORIES = [
   { value: 'lighting_specialist', label: 'Lighting Specialist', icon: '💡' },
   { value: 'songwriter', label: 'Songwriter', icon: '✍️' },
   { value: 'composer', label: 'Composer', icon: '🎼' },
+  { value: 'choir', label: 'Choir', icon: '🎶' },
+  { value: 'orchestra', label: 'Orchestra', icon: '🎻' },
   { value: 'sound_engineer', label: 'Sound Engineer', icon: '🎚️' },
   { value: 'mc_entertainer', label: 'MC / Entertainer', icon: '🎙️' },
 ];
