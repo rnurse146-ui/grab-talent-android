@@ -28,6 +28,23 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
+      {/* Create Profile Banner — first thing talent without a profile see */}
+      {!talentProfile && (
+        <Link to="/TalentSetup" className="block mb-8 group">
+          <div className="rounded-3xl border-2 border-orange-500/60 bg-gradient-to-br from-orange-600/20 via-zinc-900 to-zinc-950 p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            <span className="text-4xl">🎤</span>
+            <div className="flex-1">
+              <h2 className="text-xl sm:text-2xl font-bold mb-1">Welcome! First step: create your profile</h2>
+              <p className="text-zinc-400 text-sm sm:text-base">You're not discoverable yet — set up your profile so event organizers can find and book you.</p>
+            </div>
+            <Button className="bg-orange-600 hover:bg-orange-500 text-white h-12 px-6 text-base font-semibold shrink-0 w-full sm:w-auto">
+              <Star className="w-5 h-5 mr-2" />
+              Create Profile
+            </Button>
+          </div>
+        </Link>
+      )}
+
       {/* Hero Banner */}
       <div className="relative rounded-3xl overflow-hidden mb-8 bg-zinc-900 border border-zinc-700 p-8">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
