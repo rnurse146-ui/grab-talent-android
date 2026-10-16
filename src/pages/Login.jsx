@@ -76,7 +76,7 @@ export default function Login() {
           Don't have an account?{" "}
           <Link
             to={"/register" + (returnTo !== "/" ? "?returnTo=" + encodeURIComponent(returnTo) : "")}
-            className="text-primary font-medium hover:underline"
+            className="text-primary text-base font-semibold hover:underline"
           >
             Create one
           </Link>
