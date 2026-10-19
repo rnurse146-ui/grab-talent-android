@@ -63,6 +63,7 @@ const TALENT_CATEGORIES = [
   { value: 'fortune_teller', label: 'Fortune Teller', icon: '🔮' },
   { value: 'juggler', label: 'Juggler', icon: '🤹' },
   { value: 'caricature_artist', label: 'Caricature Artist', icon: '🎨' },
+  { value: 'face_painter', label: 'Face Painter', icon: '🖌️' },
   { value: 'comedian', label: 'Comedian', icon: '😂' },
   { value: 'pyrotechnics', label: 'Pyrotechnics', icon: '🎆' },
   { value: 'live_painter', label: 'Live Painter', icon: '🖼️' },
