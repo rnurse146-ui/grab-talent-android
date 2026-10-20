@@ -30,7 +30,7 @@ export default function SeekerDashboard({ user, recentBookings, maybeList }) {
       <div className="relative rounded-3xl overflow-hidden mb-8 bg-zinc-900 border border-zinc-700 p-8">
       <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
       <div className="relative z-10">
-        <p className="text-zinc-400 font-medium mb-2">Welcome back, {user?.full_name?.split(' ')[0]} 👋</p>
+        <p className="text-zinc-400 font-medium mb-2">{user ? `Welcome back, ${user.full_name?.split(' ')[0]}` : 'Welcome'} 👋</p>
         <h1 className="text-3xl font-bold mb-3">Find Your Perfect Talent</h1>
         <p className="text-zinc-500 mb-6 max-w-md">Discover and book world-class performers for your next event. Swipe, save, and book with ease.</p>
         <Link to={createPageUrl('Discover')}>

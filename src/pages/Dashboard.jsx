@@ -8,7 +8,8 @@ import { Link } from 'react-router-dom';
 import SeekerDashboard from '@/components/dashboard/SeekerDashboard';
 import TalentDashboard from '@/components/dashboard/TalentDashboard';
 import NotificationBell from '@/components/NotificationBell';
-import GuestDashboard from '@/components/dashboard/GuestDashboard';
+import GuestTalentDashboard from '@/components/dashboard/GuestTalentDashboard';
+import GuestLoginPrompt from '@/components/GuestLoginPrompt';
 import GuestWelcomePopup, { GUEST_WELCOME_KEY } from '@/components/GuestWelcomePopup';
 
 export default function Dashboard() {
@@ -20,6 +21,7 @@ export default function Dashboard() {
   const [activeView, setActiveView] = useState(null); // 'seeker' | 'talent'
   const [guest, setGuest] = useState(false);
   const [showGuestWelcome, setShowGuestWelcome] = useState(() => !sessionStorage.getItem(GUEST_WELCOME_KEY));
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -33,6 +35,7 @@ export default function Dashboard() {
     const authed = await base44.auth.isAuthenticated();
     if (!authed) {
       setGuest(true);
+      setActiveView('seeker'); // guests get the role-selection dashboard too
       setLoading(false);
       return;
     }
@@ -87,10 +90,52 @@ export default function Dashboard() {
   if (guest) {
     return (
       <div className="min-h-screen bg-slate-950 text-white">
-        <GuestDashboard />
+        {/* Top Nav — same role switcher as logged-in users */}
+        <div className="border-b border-slate-800 bg-black/90 backdrop-blur-sm sticky top-0 md:top-14 z-10 safe-top">
+          <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col items-center gap-4 relative">
+            <Link to="/">
+              <Logo className="h-16 w-auto" variant="light" />
+            </Link>
+
+            <div className="flex items-center bg-zinc-900 rounded-2xl p-1.5 border border-zinc-700 shadow-lg">
+              <button
+                onClick={() => setActiveView('seeker')}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  activeView === 'seeker'
+                    ? 'bg-white text-black shadow-md scale-105'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                }`}
+              >
+                <Search className="w-4 h-4" />
+                Grabbing Talent
+              </button>
+              <button
+                onClick={() => setActiveView('talent')}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  activeView === 'talent'
+                    ? 'bg-white text-black shadow-md scale-105'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                }`}
+              >
+                <Star className="w-4 h-4" />
+                I'm a Talent
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Dashboard Content */}
+        {activeView === 'seeker' && (
+          <SeekerDashboard user={null} recentBookings={[]} maybeList={[]} />
+        )}
+        {activeView === 'talent' && (
+          <GuestTalentDashboard onCreateProfile={() => setShowLoginPrompt(true)} />
+        )}
+
         <footer className="border-t border-slate-800 py-6 text-center text-xs text-zinc-500">
           © {new Date().getFullYear()} Grab Talent. All rights reserved. · <Link to="/privacy-policy" className="text-zinc-400 hover:text-white hover:underline">Privacy Policy</Link>
         </footer>
+        <GuestLoginPrompt open={showLoginPrompt} onOpenChange={setShowLoginPrompt} />
         <GuestWelcomePopup open={showGuestWelcome} onClose={closeGuestWelcome} />
       </div>
     );
