@@ -335,15 +335,13 @@ export default function Discover() {
       {/* Header */}
       <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black">
         <div className="flex items-center gap-2">
-          {isGuest && (
-            <button
-              onClick={() => navigate(-1)}
-              aria-label="Back to dashboard"
-              className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full bg-white text-black active:scale-90 transition-transform"
-            >
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-          )}
+          <button
+            onClick={() => navigate(-1)}
+            aria-label="Back to dashboard"
+            className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full bg-white text-black active:scale-90 transition-transform"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
           <Link to={isGuest ? '/' : createPageUrl('Dashboard')}>
             <Logo className="h-12 w-auto" variant="light" />
           </Link>
@@ -604,15 +602,13 @@ export default function Discover() {
       <div className="min-h-[100dvh] pb-28 text-white">
       <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 md:top-14 z-10">
         <div className="flex items-center gap-2">
-          {isGuest && (
-            <button
-              onClick={() => navigate(-1)}
-              aria-label="Back to dashboard"
-              className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full bg-white text-black active:scale-90 transition-transform"
-            >
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-          )}
+          <button
+            onClick={() => navigate(-1)}
+            aria-label="Back to dashboard"
+            className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full bg-white text-black active:scale-90 transition-transform"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
           <Link to={isGuest ? '/' : createPageUrl('Dashboard')}>
             <Logo className="h-12 w-auto" variant="light" />
           </Link>
