@@ -45,15 +45,12 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
-// Home screen: signed-in users land on the dashboard, visitors go straight
-// to guest browsing in Discover (account is only needed to book or message).
+// Home screen: everyone lands on the dashboard — guests see a welcome pop-up
+// there (account is only needed to book or message).
 const HomeGate = () => {
-  const { isAuthenticated, isLoadingAuth } = useAuth();
+  const { isLoadingAuth } = useAuth();
   if (isLoadingAuth) return <PageLoader />;
-  if (isAuthenticated) {
-    return <LayoutWrapper currentPageName={mainPageKey}><MainPage /></LayoutWrapper>;
-  }
-  return <Navigate to="/Discover" replace />;
+  return <LayoutWrapper currentPageName={mainPageKey}><MainPage /></LayoutWrapper>;
 };
 
 const AuthenticatedApp = () => {

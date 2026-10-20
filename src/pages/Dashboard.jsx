@@ -8,6 +8,8 @@ import { Link } from 'react-router-dom';
 import SeekerDashboard from '@/components/dashboard/SeekerDashboard';
 import TalentDashboard from '@/components/dashboard/TalentDashboard';
 import NotificationBell from '@/components/NotificationBell';
+import GuestDashboard from '@/components/dashboard/GuestDashboard';
+import GuestWelcomePopup, { GUEST_WELCOME_KEY } from '@/components/GuestWelcomePopup';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -16,10 +18,24 @@ export default function Dashboard() {
   const [maybeList, setMaybeList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState(null); // 'seeker' | 'talent'
+  const [guest, setGuest] = useState(false);
+  const [showGuestWelcome, setShowGuestWelcome] = useState(() => !sessionStorage.getItem(GUEST_WELCOME_KEY));
 
   useEffect(() => { loadData(); }, []);
 
+  const closeGuestWelcome = () => {
+    sessionStorage.setItem(GUEST_WELCOME_KEY, '1');
+    setShowGuestWelcome(false);
+  };
+
   const loadData = async () => {
+    // Guests land straight on the dashboard with the welcome pop-up
+    const authed = await base44.auth.isAuthenticated();
+    if (!authed) {
+      setGuest(true);
+      setLoading(false);
+      return;
+    }
     const currentUser = await base44.auth.me();
     setUser(currentUser);
 
@@ -64,6 +80,18 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (guest) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white">
+        <GuestDashboard />
+        <footer className="border-t border-slate-800 py-6 text-center text-xs text-zinc-500">
+          © {new Date().getFullYear()} Grab Talent. All rights reserved. · <Link to="/privacy-policy" className="text-zinc-400 hover:text-white hover:underline">Privacy Policy</Link>
+        </footer>
+        <GuestWelcomePopup open={showGuestWelcome} onClose={closeGuestWelcome} />
       </div>
     );
   }
