@@ -45,6 +45,17 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
+// Home screen: signed-in users land on the dashboard, visitors go straight
+// to guest browsing in Discover (account is only needed to book or message).
+const HomeGate = () => {
+  const { isAuthenticated, isLoadingAuth } = useAuth();
+  if (isLoadingAuth) return <PageLoader />;
+  if (isAuthenticated) {
+    return <LayoutWrapper currentPageName={mainPageKey}><MainPage /></LayoutWrapper>;
+  }
+  return <Navigate to="/Discover" replace />;
+};
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings } = useAuth();
 
@@ -146,13 +157,10 @@ const AppRoutes = ({ location }) => (
         <Route path="/Settings" element={<LayoutWrapper currentPageName="Settings"><SettingsPage /></LayoutWrapper>} />
       </Route>
 
+      <Route path="/" element={<HomeGate />} />
+
       {/* Authenticated app routes — gated by ProtectedRoute */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-        <Route path="/" element={
-          <LayoutWrapper currentPageName={mainPageKey}>
-            <MainPage />
-          </LayoutWrapper>
-        } />
         {Object.entries(Pages).filter(([path]) => path !== 'Discover' && path !== 'TalentProfile' && path !== 'MaybeList' && path !== 'Settings').map(([path, Page]) => (
           <Route
             key={path}

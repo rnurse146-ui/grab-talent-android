@@ -42,6 +42,7 @@ const TALENT_CATEGORIES = [
   { value: 'juggler', label: 'Juggler' },
   { value: 'caricature_artist', label: 'Caricature Artist' },
   { value: 'face_painter', label: 'Face Painter' },
+  { value: 'mixing_mastering_engineer', label: 'Mixing & Mastering Engineer' },
   { value: 'live_painter', label: 'Live Painter' },
   { value: 'lighting_specialist', label: 'Lighting Specialist' },
   { value: 'songwriter', label: 'Songwriter' },
