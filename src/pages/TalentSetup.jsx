@@ -60,7 +60,7 @@ const TALENT_CATEGORIES = [
   { value: 'choreographer', label: 'Choreographer', icon: '🩰' },
   { value: 'circus_performer', label: 'Circus Performer', icon: '🎪' },
   { value: 'vr_artist', label: 'VR Artist', icon: '🥽' },
-  { value: 'fortune_teller', label: 'Fortune Teller', icon: '🔮' },
+  { value: 'fortune_teller', label: 'Fortune Teller / Psychic', icon: '🔮' },
   { value: 'juggler', label: 'Juggler', icon: '🤹' },
   { value: 'caricature_artist', label: 'Caricature Artist', icon: '🎨' },
   { value: 'face_painter', label: 'Face Painter', icon: '🖌️' },
