@@ -39,7 +39,10 @@ export default function GuestWelcomePopup({ open, onClose }) {
               Welcome to Grab Talent
             </h1>
             <p className="mt-5 text-lg text-zinc-400 leading-relaxed">
-              Empowering talented people to find work easy, and anyone looking for people for events & parties to hire them easy.
+              Aiming to be the Uber for the Talent industry, making talented people find work fast and easy, and people looking for talent for any party or event find them with just a swipe of their finger.
+            </p>
+            <p className="mt-4 text-sm font-semibold text-zinc-300">
+              Grab Talent - Talent at your fingertips
             </p>
             <button
               onClick={onClose}
