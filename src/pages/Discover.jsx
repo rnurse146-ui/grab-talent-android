@@ -8,9 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
   X, Heart, Star, MapPin, Banknote, CheckCircle2,
-  Filter, ChevronRight, Loader2, List, Calendar, User, Zap, Undo2, Car
+  Filter, ChevronRight, Loader2, List, Calendar, User, Zap, Undo2, Car, ArrowLeft
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Logo from '@/components/Logo';
 import DeckVideo from '@/components/DeckVideo';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
@@ -69,6 +69,7 @@ export default function Discover() {
   const [welcomeStep, setWelcomeStep] = useState(1);
   const WELCOME_STEPS = 3;
   const dragX = useRef(0);
+  const navigate = useNavigate();
   const { isGuest } = useAuth();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [travelIds, setTravelIds] = useState(new Set());
@@ -333,9 +334,20 @@ export default function Discover() {
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black">
-        <Link to={isGuest ? '/' : createPageUrl('Dashboard')}>
-          <Logo className="h-12 w-auto" variant="light" />
-        </Link>
+        <div className="flex items-center gap-2">
+          {isGuest && (
+            <button
+              onClick={() => navigate(-1)}
+              aria-label="Back to dashboard"
+              className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full text-white active:scale-90 transition-transform"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+          )}
+          <Link to={isGuest ? '/' : createPageUrl('Dashboard')}>
+            <Logo className="h-12 w-auto" variant="light" />
+          </Link>
+        </div>
         <span className="text-zinc-500 text-sm">{welcomeStep} / {WELCOME_STEPS}</span>
       </div>
 
@@ -591,9 +603,20 @@ export default function Discover() {
     <PullToRefresh onRefresh={loadData} className="h-[100dvh] md:h-[calc(100dvh-3.5rem)] bg-black text-white">
       <div className="min-h-[100dvh] pb-28 text-white">
       <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 md:top-14 z-10">
-        <Link to={isGuest ? '/' : createPageUrl('Dashboard')}>
-          <Logo className="h-12 w-auto" variant="light" />
-        </Link>
+        <div className="flex items-center gap-2">
+          {isGuest && (
+            <button
+              onClick={() => navigate(-1)}
+              aria-label="Back to dashboard"
+              className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full text-white active:scale-90 transition-transform"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+          )}
+          <Link to={isGuest ? '/' : createPageUrl('Dashboard')}>
+            <Logo className="h-12 w-auto" variant="light" />
+          </Link>
+        </div>
         <div className="flex items-center gap-2">
           <Link to={createPageUrl('MaybeList')}>
             <Button size="sm" className="bg-green-500 hover:bg-green-400 text-black font-bold relative">
