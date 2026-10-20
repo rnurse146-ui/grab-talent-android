@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import Logo from '@/components/Logo';
 import DeckVideo from '@/components/DeckVideo';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
+import GuestWelcomePopup, { GUEST_WELCOME_KEY } from '@/components/GuestWelcomePopup';
 import { useAuth } from '@/lib/AuthContext';
 import PullToRefresh from '@/components/PullToRefresh';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
@@ -71,6 +72,7 @@ export default function Discover() {
   const dragX = useRef(0);
   const { isGuest } = useAuth();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [showGuestWelcome, setShowGuestWelcome] = useState(() => isGuest && !sessionStorage.getItem(GUEST_WELCOME_KEY));
   const [travelIds, setTravelIds] = useState(new Set());
   const [travelInfo, setTravelInfo] = useState(null);
 
@@ -327,6 +329,11 @@ export default function Discover() {
   const handleWelcomeStart = () => {
     setShowWelcome(false);
     loadTalents();
+  };
+
+  const closeGuestWelcome = () => {
+    sessionStorage.setItem(GUEST_WELCOME_KEY, '1');
+    setShowGuestWelcome(false);
   };
 
   if (showWelcome) return (
@@ -1004,6 +1011,7 @@ export default function Discover() {
       </div>
       </div>
       <GuestLoginPrompt open={showLoginPrompt} onOpenChange={setShowLoginPrompt} />
+      <GuestWelcomePopup open={showGuestWelcome} onClose={closeGuestWelcome} />
     </PullToRefresh>
   );
 }
