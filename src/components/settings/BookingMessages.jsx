@@ -17,7 +17,7 @@ export default function BookingMessages({ user }) {
         { sort: '-created_date', limit: 50 }
       );
       const byConversation = {};
-      msgs.forEach(m => {
+      (msgs.items || msgs || []).forEach(m => {
         const key = m.booking_id || m.conversation_id;
         if (!byConversation[key]) {
           byConversation[key] = { last: m, unread: 0, booking_id: m.booking_id };

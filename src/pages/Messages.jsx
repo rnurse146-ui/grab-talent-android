@@ -90,7 +90,7 @@ export default function Messages() {
       '-created_date', 200
     );
 
-    const convList = buildConversations(allMessages, currentUser);
+    const convList = buildConversations(allMessages.items || allMessages || [], currentUser);
     setConversations(convList);
 
     let initialConv = null;
@@ -126,7 +126,7 @@ export default function Messages() {
         { $or: [{ sender_id: currentUser.id }, { receiver_id: currentUser.id }] },
         '-created_date', 200
       );
-      const convList = buildConversations(allMessages, currentUser);
+      const convList = buildConversations(allMessages.items || allMessages || [], currentUser);
       setConversations(convList);
       const activeId = activeConvIdRef.current;
       if (activeId) {
