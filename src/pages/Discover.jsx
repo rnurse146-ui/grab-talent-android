@@ -339,7 +339,7 @@ export default function Discover() {
             <button
               onClick={() => navigate(-1)}
               aria-label="Back to dashboard"
-              className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full text-white active:scale-90 transition-transform"
+              className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full bg-white text-black active:scale-90 transition-transform"
             >
               <ArrowLeft className="w-6 h-6" />
             </button>
@@ -608,7 +608,7 @@ export default function Discover() {
             <button
               onClick={() => navigate(-1)}
               aria-label="Back to dashboard"
-              className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full text-white active:scale-90 transition-transform"
+              className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full bg-white text-black active:scale-90 transition-transform"
             >
               <ArrowLeft className="w-6 h-6" />
             </button>
