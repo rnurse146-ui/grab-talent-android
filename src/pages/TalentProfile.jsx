@@ -175,7 +175,7 @@ export default function TalentProfile() {
             )}
             {!isOwner && (
               <div className="flex gap-3">
-                {isGuest ? (
+                {!user ? (
                   <>
                     <Button size="lg" onClick={() => setShowLoginPrompt(true)} className="bg-white text-black hover:bg-zinc-100"><Calendar className="w-5 h-5 mr-2" />Book Now</Button>
                     <Button size="lg" variant="outline" onClick={() => setShowLoginPrompt(true)} className="border-zinc-700 bg-transparent"><MessageSquare className="w-5 h-5 mr-2" />Message</Button>

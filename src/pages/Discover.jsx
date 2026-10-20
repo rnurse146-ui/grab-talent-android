@@ -17,6 +17,7 @@ import GuestLoginPrompt from '@/components/GuestLoginPrompt';
 import { useAuth } from '@/lib/AuthContext';
 import PullToRefresh from '@/components/PullToRefresh';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
+import { toast } from '@/components/ui/use-toast';
 import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
 import { rankTalents } from '@/lib/discoveryRanking';
 import { normalizeCity, cityMatches, travelsTo, inSearchArea, haversineMiles, geocodeCityCached } from '@/lib/cityMatch';
@@ -271,11 +272,13 @@ export default function Discover() {
   const handleSwipe = async (direction) => {
     if (!talents[currentIndex]) return;
     const talent = talents[currentIndex];
-    // Guests can build their Maybe List on this device — booking still needs an account
-    if (isGuest) {
+    // Guests (and anyone not signed in) build their Maybe List on this device —
+    // booking still needs an account
+    if (!user) {
       if (direction === 'right') {
         addGuestMaybe(talent);
         setMaybeCount(getGuestMaybes().length);
+        toast({ title: 'Saved to your Maybe List', description: 'Create a free account to book them.' });
       }
       setSwiping(direction);
       setTimeout(() => {
@@ -622,7 +625,7 @@ export default function Discover() {
               )}
             </Button>
           </Link>
-          {isGuest && (
+          {!user && (
             <Button variant="outline" size="sm" onClick={() => setShowLoginPrompt(true)} className="border-zinc-700 bg-transparent">
               Sign In
             </Button>
@@ -990,7 +993,7 @@ export default function Discover() {
               </div>
               <Link
                 to={createPageUrl('BookTalent') + `?talent_id=${currentTalent.id}${eventDate ? '&event_date=' + eventDate : ''}`}
-                onClick={e => { if (isGuest) { e.preventDefault(); setShowLoginPrompt(true); } }}
+                onClick={e => { if (!user) { e.preventDefault(); setShowLoginPrompt(true); } }}
                 className="flex flex-col items-center gap-1.5"
               >
                 <motion.button whileTap={{ scale: 0.9 }} className="w-12 h-12 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-white transition-colors">
