@@ -278,7 +278,12 @@ export default function Discover() {
       if (direction === 'right') {
         addGuestMaybe(talent);
         setMaybeCount(getGuestMaybes().length);
-        toast({ title: 'Saved to your Maybe List', description: 'Create a free account to book them.' });
+        // Show the signup reminder only once per session — the Maybe List
+        // itself keeps saving silently on every swipe
+        if (!sessionStorage.getItem('gt_maybe_toast_shown')) {
+          sessionStorage.setItem('gt_maybe_toast_shown', '1');
+          const reminderToast = toast({ title: 'Saved to your Maybe List', description: 'Create a free account to book them.', action: { altText: 'Close', onClick: () => reminderToast.dismiss() } });
+        }
       }
       setSwiping(direction);
       setTimeout(() => {
