@@ -45,7 +45,8 @@
         "pyrotechnics",
         "live_painter",
         "photographer",
-        "lighting_specialist"
+        "lighting_specialist",
+        "bagpiper"
       ],
       "description": "Primary talent category \u2014 kept as the first of talent_categories for compatibility"
     },

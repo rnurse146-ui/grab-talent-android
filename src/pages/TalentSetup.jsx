@@ -70,6 +70,7 @@ const TALENT_CATEGORIES = [
   { value: 'live_painter', label: 'Live Painter', icon: '🖼️' },
   { value: 'photographer', label: 'Photography / Filmmaker', icon: '📸' },
   { value: 'lighting_specialist', label: 'Lighting Specialist', icon: '💡' },
+  { value: 'bagpiper', label: 'Bagpiper', icon: '🎶' },
   { value: 'songwriter', label: 'Songwriter', icon: '✍️' },
   { value: 'composer', label: 'Composer', icon: '🎼' },
   { value: 'choir', label: 'Choir', icon: '🎶' },

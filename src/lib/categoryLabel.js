@@ -5,5 +5,6 @@ export function categoryLabel(category) {
   if (category === 'photographer') return 'photography / filmmaker';
   if (category === 'fortune_teller') return 'fortune teller / psychic';
   if (category === 'mixing_mastering_engineer') return 'mixing & mastering engineer';
+  if (category === 'bagpiper') return 'bagpiper';
   return category.replace(/_/g, ' ');
 }
