@@ -123,12 +123,16 @@ export default function Discover() {
         base44.entities.SwipeHistory.filter({ seeker_id: currentUser.id }),
         base44.entities.MaybeList.filter({ seeker_id: currentUser.id })
       ]);
-      // Only passes stay blocked: talents on the Maybe List keep showing in the
-      // deck (unless they're unavailable on the event date, filtered later)
-      swipedSet = new Set(history.filter(h => h.action === 'pass').map(h => h.talent_profile_id));
+      // Passes and talent on the Maybe List both stay out of the deck
+      swipedSet = new Set([
+        ...history.filter(h => h.action === 'pass').map(h => h.talent_profile_id),
+        ...maybe.map(m => m.talent_profile_id)
+      ]);
       setMaybeCount(maybe.length);
       setPassedCount(history.filter(h => h.action === 'pass').length);
     } else {
+      // Guests: talent they've saved to the on-device Maybe List stays out too
+      swipedSet = new Set(getGuestMaybes().map(m => m.talent_profile_id));
       setMaybeCount(getGuestMaybes().length);
     }
     setUser(currentUser);
@@ -150,8 +154,7 @@ export default function Discover() {
     
     const allTalents = await base44.entities.TalentProfile.filter(query, '-average_rating', 200);
     
-    // Maybe List talent stays in the deck — being on the list doesn't block a
-    // booking, and the date check below already removes anyone booked/unavailable
+    // Talent already passed or saved to the Maybe List never re-enters the deck
     let localIds = new Set();
     let filtered = allTalents;
 
@@ -239,7 +242,7 @@ export default function Discover() {
   };
 
   const handleUndo = async () => {
-    if (!lastPass) return;
+    if (!lastPass?.historyId) return;
     await base44.entities.SwipeHistory.delete(lastPass.historyId);
     if (lastPass.maybeId) {
       await base44.entities.MaybeList.delete(lastPass.maybeId);
@@ -273,6 +276,23 @@ export default function Discover() {
     setLastPass(null);
     setSwiping(null);
     setCurrentIndex(prev => Math.max(0, prev - 3));
+  };
+
+  // Go back one performer — if they were passed, undo the pass so they can be
+  // swiped again instead of staying blocked from the deck
+  const rewindOne = async () => {
+    if (currentIndex === 0 || !talents[currentIndex - 1]) return;
+    const prevTalent = talents[currentIndex - 1];
+    setLastPass(null);
+    setSwiping(null);
+    setCurrentIndex(prev => prev - 1);
+    if (!user) return;
+    const passRecords = await base44.entities.SwipeHistory.filter({ seeker_id: user.id, talent_profile_id: prevTalent.id, action: 'pass' });
+    if (passRecords.length > 0) {
+      await base44.entities.SwipeHistory.deleteMany({ seeker_id: user.id, talent_profile_id: prevTalent.id, action: 'pass' });
+      setSwipedIds(prev => { const next = new Set(prev); next.delete(prevTalent.id); return next; });
+      setPassedCount(prev => Math.max(0, prev - 1));
+    }
   };
 
   const handleDragEnd = (event, info) => {
@@ -309,30 +329,37 @@ export default function Discover() {
     }
     setSwiping(direction);
 
-    const historyRecord = await base44.entities.SwipeHistory.create({
-      seeker_id: user.id,
-      talent_profile_id: talent.id,
-      action: direction === 'right' ? 'maybe' : 'pass'
-    });
+    // Already saved from an earlier swipe (rewound back to them): don't double-save
+    const alreadyMaybe = direction === 'right' &&
+      (await base44.entities.MaybeList.filter({ seeker_id: user.id, talent_profile_id: talent.id })).length > 0;
 
+    let historyRecord = null;
     let maybeId = null;
-    if (direction === 'right') {
-      const maybeRecord = await base44.entities.MaybeList.create({
+    if (!alreadyMaybe) {
+      historyRecord = await base44.entities.SwipeHistory.create({
         seeker_id: user.id,
         talent_profile_id: talent.id,
-        talent_stage_name: talent.stage_name,
-        talent_category: talent.talent_category,
-        talent_photo: talent.profile_photo,
-        talent_hourly_rate: effectiveHourlyRate(talent),
-        talent_rating: talent.average_rating,
-        talent_city: talent.location_city
+        action: direction === 'right' ? 'maybe' : 'pass'
       });
-      maybeId = maybeRecord.id;
-      setMaybeCount(prev => prev + 1);
+
+      if (direction === 'right') {
+        const maybeRecord = await base44.entities.MaybeList.create({
+          seeker_id: user.id,
+          talent_profile_id: talent.id,
+          talent_stage_name: talent.stage_name,
+          talent_category: talent.talent_category,
+          talent_photo: talent.profile_photo,
+          talent_hourly_rate: effectiveHourlyRate(talent),
+          talent_rating: talent.average_rating,
+          talent_city: talent.location_city
+        });
+        maybeId = maybeRecord.id;
+        setMaybeCount(prev => prev + 1);
+      }
     }
 
     if (direction === 'left') setPassedCount(prev => prev + 1);
-    setLastPass({ talent, historyId: historyRecord.id, maybeId, wasPass: direction === 'left' });
+    setLastPass({ talent, historyId: historyRecord?.id || null, maybeId, wasPass: direction === 'left' });
     setSwipedIds(prev => new Set([...prev, talent.id]));
 
     setTimeout(() => {
@@ -1017,6 +1044,12 @@ export default function Discover() {
                 <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Back 3</span>
               </div>
               <div className="flex flex-col items-center gap-1.5">
+                <motion.button whileTap={{ scale: 0.9 }} onClick={rewindOne} disabled={currentIndex === 0} className="w-12 h-12 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-purple-500 hover:bg-purple-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  <Undo2 className="w-5 h-5 text-purple-300" />
+                </motion.button>
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Back 1</span>
+              </div>
+              <div className="flex flex-col items-center gap-1.5">
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleSwipe('left')} className="w-14 h-14 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center hover:border-red-500 hover:bg-red-500/20 transition-colors">
                   <X className="w-7 h-7 text-red-400" />
                 </motion.button>
@@ -1040,7 +1073,7 @@ export default function Discover() {
               </div>
             </div>
             {/* Undo button */}
-            {lastPass && (
+            {lastPass?.historyId && (
               <motion.button
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1050,7 +1083,7 @@ export default function Discover() {
                 ↩ Undo last swipe
               </motion.button>
             )}
-            {!lastPass && <div className="h-10 mt-4" />}
+            {!lastPass?.historyId && <div className="h-10 mt-4" />}
             <p className="text-zinc-500 text-sm mt-2">{currentIndex + 1} of {talents.length} talents</p>
           </>
         )}
