@@ -56,6 +56,12 @@ const TALENT_CATEGORIES = [
 ];
 
 export default function Discover() {
+  // Session deck memory: coming back from a talent profile resumes the deck
+  // instead of restarting the "what are you looking for" wizard
+  const savedDeck = (() => {
+    try { return JSON.parse(sessionStorage.getItem('gt_discover_state') || 'null'); } catch { return null; }
+  })();
+  const resumeTalentIdRef = useRef(savedDeck?.currentTalentId || null);
   const [user, setUser] = useState(null);
   const [talents, setTalents] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -64,10 +70,10 @@ export default function Discover() {
   const [swipedIds, setSwipedIds] = useState(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [maybeCount, setMaybeCount] = useState(0);
-  const [eventDate, setEventDate] = useState('');
+  const [eventDate, setEventDate] = useState(savedDeck?.eventDate || '');
   const [lastPass, setLastPass] = useState(null);
   const [passedCount, setPassedCount] = useState(0);
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(!(savedDeck && savedDeck.done));
   const [welcomeStep, setWelcomeStep] = useState(1);
   const WELCOME_STEPS = 3;
   const dragX = useRef(0);
@@ -87,7 +93,8 @@ export default function Discover() {
     verifiedOnly: false,
     lastMinuteOnly: false,
     equipment: [],
-    maxDistance: 'any'
+    maxDistance: 'any',
+    ...(savedDeck?.filters || {})
   });
   // How many filters differ from the default — shown as a badge on the Filters button
   const activeFilterCount =
@@ -126,7 +133,13 @@ export default function Discover() {
     }
     setUser(currentUser);
     setSwipedIds(swipedSet);
-    await loadTalents(swipedSet, undefined, currentUser?.preferred_city || '');
+    const deck = await loadTalents(swipedSet, undefined, currentUser?.preferred_city || '');
+    // Resume the deck where the user left off (e.g. back from a talent profile)
+    if (resumeTalentIdRef.current && Array.isArray(deck)) {
+      const idx = deck.findIndex(t => t.id === resumeTalentIdRef.current);
+      if (idx >= 0) setCurrentIndex(idx);
+      resumeTalentIdRef.current = null;
+    }
   };
 
   const loadTalents = async (alreadySwiped = swipedIds, dateOverride = undefined, seekerCityOverride = '') => {
@@ -222,6 +235,7 @@ export default function Discover() {
     setTalents(filtered);
     setCurrentIndex(0);
     setLoading(false);
+    return filtered;
   };
 
   const handleUndo = async () => {
@@ -328,6 +342,17 @@ export default function Discover() {
   };
 
   const currentTalent = talents[currentIndex];
+
+  // Keep deck progress in this tab's session so returning from a profile
+  // picks up mid-deck instead of restarting the intro wizard
+  useEffect(() => {
+    sessionStorage.setItem('gt_discover_state', JSON.stringify({
+      done: !showWelcome,
+      filters,
+      eventDate,
+      currentTalentId: talents[currentIndex]?.id || null
+    }));
+  }, [showWelcome, filters, eventDate, currentIndex, talents]);
 
   const applyFilters = () => {
     loadTalents();
