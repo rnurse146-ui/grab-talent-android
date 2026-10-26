@@ -97,6 +97,10 @@ export default function BookTalent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (timeOrderInvalid) {
+      setSubmitError('Your end time needs to be after your start time.');
+      return;
+    }
     setSubmitting(true);
     setSubmitError('');
     try {
@@ -136,6 +140,7 @@ export default function BookTalent() {
   );
 
   const pricing = calculatePricing();
+  const timeOrderInvalid = !!formData.start_time && !!formData.end_time && formData.end_time <= formData.start_time;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -203,8 +208,23 @@ export default function BookTalent() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div><Label className="text-zinc-400">Start Time</Label><Input type="time" value={formData.start_time} onChange={(e) => setFormData({...formData, start_time: e.target.value})} className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
-            <div><Label className="text-zinc-400">End Time</Label><Input type="time" value={formData.end_time} onChange={(e) => setFormData({...formData, end_time: e.target.value})} className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
+            <div>
+              <Label className="text-zinc-400">End Time</Label>
+              <Input
+                type="time"
+                value={formData.end_time}
+                min={formData.start_time || undefined}
+                onChange={(e) => setFormData({...formData, end_time: e.target.value})}
+                className={`bg-zinc-900 mt-2 ${timeOrderInvalid ? 'border-red-600' : 'border-zinc-800'}`}
+                required
+              />
+            </div>
           </div>
+          {timeOrderInvalid && (
+            <p className="flex items-center gap-2 text-sm text-red-400 -mt-3">
+              <AlertTriangle className="w-4 h-4 shrink-0" /> Your end time needs to be after your start time.
+            </p>
+          )}
 
           <div><Label className="text-zinc-400">Venue Name</Label><Input value={formData.venue_name} onChange={(e) => setFormData({...formData, venue_name: e.target.value})} placeholder="e.g. The Grand Hotel" className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
           <div><Label className="text-zinc-400">Venue Address</Label><Input value={formData.venue_address} onChange={(e) => setFormData({...formData, venue_address: e.target.value})} placeholder="Full address" className="bg-zinc-900 border-zinc-800 mt-2" required /></div>
@@ -233,7 +253,7 @@ export default function BookTalent() {
           {submitError && (
             <p className="text-sm text-red-400 bg-red-950/40 border border-red-700/40 rounded-xl px-4 py-3">{submitError}</p>
           )}
-          <Button type="submit" disabled={submitting || !formData.event_date} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
+          <Button type="submit" disabled={submitting || !formData.event_date || timeOrderInvalid} className="w-full h-12 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
             {submitting ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Sending...</> : 'Send Booking Request'}
           </Button>
         </form>
