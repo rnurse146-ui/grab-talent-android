@@ -61,7 +61,18 @@ export default function Discover() {
   const savedDeck = (() => {
     try { return JSON.parse(sessionStorage.getItem('gt_discover_state') || 'null'); } catch { return null; }
   })();
-  const resumeTalentIdRef = useRef(savedDeck?.currentTalentId || null);
+  // Only resume the deck (and its previous search) when we're coming straight
+  // back from a talent profile. Opening Discover any other way starts a fresh
+  // search at the "what are you looking for" step.
+  const returningFromProfile = (() => {
+    try {
+      const flag = sessionStorage.getItem('gt_resume_deck') === '1';
+      sessionStorage.removeItem('gt_resume_deck');
+      return flag;
+    } catch { return false; }
+  })();
+  const resume = returningFromProfile ? savedDeck : null;
+  const resumeTalentIdRef = useRef(resume?.currentTalentId || null);
   const [user, setUser] = useState(null);
   const [talents, setTalents] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -73,7 +84,7 @@ export default function Discover() {
   const [eventDate, setEventDate] = useState(savedDeck?.eventDate || '');
   const [lastPass, setLastPass] = useState(null);
   const [passedCount, setPassedCount] = useState(0);
-  const [showWelcome, setShowWelcome] = useState(!(savedDeck && savedDeck.done));
+  const [showWelcome, setShowWelcome] = useState(!(resume && resume.done));
   const [welcomeStep, setWelcomeStep] = useState(1);
   const WELCOME_STEPS = 3;
   const dragX = useRef(0);
@@ -94,7 +105,7 @@ export default function Discover() {
     lastMinuteOnly: false,
     equipment: [],
     maxDistance: 'any',
-    ...(savedDeck?.filters || {})
+    ...(resume?.filters || {})
   });
   // How many filters differ from the default — shown as a badge on the Filters button
   const activeFilterCount =
@@ -1025,7 +1036,10 @@ export default function Discover() {
                       {currentTalent.bio && (<p className="text-sm text-slate-300 line-clamp-2">{currentTalent.bio}</p>)}
                       <Link
                         to={`/TalentProfile?id=${currentTalent.id}${eventDate ? '&event_date=' + eventDate : ''}`}
-                        onClick={e => e.stopPropagation()}
+                        onClick={e => {
+                          e.stopPropagation();
+                          try { sessionStorage.setItem('gt_resume_deck', '1'); } catch { /* ignore */ }
+                        }}
                         className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-black bg-white hover:bg-zinc-200 rounded-full px-5 py-2.5 shadow-lg transition-colors"
                       >
                         <User className="w-4 h-4" /> View full profile
