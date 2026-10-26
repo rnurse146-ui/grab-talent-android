@@ -7,6 +7,60 @@ import { buildBookingIcs, toBase64Utf8 } from '../../shared/calendarInvite.ts';
 // booking request, so both sides hear about it even when not using the app.
 // Recipient address and email content are derived server-side — only ids are
 // accepted from the caller, and the caller must be the seeker who triggered it.
+const APP_URL = 'https://grabtalent.co.uk';
+const LOGO_URL = 'https://media.base44.com/images/public/697f3da7f123570707b055b1/22eb7db98_logo2.jpg';
+
+const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => (
+  { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+));
+
+// One branded, clickable email layout: a header lockup, headline, a details
+// table and a prominent button. Links are absolute and point at the live app.
+const emailHtml = ({ heading, intro, rows, ctaLabel, ctaUrl, outro }) => `
+<div style="margin:0;padding:24px 12px;background:#fcfcfd;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
+    <tr>
+      <td style="background:#71717a;padding:16px 24px;">
+        <img src="${LOGO_URL}" alt="Grab Talent" height="30" style="height:30px;display:block;border:0;" />
+        <span style="color:#ffffff;font-size:16px;font-weight:bold;display:inline-block;margin-top:8px;">Grab Talent</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:28px 24px 8px;">
+        <h1 style="margin:0 0 10px;font-size:22px;line-height:1.3;color:#18181b;">${escapeHtml(heading)}</h1>
+        <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#71717a;">${intro}</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;color:#3f3f46;line-height:1.5;">
+          ${rows}
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:24px;">
+        <a href="${ctaUrl}" style="display:inline-block;background:#71717a;color:#ffffff;text-decoration:none;font-size:16px;font-weight:bold;padding:14px 28px;border-radius:6px;">${escapeHtml(ctaLabel)}</a>
+        <p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#71717a;">
+          If the button doesn't work, copy this link into your browser:<br />
+          <a href="${ctaUrl}" style="color:#71717a;word-break:break-all;">${ctaUrl}</a>
+        </p>
+        ${outro ? `<p style="margin:18px 0 0;font-size:13px;line-height:1.6;color:#71717a;">${outro}</p>` : ''}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:18px 24px;background:#f4f4f5;border-top:1px solid #e5e7eb;">
+        <p style="margin:0 0 8px;font-size:12px;line-height:1.6;color:#71717a;">
+          <strong style="color:#3f3f46;">Can't find our emails?</strong> Check your junk or spam folder and mark any message from Grab Talent as "Not junk", so you never miss a booking.
+        </p>
+        <p style="margin:0;font-size:12px;line-height:1.6;color:#a1a1aa;">
+          This is an automated message, please do not reply to this email. For help, open the Help section in the Grab Talent app.
+        </p>
+      </td>
+    </tr>
+  </table>
+</div>`;
+
+const detailRow = (label, value) => value
+  ? `<tr><td style="padding:4px 0;color:#71717a;width:120px;vertical-align:top;">${escapeHtml(label)}</td><td style="padding:4px 0;color:#18181b;">${escapeHtml(value)}</td></tr>`
+  : '';
+
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -45,31 +99,32 @@ export default async function(req) {
       // point to the in-app booking instead, where it renders in a safe UI.
       const eventName = sanitizeText(booking.event_name, 120) || 'Event';
       const clientName = sanitizeText(booking.seeker_name, 100) || 'An event organizer';
+      const talentName = sanitizeText(booking.talent_stage_name, 100) || 'there';
       const venue = sanitizeText([booking.venue_name, booking.venue_city].filter(Boolean).join(', '), 160);
       const eventType = sanitizeText(booking.event_type, 40).replace(/_/g, ' ') || 'event';
       const startT = normalizeTime(booking.start_time) || 'TBD';
       const endT = normalizeTime(booking.end_time) || 'TBD';
+      const bookingUrl = `${APP_URL}/BookingDetails?id=${encodeURIComponent(booking.id)}`;
 
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: talentEmail,
-        subject: `🎭 New Booking Request: ${eventName} on ${formatDate(booking.event_date)}`,
-        body: `Hi ${booking.talent_stage_name || 'there'},
-
-You've received a new booking request on Grab Talent!
-
-📅 Event: ${eventName} (${eventType})
-🗓️ Date: ${formatDate(booking.event_date)}
-⏰ Time: ${startT} – ${endT}${Number.isFinite(booking.duration_hours) ? ` (${booking.duration_hours}h)` : ''}
-📍 Venue: ${venue}
-${booking.total_price != null ? `💷 Total: £${booking.total_price} (your payout: £${booking.talent_payout})` : ''}
-👤 Client: ${clientName}
-
-Special requirements and client contact details are only shown in the booking request in the app, never in this email.
-
-The client is waiting on your response — open Grab Talent to review the request and accept or decline it.
-https://grabtalent.base44.app
-
-— The Grab Talent Team`
+        from_name: 'Grab Talent',
+        subject: `New booking request: ${eventName} on ${formatDate(booking.event_date)}`,
+        html: emailHtml({
+          heading: 'You have a new booking request',
+          intro: `Hi ${escapeHtml(talentName)}, ${escapeHtml(clientName)} would like to book you for a ${escapeHtml(eventType)}. Open the request to accept or decline it.`,
+          rows: [
+            detailRow('Event', `${eventName} (${eventType})`),
+            detailRow('Date', formatDate(booking.event_date)),
+            detailRow('Time', `${startT} – ${endT}${Number.isFinite(booking.duration_hours) ? ` (${booking.duration_hours}h)` : ''}`),
+            detailRow('Venue', venue),
+            detailRow('Client', clientName),
+            booking.total_price != null ? detailRow('Total', `£${booking.total_price} (your payout: £${booking.talent_payout})`) : ''
+          ].join(''),
+          ctaLabel: 'Review and accept booking',
+          ctaUrl: bookingUrl,
+          outro: 'Special requirements and client contact details are only shown in the booking request in the app. The client is waiting on your response.'
+        })
       });
       return Response.json({ sent: true });
     }
@@ -98,6 +153,7 @@ https://grabtalent.base44.app
       const venue = sanitizeText([booking.venue_name, booking.venue_city].filter(Boolean).join(', '), 160);
       const startT = normalizeTime(booking.start_time) || 'TBD';
       const endT = normalizeTime(booking.end_time) || 'TBD';
+      const bookingUrl = `${APP_URL}/BookingDetails?id=${encodeURIComponent(booking.id)}`;
 
       if (response === 'accepted') {
         // The date is now real for the client: attach a calendar invite so it
@@ -109,41 +165,39 @@ https://grabtalent.base44.app
         });
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: seekerEmail,
-          subject: `✅ ${talentName} accepted your booking request: ${eventName}`,
+          from_name: 'Grab Talent',
+          subject: `${talentName} accepted your booking request: ${eventName}`,
           attachments: [{ filename: icsFilename, content: toBase64Utf8(icsContent) }],
-          body: `Hi ${seekerName},
-
-Great news — ${talentName} has ACCEPTED your booking request on Grab Talent!
-
-📅 Event: ${eventName}
-🗓️ Date: ${formatDate(booking.event_date)}
-⏰ Time: ${startT} – ${endT}
-📍 Venue: ${venue}
-
-A calendar invite is attached so you can add the date to your calendar app (Google, Apple, Outlook and more) while you wait for the date to be locked in.
-
-Next step: open Grab Talent and confirm the booking to lock the date in.
-
-https://grabtalent.base44.app
-
-— The Grab Talent Team`
+          html: emailHtml({
+            heading: `${talentName} accepted your booking`,
+            intro: `Hi ${escapeHtml(seekerName)}, great news. ${escapeHtml(talentName)} has accepted your booking request. Confirm the booking in the app to lock the date in.`,
+            rows: [
+              detailRow('Event', eventName),
+              detailRow('Date', formatDate(booking.event_date)),
+              detailRow('Time', `${startT} – ${endT}`),
+              detailRow('Venue', venue)
+            ].join(''),
+            ctaLabel: 'Confirm the booking',
+            ctaUrl: bookingUrl,
+            outro: 'A calendar invite is attached, so you can add the date to Google Calendar, Apple Calendar or Outlook while you confirm.'
+          })
         });
       } else {
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: seekerEmail,
+          from_name: 'Grab Talent',
           subject: `Booking request declined: ${eventName}`,
-          body: `Hi ${seekerName},
-
-Unfortunately ${talentName} is unable to take your booking on Grab Talent.
-
-📅 Event: ${eventName}
-🗓️ Date: ${formatDate(booking.event_date)}
-
-Your date is still free — open Grab Talent to browse other great performers for your event.
-
-https://grabtalent.base44.app
-
-— The Grab Talent Team`
+          html: emailHtml({
+            heading: 'Your booking request was declined',
+            intro: `Hi ${escapeHtml(seekerName)}, unfortunately ${escapeHtml(talentName)} is unable to take your booking on Grab Talent.`,
+            rows: [
+              detailRow('Event', eventName),
+              detailRow('Date', formatDate(booking.event_date))
+            ].join(''),
+            ctaLabel: 'Find other talent',
+            ctaUrl: `${APP_URL}/Discover`,
+            outro: 'Your date is still free. Open Grab Talent to browse other great performers for your event.'
+          })
         });
       }
       return Response.json({ sent: true });

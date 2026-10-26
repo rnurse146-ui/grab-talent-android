@@ -129,7 +129,7 @@ export default function BookTalent() {
         <p className="text-zinc-400 mb-6">Your booking request has been sent to {talent.stage_name}. They'll review and respond soon.</p>
         <div className="flex gap-3 justify-center">
           <Link to={createPageUrl('Bookings')}><Button className="bg-white text-black hover:bg-zinc-100">View Bookings</Button></Link>
-          <Link to={createPageUrl('Dashboard')}><Button variant="outline" className="border-zinc-700">Dashboard</Button></Link>
+          <Link to={createPageUrl('Dashboard')}><Button variant="outline" className="bg-white text-black border-white hover:bg-zinc-100 hover:text-black">Back to Dashboard</Button></Link>
         </div>
       </div>
     </div>

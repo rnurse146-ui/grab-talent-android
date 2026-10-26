@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
 import {
   Star, Calendar, MessageSquare, Eye, TrendingUp,
-  CheckCircle2, ChevronRight, Settings, Shield, Pencil
+  CheckCircle2, ChevronRight, Settings, Shield, Pencil, Mail
 } from 'lucide-react';
 import TalentCalendar from './TalentCalendar';
 import ProfileVisibilityToggle from '@/components/talent/ProfileVisibilityToggle';
@@ -71,6 +71,18 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
           )}
         </div>
       </div>
+
+      {talentProfile && (
+        <div className="mb-8 rounded-2xl border border-amber-600/40 bg-amber-950/30 p-4 flex items-start gap-3">
+          <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-amber-200">Booking emails may land in your junk folder</p>
+            <p className="text-xs text-amber-200/70 mt-1 leading-relaxed">
+              Booking requests and gig confirmations are emailed to <span className="text-amber-100">{user?.email}</span>. If they don't appear in your inbox, open your spam or junk folder and mark them as <span className="text-amber-100">"Not junk"</span> so you never miss a booking.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">

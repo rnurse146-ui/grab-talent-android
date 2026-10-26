@@ -11,6 +11,7 @@ import NotificationBell from '@/components/NotificationBell';
 import GuestTalentDashboard from '@/components/dashboard/GuestTalentDashboard';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
 import GuestWelcomePopup, { GUEST_WELCOME_KEY } from '@/components/GuestWelcomePopup';
+import NewBookingCelebration from '@/components/talent/NewBookingCelebration';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -206,6 +207,7 @@ export default function Dashboard() {
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-zinc-500">
         © {new Date().getFullYear()} Grab Talent. All rights reserved. · <Link to="/privacy-policy" className="text-zinc-400 hover:text-white hover:underline">Privacy Policy</Link>
       </footer>
+      <NewBookingCelebration user={user} />
     </div>
   );
 }
