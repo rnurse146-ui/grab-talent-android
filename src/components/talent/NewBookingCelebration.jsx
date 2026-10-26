@@ -102,18 +102,18 @@ export default function NewBookingCelebration({ user }) {
 
         <div className="text-center mb-5">
           <div className="text-4xl mb-3">🎉</div>
-          <h2 className="text-2xl font-bold mb-1">You have a booking!</h2>
-          <p className="text-zinc-400 text-sm">Someone wants to book you. Message them now to start the conversation.</p>
+          <h2 className="text-2xl font-bold mb-2 text-white">You have a booking!</h2>
+          <p className="text-zinc-100 text-base leading-relaxed">Someone wants to book you. Message them now to start the conversation.</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800 space-y-2 mb-5">
-          <p className="font-semibold text-lg">{booking.event_name || 'Event'}</p>
-          <p className="text-sm text-zinc-400 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-purple-400 shrink-0" />
+        <div className="p-4 rounded-2xl bg-zinc-800/70 border border-zinc-600 space-y-2 mb-5">
+          <p className="font-bold text-xl text-white">{booking.event_name || 'Event'}</p>
+          <p className="text-base text-white flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-purple-300 shrink-0" />
             {eventDate}
           </p>
-          <p className="text-sm text-zinc-400">
-            Requested by <span className="text-white font-medium">{booking.seeker_name || 'a client'}</span>
+          <p className="text-base text-zinc-100">
+            Requested by <span className="text-white font-semibold">{booking.seeker_name || 'a client'}</span>
             {booking.venue_city ? ` • ${booking.venue_city}` : ''}
           </p>
         </div>
@@ -122,8 +122,8 @@ export default function NewBookingCelebration({ user }) {
           <div className="mb-5 p-4 rounded-2xl bg-green-950/40 border border-green-700/50 flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-green-200">Message sent</p>
-              <p className="text-xs text-green-200/70 mt-1">{booking.seeker_name || 'The client'} can reply in your Messages.</p>
+              <p className="text-base font-semibold text-green-100">Message sent</p>
+              <p className="text-sm text-green-100/80 mt-1">{booking.seeker_name || 'The client'} can reply in your Messages.</p>
             </div>
           </div>
         ) : (
@@ -132,7 +132,7 @@ export default function NewBookingCelebration({ user }) {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={`Say hi to ${booking.seeker_name || 'the client'}...`}
-              className="bg-zinc-950 border-zinc-800 min-h-[90px] text-white"
+              className="bg-zinc-950 border-zinc-600 min-h-[90px] text-base text-white placeholder:text-zinc-400"
             />
             <Button
               onClick={sendQuickMessage}
@@ -145,11 +145,11 @@ export default function NewBookingCelebration({ user }) {
         )}
 
         <div className="flex flex-col gap-2">
-          <Button variant="outline" onClick={openBooking} className="w-full border-zinc-700 text-zinc-200 hover:text-white">
+          <Button variant="outline" onClick={openBooking} className="w-full h-11 border-zinc-500 text-white text-base font-semibold hover:bg-zinc-800 hover:text-white">
             Review the request
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
-          <button onClick={openMessages} className="text-zinc-500 text-sm hover:text-zinc-300 transition-colors py-1">
+          <button onClick={openMessages} className="text-zinc-200 text-base font-medium hover:text-white transition-colors py-2 underline underline-offset-4">
             Open Messages
           </button>
         </div>
