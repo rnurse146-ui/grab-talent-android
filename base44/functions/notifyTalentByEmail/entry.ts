@@ -129,6 +129,50 @@ export default async function(req) {
       return Response.json({ sent: true });
     }
 
+    // The client withdrew their booking — email the talent so they don't miss it,
+    // since a cancellation sent by mistake is easy to put right by messaging.
+    if (kind === 'booking_cancelled') {
+      const bookingId = String(body?.booking_id || '');
+      if (!bookingId) return Response.json({ error: 'booking_id is required' }, { status: 400 });
+      let bookings = [];
+      try { bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId }); } catch {}
+      if (bookings.length === 0) return Response.json({ error: 'Booking not found' }, { status: 404 });
+      const booking = bookings[0];
+      if (booking.seeker_id !== user.id) return Response.json({ error: 'Forbidden' }, { status: 403 });
+
+      const talentEmail = await getTalentEmail(booking.talent_user_id);
+      if (!talentEmail) return Response.json({ sent: false });
+
+      const eventName = sanitizeText(booking.event_name, 120) || 'Event';
+      const clientName = sanitizeText(booking.seeker_name, 100) || 'The client';
+      const talentName = sanitizeText(booking.talent_stage_name, 100) || 'there';
+      const venue = sanitizeText([booking.venue_name, booking.venue_city].filter(Boolean).join(', '), 160);
+      const startT = normalizeTime(booking.start_time) || 'TBD';
+      const endT = normalizeTime(booking.end_time) || 'TBD';
+      const bookingUrl = `${APP_URL}/BookingDetails?id=${encodeURIComponent(booking.id)}`;
+
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: talentEmail,
+        from_name: 'Grab Talent',
+        subject: `Booking cancelled by the client: ${eventName}`,
+        html: emailHtml({
+          heading: 'A client cancelled their booking',
+          intro: `Hi ${escapeHtml(talentName)}, ${escapeHtml(clientName)} has cancelled their booking with you. Cancellations are sometimes sent by mistake, so you can open the booking and message them to check.`,
+          rows: [
+            detailRow('Event', eventName),
+            detailRow('Date', formatDate(booking.event_date)),
+            detailRow('Time', `${startT} – ${endT}`),
+            detailRow('Venue', venue),
+            detailRow('Client', clientName)
+          ].join(''),
+          ctaLabel: 'Open the booking',
+          ctaUrl: bookingUrl,
+          outro: 'The date has been freed up in your calendar, so other clients can book you for it.'
+        })
+      });
+      return Response.json({ sent: true });
+    }
+
     // Talent accepted or declined a booking — email the seeker. The caller must
     // be the talent on the booking, and the response is validated server-side.
     if (kind === 'booking_response') {

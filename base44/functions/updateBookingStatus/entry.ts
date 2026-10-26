@@ -63,6 +63,15 @@ export default async function(req) {
       }
     }
 
+    // The client withdrawing their booking can be a mistake, so the talent is
+    // emailed as well as notified in-app (their date is freed up, after all).
+    const seekerCancelled = isSeeker && newStatus === 'cancelled';
+    if (seekerCancelled) {
+      try {
+        await base44.functions.invoke('notifyTalentByEmail', { kind: 'booking_cancelled', booking_id: bookingId });
+      } catch (e) {}
+    }
+
     // Seeker confirming the booking emails the talent a calendar invite
     if (isSeeker && newStatus === 'confirmed') {
       try {
@@ -83,9 +92,11 @@ export default async function(req) {
       await base44.asServiceRole.entities.Notification.create({
         user_id: recipientId,
         type: 'booking',
-        title: 'Booking update',
-        body: `"${booking.event_name || 'Your event'}" ${STATUS_MESSAGES[newStatus] || 'was updated'}.`,
-        link_url: '/Bookings'
+        title: seekerCancelled ? 'Booking cancelled by the client' : 'Booking update',
+        body: seekerCancelled
+          ? `"${booking.event_name || 'Your event'}" on ${booking.event_date || 'the booked date'} was cancelled by the client. It may have been a mistake — open the booking to message them.`
+          : `"${booking.event_name || 'Your event'}" ${STATUS_MESSAGES[newStatus] || 'was updated'}.`,
+        link_url: seekerCancelled ? `/BookingDetails?id=${bookingId}` : '/Bookings'
       });
     } catch (e) {}
 

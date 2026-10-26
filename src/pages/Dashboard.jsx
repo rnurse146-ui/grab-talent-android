@@ -12,6 +12,7 @@ import GuestTalentDashboard from '@/components/dashboard/GuestTalentDashboard';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
 import GuestWelcomePopup, { GUEST_WELCOME_KEY } from '@/components/GuestWelcomePopup';
 import NewBookingCelebration from '@/components/talent/NewBookingCelebration';
+import BookingCancelledAlert from '@/components/talent/BookingCancelledAlert';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -208,6 +209,7 @@ export default function Dashboard() {
         © {new Date().getFullYear()} Grab Talent. All rights reserved. · <Link to="/privacy-policy" className="text-zinc-400 hover:text-white hover:underline">Privacy Policy</Link>
       </footer>
       <NewBookingCelebration user={user} />
+      <BookingCancelledAlert user={user} />
     </div>
   );
 }
