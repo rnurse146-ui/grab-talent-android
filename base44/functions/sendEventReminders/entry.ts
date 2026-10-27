@@ -9,14 +9,19 @@ export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Tomorrow's date in the app's home timezone (Europe/London) as yyyy-mm-dd
+    // Reminders go out one day before the event (both sides) and one week before
+    // (the client), computed in the app's home timezone (Europe/London).
     const ukToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
-    const tomorrow = new Date(`${ukToday}T12:00:00Z`);
-    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-    const targetDate = tomorrow.toISOString().slice(0, 10);
+    const addDays = (isoDate, days) => {
+      const d = new Date(`${isoDate}T12:00:00Z`);
+      d.setUTCDate(d.getUTCDate() + days);
+      return d.toISOString().slice(0, 10);
+    };
+    const dayBefore = addDays(ukToday, 1);
+    const weekBefore = addDays(ukToday, 7);
 
     const bookings = await base44.asServiceRole.entities.Booking.filter(
-      { event_date: targetDate, status: { $in: ['pending', 'accepted', 'confirmed'] } }
+      { event_date: { $in: [dayBefore, weekBefore] }, status: { $in: ['pending', 'accepted', 'confirmed'] } }
     );
 
     const getUser = async (userId) => {
@@ -60,7 +65,10 @@ export default async function(req) {
       };
 
       const sends = [];
-      if (talentUser) {
+      // A week out only the client is reminded; the day-before reminder goes to both
+      const isWeekReminder = String(booking.event_date).slice(0, 10) === weekBefore;
+
+      if (talentUser && !isWeekReminder) {
         sends.push(base44.asServiceRole.integrations.Core.SendEmail({
           to: talentUser.email,
           template_name: 'EventReminder',
@@ -77,7 +85,7 @@ export default async function(req) {
       if (seekerUser) {
         sends.push(base44.asServiceRole.integrations.Core.SendEmail({
           to: seekerUser.email,
-          template_name: 'EventReminder',
+          template_name: isWeekReminder ? 'EventReminderWeek' : 'EventReminder',
           variables: {
             first_name: seekerName,
             ...shared,
@@ -95,7 +103,7 @@ export default async function(req) {
       details.push({ booking_id: booking.id, emails_sent: ok });
     }
 
-    return Response.json({ ok: true, target_date: targetDate, bookings: bookings.length, emails_sent: emailsSent, details });
+    return Response.json({ ok: true, day_before: dayBefore, week_before: weekBefore, bookings: bookings.length, emails_sent: emailsSent, details });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

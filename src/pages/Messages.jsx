@@ -12,6 +12,8 @@ import PullToRefresh from '@/components/PullToRefresh';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { createNotification } from '@/lib/notifications';
+import VoiceRecorder from '@/components/chat/VoiceRecorder';
+import VoiceNotePlayer from '@/components/chat/VoiceNotePlayer';
 
 function formatTime(dateStr) {
   const d = new Date(dateStr);
@@ -297,6 +299,52 @@ export default function Messages() {
     }
   };
 
+  // Voice notes are uploaded privately in the recorder; this sends the message
+  // record through the backend function like any other message.
+  const sendVoiceNote = async (audioUri) => {
+    if (!audioUri || !activeConvId) return;
+    const conv = conversations.find(c => c.id === activeConvId);
+    if (!conv) return;
+
+    const tempId = `temp_voice_${Date.now()}`;
+    const optimisticMsg = {
+      id: tempId,
+      conversation_id: activeConvId,
+      sender_id: user.id,
+      receiver_id: conv.otherId,
+      sender_name: user.full_name,
+      receiver_name: conv.otherName,
+      content: '🎤 Voice note',
+      audio_uri: audioUri,
+      is_read: false,
+      created_date: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
+
+    try {
+      const res = await base44.functions.invoke('sendMessage', {
+        conversation_id: activeConvId,
+        receiver_id: conv.otherId,
+        audio_uri: audioUri
+      });
+      const created = res?.data?.message;
+      setMessages(prev => prev.map(m => m.id === tempId ? created : m));
+      setConversations(prev => prev.map(c => c.id === activeConvId
+        ? { ...c, lastMessage: created, messages: c.messages.map(m => m.id === tempId ? created : m) }
+        : c));
+      await createNotification({
+        userId: conv.otherId,
+        type: 'message',
+        title: `New voice note from ${user.full_name}`,
+        body: 'Sent you a voice note',
+        linkUrl: createPageUrl('Messages')
+      });
+    } catch (e) {
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      setBlockedWarning(e?.data?.error || e?.message || 'Voice note failed to send. Please try again.');
+    }
+  };
+
   const activeConv = conversations.find(c => c.id === activeConvId);
   const totalUnread = conversations.reduce((sum, c) => sum + (c.unread || 0), 0);
 
@@ -455,7 +503,9 @@ export default function Messages() {
                             ? 'bg-gradient-to-br from-purple-600 to-purple-500 text-white rounded-br-sm'
                             : 'bg-slate-800 text-slate-100 rounded-bl-sm'
                         }`}>
-                          <p>{msg.content}</p>
+                          {msg.audio_uri
+                            ? <VoiceNotePlayer audioUri={msg.audio_uri} isMine={isMe} />
+                            : <p>{msg.content}</p>}
                         </div>
                         {isMe && (
                           <span className="text-xs text-slate-600 shrink-0">
@@ -486,6 +536,7 @@ export default function Messages() {
               {/* Input */}
               <div className="px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+4rem)] md:pb-3 border-t border-zinc-800 shrink-0 bg-black">
                 <div className="flex gap-2 items-center">
+                  <VoiceRecorder onRecorded={sendVoiceNote} />
                   <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}

@@ -7,14 +7,29 @@ import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
 import {
   Star, Calendar, MessageSquare, Eye, TrendingUp,
-  CheckCircle2, ChevronRight, Settings, Shield, Pencil, Mail
+  CheckCircle2, ChevronRight, Settings, Shield, Pencil, Mail,
+  XCircle, Loader2
 } from 'lucide-react';
 import TalentCalendar from './TalentCalendar';
 import ProfileVisibilityToggle from '@/components/talent/ProfileVisibilityToggle';
 
 export default function TalentDashboard({ user, talentProfile, recentBookings }) {
-  const pendingBookings = recentBookings.filter(b => b.status === 'pending');
+  const [decided, setDecided] = useState({});
+  const [actingId, setActingId] = useState(null);
+  const pendingBookings = recentBookings.filter(b => b.status === 'pending' && !decided[b.id]);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Accepting or declining is validated server-side; a decline also messages the
+  // client with an apology from the backend.
+  const handlePendingAction = async (bookingId, status) => {
+    setActingId(bookingId);
+    try {
+      await base44.functions.invoke('updateBookingStatus', { booking_id: bookingId, status });
+      setDecided(prev => ({ ...prev, [bookingId]: status }));
+    } finally {
+      setActingId(null);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -142,8 +157,11 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
               </h2>
               <div className="space-y-3">
                 {pendingBookings.map((booking) => (
-                  <Link key={booking.id} to={createPageUrl('BookingDetails') + `?id=${booking.id}`}>
-                    <motion.div whileHover={{ backgroundColor: 'rgba(255,255,255,0.04)' }} className="flex items-center gap-4 p-4 rounded-xl border border-zinc-800 bg-zinc-950/50 cursor-pointer">
+                  <div key={booking.id} className="p-4 rounded-xl border border-zinc-800 bg-zinc-950/50">
+                    <Link
+                      to={createPageUrl('BookingDetails') + `?id=${booking.id}`}
+                      className="flex items-center gap-4 mb-4"
+                    >
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium truncate">{booking.event_name || 'Event'}</h4>
                         <p className="text-sm text-zinc-500">By {booking.seeker_name} • {booking.event_date}</p>
@@ -152,8 +170,28 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
                         <p className="text-xs text-zinc-500">{booking.duration_hours}h</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-zinc-600" />
-                    </motion.div>
-                  </Link>
+                    </Link>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button
+                        onClick={() => handlePendingAction(booking.id, 'accepted')}
+                        disabled={actingId === booking.id}
+                        className="flex-1 h-12 text-base font-bold bg-green-600 hover:bg-green-500 text-white"
+                      >
+                        {actingId === booking.id
+                          ? <Loader2 className="w-5 h-5 animate-spin" />
+                          : <><CheckCircle2 className="w-5 h-5 mr-2" />Accept booking</>}
+                      </Button>
+                      <Button
+                        onClick={() => handlePendingAction(booking.id, 'declined')}
+                        disabled={actingId === booking.id}
+                        variant="outline"
+                        className="flex-1 h-12 text-base font-bold border-2 border-red-500 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+                      >
+                        <XCircle className="w-5 h-5 mr-2" />
+                        Decline
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import {
   ChevronLeft, Calendar, Clock, MapPin, Banknote,
   Loader2, CheckCircle2, XCircle, AlertCircle,
-  MessageSquare, Star, User, Phone, CalendarX, ShieldCheck, CalendarPlus
+  MessageSquare, Star, User, Phone, CalendarX, ShieldCheck, CalendarPlus, CalendarClock
 } from 'lucide-react';
+import AmendDateDialog from '@/components/booking/AmendDateDialog';
 import { downloadBookingIcs } from '@/lib/calendarInvite';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
@@ -41,6 +42,7 @@ export default function BookingDetails() {
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [submittingRating, setSubmittingRating] = useState(false);
   const [talentProfile, setTalentProfile] = useState(null);
+  const [showAmendDate, setShowAmendDate] = useState(false);
 
   useEffect(() => { loadData(); }, [bookingId]);
 
@@ -256,6 +258,17 @@ export default function BookingDetails() {
             </div>
           )}
 
+          {isSeeker && ['pending', 'accepted', 'confirmed'].includes(booking.status) && (
+            <Button
+              onClick={() => setShowAmendDate(true)}
+              variant="outline"
+              className="w-full h-12 text-base font-semibold border-purple-700/60 text-purple-300 hover:bg-purple-500/10 hover:text-purple-200"
+            >
+              <CalendarClock className="w-5 h-5 mr-2" />
+              Amend date
+            </Button>
+          )}
+
           {isSeeker && booking.status === 'pending' && (
             <Button onClick={() => handleStatusUpdate('cancelled')} disabled={updating} variant="outline" className="w-full border-zinc-700 text-zinc-400">
               Cancel Request
@@ -389,6 +402,15 @@ export default function BookingDetails() {
             )}
           </div>
         </div>
+      )}
+
+      {isSeeker && (
+        <AmendDateDialog
+          open={showAmendDate}
+          onOpenChange={setShowAmendDate}
+          booking={booking}
+          onAmended={(updated) => updated && setBooking(prev => ({ ...prev, ...updated }))}
+        />
       )}
 
       {showAttendanceModal && (

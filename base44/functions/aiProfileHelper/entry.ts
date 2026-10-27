@@ -39,6 +39,15 @@ export default async function(req: Request): Promise<Response> {
       return Response.json({ specialties: (res.specialties || []).slice(0, 6) });
     }
 
+    // A short, warm first reply for a new booking request — saves the talent
+    // typing the same "thanks for booking" message every time.
+    if (kind === 'booking_reply') {
+      const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: `Write a short first reply from a performer to a client who has just sent a booking request on Grab Talent, a UK platform for booking live performers.\n\nPerformer: ${body.stage_name || 'the performer'}${body.category_label ? ` (${body.category_label})` : ''}\nClient: ${body.client_name || 'the client'}\nEvent: ${body.event_name || 'their event'} on ${body.event_date || 'the requested date'}\n\n2-3 sentences, British English, warm, confident and professional. Thank them for the booking, say you're pleased/looking forward to it, and say you'll come back to them shortly with the details. Plain text only — no emojis, no headings, no quotes, no sign-off name, and never include phone numbers, email addresses, social handles or links. Return only the message.`,
+      });
+      return Response.json({ message: String(res).trim() });
+    }
+
     const styleNote = body.current_bio
       ? `They already wrote a draft bio but want it punchier — improve on it while keeping any real facts:\n"""\n${body.current_bio}\n"""`
       : '';

@@ -25,6 +25,10 @@
       "type": "string",
       "description": "Message content \u2014 contact-info filtering is enforced by the sendMessage backend function"
     },
+    "audio_uri": {
+      "type": "string",
+      "description": "Private storage URI of a voice note \u2014 written only by the sendMessage backend function, played back through a signed URL"
+    },
     "is_read": {
       "type": "boolean",
       "default": false

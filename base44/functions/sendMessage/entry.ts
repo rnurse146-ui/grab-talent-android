@@ -39,8 +39,13 @@ export default async function(req) {
     const conversationId = String(body?.conversation_id || '');
     const receiverId = String(body?.receiver_id || '');
     const content = String(body?.content || '').trim();
-    if (!conversationId || !receiverId || !content) {
-      return Response.json({ error: 'conversation_id, receiver_id and content are required' }, { status: 400 });
+    // Voice notes arrive already uploaded; the caller sends their private URI
+    const audioUri = String(body?.audio_uri || '').trim();
+    if (audioUri && (audioUri.length > 500 || /\s/.test(audioUri))) {
+      return Response.json({ error: 'Invalid audio file' }, { status: 400 });
+    }
+    if (!conversationId || !receiverId || (!content && !audioUri)) {
+      return Response.json({ error: 'conversation_id, receiver_id and content or audio_uri are required' }, { status: 400 });
     }
     if (receiverId === user.id) {
       return Response.json({ error: 'You cannot message yourself' }, { status: 400 });
@@ -56,7 +61,7 @@ export default async function(req) {
 
     // Contact-info block: only shareable once a booking between these two users
     // is confirmed or completed through the platform.
-    const reasons = containsContactInfo(content);
+    const reasons = content ? containsContactInfo(content) : [];
     if (reasons.length > 0) {
       const bookings = await base44.asServiceRole.entities.Booking.filter({
         $or: [
@@ -79,7 +84,8 @@ export default async function(req) {
       receiver_id: receiverId,
       sender_name: String(user.full_name || 'User'),
       receiver_name: String(receiver?.full_name || 'User'),
-      content,
+      content: content || '🎤 Voice note',
+      ...(audioUri ? { audio_uri: audioUri } : {}),
       is_read: false
     });
 

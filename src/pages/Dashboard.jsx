@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
-import { Search, Star, Loader2 } from 'lucide-react';
+import { Search, Star, Loader2, LogOut, Users } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import Logo from '@/components/Logo';
 import { Link } from 'react-router-dom';
 import SeekerDashboard from '@/components/dashboard/SeekerDashboard';
@@ -13,6 +14,7 @@ import GuestLoginPrompt from '@/components/GuestLoginPrompt';
 import GuestWelcomePopup, { GUEST_WELCOME_KEY } from '@/components/GuestWelcomePopup';
 import NewBookingCelebration from '@/components/talent/NewBookingCelebration';
 import BookingCancelledAlert from '@/components/talent/BookingCancelledAlert';
+import BookingDateChangedAlert from '@/components/talent/BookingDateChangedAlert';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -26,6 +28,9 @@ export default function Dashboard() {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => { loadData(); }, []);
+
+  const handleSignOut = () => base44.auth.logout(createPageUrl('Home'));
+  const handleSwitchAccount = () => base44.auth.logout(createPageUrl('Login'));
 
   const closeGuestWelcome = () => {
     sessionStorage.setItem(GUEST_WELCOME_KEY, '1');
@@ -158,6 +163,31 @@ export default function Dashboard() {
           <div className="absolute right-6 top-4">
             <NotificationBell />
           </div>
+          <div className="absolute left-6 top-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="flex items-center gap-2 h-10 px-3 rounded-xl border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors"
+                  aria-label="Account options"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="text-sm font-semibold hidden sm:inline">Sign out</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 bg-zinc-900 border-zinc-700 text-white">
+                <DropdownMenuLabel className="text-xs font-normal text-zinc-400 truncate">{user?.email}</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-zinc-800" />
+                <DropdownMenuItem onClick={handleSwitchAccount} className="cursor-pointer focus:bg-zinc-800 focus:text-white">
+                  <Users className="w-4 h-4 mr-2" />
+                  Switch account
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer focus:bg-zinc-800 focus:text-white">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <Link to={createPageUrl('Dashboard')}>
             <Logo className="h-16 w-auto" variant="light" />
           </Link>
@@ -210,6 +240,7 @@ export default function Dashboard() {
       </footer>
       <NewBookingCelebration user={user} />
       <BookingCancelledAlert user={user} />
+      <BookingDateChangedAlert user={user} />
     </div>
   );
 }

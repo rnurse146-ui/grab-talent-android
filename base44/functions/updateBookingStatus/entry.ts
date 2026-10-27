@@ -86,6 +86,30 @@ export default async function(req) {
       } catch (e) {}
     }
 
+    // A decline also lands in the client's chat as a short, polite explanation,
+    // so they know straight away why and aren't left guessing.
+    if (isTalent && newStatus === 'declined') {
+      try {
+        const conversationId = [booking.seeker_id, booking.talent_user_id].sort().join('_');
+        const eventName = `"${booking.event_name || 'your event'}"`;
+        const eventDate = booking.event_date
+          ? new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+              .format(new Date(`${booking.event_date}T12:00:00Z`))
+          : 'that date';
+        const firstName = String(booking.seeker_name || 'there').split(' ')[0];
+        await base44.asServiceRole.entities.Message.create({
+          conversation_id: conversationId,
+          sender_id: booking.talent_user_id,
+          receiver_id: booking.seeker_id,
+          sender_name: String(booking.talent_stage_name || 'Talent'),
+          receiver_name: String(booking.seeker_name || 'Client'),
+          content: `Hi ${firstName}, thank you so much for thinking of me for ${eventName}. I'm really sorry, but I'm not available on ${eventDate}, so I've had to decline this booking. Apologies for any inconvenience — I hope your event is a huge success!`,
+          is_read: false,
+          booking_id: booking.id
+        });
+      } catch (e) {}
+    }
+
     // Tell the other party what happened
     try {
       const recipientId = isSeeker ? booking.talent_user_id : booking.seeker_id;

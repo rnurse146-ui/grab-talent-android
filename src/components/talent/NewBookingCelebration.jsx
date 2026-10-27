@@ -5,7 +5,8 @@ import confetti from 'canvas-confetti';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Calendar, Send, Loader2, CheckCircle2, ChevronRight } from 'lucide-react';
+import { X, Calendar, Send, Loader2, CheckCircle2, ChevronRight, Sparkles } from 'lucide-react';
+import { categoryLabel } from '@/lib/categoryLabel';
 
 const seenKey = (userId) => `gt_seen_pending_bookings_${userId}`;
 
@@ -17,6 +18,7 @@ export default function NewBookingCelebration({ user }) {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -68,6 +70,24 @@ export default function NewBookingCelebration({ user }) {
     const seekerId = booking.seeker_id;
     setBooking(null);
     navigate(`/Messages?to=${seekerId}`);
+  };
+
+  const generateReply = async () => {
+    if (!booking) return;
+    setAiLoading(true);
+    try {
+      const res = await base44.functions.invoke('aiProfileHelper', {
+        kind: 'booking_reply',
+        stage_name: user?.full_name || '',
+        category_label: categoryLabel(booking.talent_category),
+        client_name: booking.seeker_name || '',
+        event_name: booking.event_name || '',
+        event_date: booking.event_date || ''
+      });
+      if (res?.data?.message) setMessage(res.data.message);
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const sendQuickMessage = async () => {
@@ -128,6 +148,15 @@ export default function NewBookingCelebration({ user }) {
           </div>
         ) : (
           <div className="mb-5 space-y-2">
+            <button
+              onClick={generateReply}
+              disabled={aiLoading}
+              className="w-full h-11 rounded-xl border border-purple-500/50 bg-purple-500/10 text-purple-200 text-base font-semibold flex items-center justify-center gap-2 hover:bg-purple-500/20 transition-colors disabled:opacity-60"
+            >
+              {aiLoading
+                ? <><Loader2 className="w-5 h-5 animate-spin" />Writing your reply…</>
+                : <><Sparkles className="w-5 h-5" />Write a reply with AI</>}
+            </button>
             <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}

@@ -47,6 +47,7 @@ const TALENT_CATEGORIES = [
   { value: 'live_painter', label: 'Live Painter' },
   { value: 'lighting_specialist', label: 'Lighting Specialist' },
   { value: 'bagpiper', label: 'Bagpiper' },
+  { value: 'cellist', label: 'Cellist' },
   { value: 'songwriter', label: 'Songwriter' },
   { value: 'composer', label: 'Composer' },
   { value: 'choir', label: 'Choir' },

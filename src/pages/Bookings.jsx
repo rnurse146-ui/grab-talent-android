@@ -100,9 +100,22 @@ export default function Bookings() {
                   </div>
 
                   {!isMyBooking && booking.status === 'pending' && (
-                    <div className="flex gap-2 pt-3 border-t border-zinc-800">
-                      <Button onClick={() => handleStatusUpdate(booking.id, 'accepted')} className="bg-white text-black hover:bg-zinc-100" size="sm">Accept</Button>
-                      <Button onClick={() => handleStatusUpdate(booking.id, 'declined')} variant="outline" className="border-red-500/50 text-red-400 hover:bg-red-500/20" size="sm">Decline</Button>
+                    <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-zinc-800">
+                      <Button
+                        onClick={() => handleStatusUpdate(booking.id, 'accepted')}
+                        className="flex-1 h-12 text-base font-bold bg-green-600 hover:bg-green-500 text-white"
+                      >
+                        <CheckCircle2 className="w-5 h-5 mr-2" />
+                        Accept booking
+                      </Button>
+                      <Button
+                        onClick={() => handleStatusUpdate(booking.id, 'declined')}
+                        variant="outline"
+                        className="flex-1 h-12 text-base font-bold border-2 border-red-500 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+                      >
+                        <XCircle className="w-5 h-5 mr-2" />
+                        Decline
+                      </Button>
                     </div>
                   )}
                   {isMyBooking && booking.status === 'accepted' && (
