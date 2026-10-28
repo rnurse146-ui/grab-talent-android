@@ -59,8 +59,10 @@ export default async function(req) {
     });
 
     const bookingUrl = `https://grabtalent.co.uk/BookingDetails?id=${encodeURIComponent(booking.id)}`;
+    // Every value is seeker-controlled free text: escape it at the sink so no
+    // markup can be injected into an email sent under the platform's identity.
     const row = (label, value) => value
-      ? `<tr><td style="padding:4px 0;color:#71717a;width:120px;vertical-align:top;">${label}</td><td style="padding:4px 0;color:#18181b;">${value}</td></tr>`
+      ? `<tr><td style="padding:4px 0;color:#71717a;width:120px;vertical-align:top;">${label}</td><td style="padding:4px 0;color:#18181b;">${escapeHtml(value)}</td></tr>`
       : '';
 
     await base44.asServiceRole.integrations.Core.SendEmail({
@@ -80,7 +82,7 @@ export default async function(req) {
     <tr>
       <td style="padding:28px 24px 8px;">
         <h1 style="margin:0 0 10px;font-size:22px;line-height:1.3;color:#18181b;">You've been hired!</h1>
-        <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#71717a;">Hi ${escapeHtml(booking.talent_stage_name || 'there')}, great news. ${clientName} has confirmed their booking with you.</p>
+        <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#71717a;">Hi ${escapeHtml(booking.talent_stage_name || 'there')}, great news. ${escapeHtml(clientName)} has confirmed their booking with you.</p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;color:#3f3f46;line-height:1.5;">
           ${row('Event', eventName)}
           ${row('Date', eventDateFormatted)}
