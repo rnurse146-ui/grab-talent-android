@@ -19,8 +19,7 @@
               "full_name": "${ .trigger.full_name }",
               "role": "${ .trigger.role }",
               "auth_method": "${ .trigger.auth_method }",
-              "occurred_at": "${ .trigger.occurred_at }",
-              "secret": "gt_signup_notify_7f3a9c2e1b8d4e6f"
+              "occurred_at": "${ .trigger.occurred_at }"
             }
           },
           "then": "end",

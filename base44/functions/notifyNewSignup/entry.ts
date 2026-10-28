@@ -8,9 +8,17 @@ export default async function(req) {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
 
-    // Verify the caller is the platform workflow, not an anonymous HTTP request.
+    // Only the platform workflow may call this, and it invokes the function as
+    // its creator (an app admin), so no secret needs to be carried in the
+    // workflow config. An external caller must present the stored secret.
     const expectedSecret = secrets.get("SIGNUP_NOTIFY_SECRET");
-    if (!expectedSecret || body.secret !== expectedSecret) {
+    const hasStoredSecret = Boolean(expectedSecret) && body.secret === expectedSecret;
+    let isAdmin = false;
+    if (!hasStoredSecret) {
+      const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
+      isAdmin = user?.role === 'admin';
+    }
+    if (!hasStoredSecret && !isAdmin) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
