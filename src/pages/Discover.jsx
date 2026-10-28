@@ -186,7 +186,7 @@ export default function Discover() {
         try {
           const areaRes = await base44.functions.invoke('matchTalentByArea', {
             profile_ids: filtered.map(t => t.id),
-            geo,
+            city: raw,
             max_distance: maxDist
           });
           (areaRes.data?.results || []).forEach(r => { areaMatches[r.id] = r; });
