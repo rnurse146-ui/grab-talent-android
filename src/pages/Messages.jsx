@@ -14,6 +14,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { createNotification } from '@/lib/notifications';
 import VoiceRecorder from '@/components/chat/VoiceRecorder';
 import VoiceNotePlayer from '@/components/chat/VoiceNotePlayer';
+import RoleBadge from '@/components/chat/RoleBadge';
+import { buildConversationRoleMap } from '@/lib/conversationRole';
 
 function formatTime(dateStr) {
   const d = new Date(dateStr);
@@ -41,6 +43,8 @@ export default function Messages() {
 
   const [user, setUser] = useState(null);
   const [conversations, setConversations] = useState([]);
+  // other user id → 'collab' | 'talent' | 'seeker', shown as a coloured badge
+  const [roleMap, setRoleMap] = useState({});
   const [activeConvId, setActiveConvId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -94,6 +98,11 @@ export default function Messages() {
 
     const convList = buildConversations(allMessages.items || allMessages || [], currentUser);
     setConversations(convList);
+
+    // What each chat partner is — shown beside their name as (Collab)/(Talent)/(Seeker)
+    const partnerIds = convList.map(c => c.otherId);
+    if (toUserId) partnerIds.push(toUserId);
+    setRoleMap(await buildConversationRoleMap(partnerIds, currentUser.id));
 
     let initialConv = null;
     if (toUserId) {
@@ -422,9 +431,12 @@ export default function Messages() {
                       <Avatar name={conv.otherName} size={10} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-0.5">
-                          <p className={`text-sm truncate ${conv.unread > 0 ? 'font-semibold text-white' : 'font-medium text-slate-200'}`}>
-                            {conv.otherName}
-                          </p>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <p className={`text-sm truncate ${conv.unread > 0 ? 'font-semibold text-white' : 'font-medium text-slate-200'}`}>
+                              {conv.otherName}
+                            </p>
+                            <RoleBadge role={roleMap[conv.otherId]} />
+                          </div>
                           <p className="text-xs text-slate-500 shrink-0 ml-2">
                             {conv.lastMessage ? formatTime(conv.lastMessage.created_date) : ''}
                           </p>
@@ -471,8 +483,11 @@ export default function Messages() {
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <Avatar name={activeConv.otherName} size={9} />
-                <div>
-                  <p className="font-semibold text-sm">{activeConv.otherName}</p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-semibold text-sm truncate">{activeConv.otherName}</p>
+                    <RoleBadge role={roleMap[activeConv.otherId]} />
+                  </div>
                   <p className="text-xs text-green-400">● Online</p>
                 </div>
               </div>
