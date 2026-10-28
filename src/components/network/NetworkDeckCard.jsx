@@ -54,37 +54,37 @@ export default function NetworkDeckCard({ talent, onSwipe, swiping, disabled, fo
           )}
 
           <div className="absolute bottom-0 left-0 right-0 p-5">
-            <h2 className="text-2xl font-bold mb-1">{talent.stage_name}</h2>
-            <p className="text-purple-300 text-sm font-medium capitalize mb-3">
+            <h2 className="text-3xl font-bold mb-1">{talent.stage_name}</h2>
+            <p className="text-purple-300 text-base font-medium capitalize mb-3">
               {categoryLabel(categories[0])}
               {categories.length > 1 && <span className="text-zinc-400"> +{categories.length - 1} more</span>}
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
               {talent.location_city && (
-                <Badge variant="secondary" className="bg-white/20 text-white">
-                  <MapPin className="w-3 h-3 mr-1" />{talent.location_city}
+                <Badge variant="secondary" className="bg-white/20 text-white text-sm">
+                  <MapPin className="w-4 h-4 mr-1" />{talent.location_city}
                 </Badge>
               )}
               {talent.experience_years > 0 && (
-                <Badge variant="secondary" className="bg-white/20 text-white">
+                <Badge variant="secondary" className="bg-white/20 text-white text-sm">
                   {talent.experience_years} yr{talent.experience_years === 1 ? '' : 's'} experience
                 </Badge>
               )}
               {talent.average_rating > 0 && (
-                <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300">
-                  <Star className="w-3 h-3 mr-1 fill-yellow-300" />{talent.average_rating.toFixed(1)}
+                <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300 text-sm">
+                  <Star className="w-4 h-4 mr-1 fill-yellow-300" />{talent.average_rating.toFixed(1)}
                 </Badge>
               )}
             </div>
-            {talent.bio && <p className="text-sm text-zinc-300 line-clamp-2">{talent.bio}</p>}
+            {talent.bio && <p className="text-base text-zinc-200 line-clamp-2">{talent.bio}</p>}
             {talent.specialties?.length > 0 && (
-              <p className="mt-2 text-xs text-zinc-400 line-clamp-1">
-                <Sparkles className="inline w-3 h-3 mr-1" />
+              <p className="mt-2 text-sm text-zinc-300 line-clamp-1">
+                <Sparkles className="inline w-4 h-4 mr-1" />
                 {talent.specialties.slice(0, 4).join(' · ')}
               </p>
             )}
-            <p className="mt-3 text-[11px] text-zinc-500">
-              <Users className="inline w-3 h-3 mr-1" />{footnote}
+            <p className="mt-3 text-sm text-zinc-400">
+              <Users className="inline w-4 h-4 mr-1" />{footnote}
             </p>
           </div>
         </div>

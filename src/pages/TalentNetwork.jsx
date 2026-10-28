@@ -174,20 +174,19 @@ export default function TalentNetwork() {
         </div>
         <div className="flex items-center gap-2">
           <Link to="/Messages">
-            <Button variant="outline" size="sm" className="border-zinc-700 bg-transparent">
-              <MessageSquare className="w-4 h-4 mr-2" />Chats
+            <Button variant="outline" className="h-11 text-base border-zinc-700 bg-transparent">
+              <MessageSquare className="w-5 h-5 mr-2" />Chats
             </Button>
           </Link>
           {profile?.network_open && (
             <Button
               variant="outline"
-              size="sm"
               onClick={() => setShowFilters(v => !v)}
-              className={`bg-transparent ${filterCount > 0 ? 'border-purple-500' : 'border-zinc-700'}`}
+              className={`h-11 text-base bg-transparent ${filterCount > 0 ? 'border-purple-500' : 'border-zinc-700'}`}
             >
-              <SlidersHorizontal className="w-4 h-4 mr-2" />Filters
+              <SlidersHorizontal className="w-5 h-5 mr-2" />Filters
               {filterCount > 0 && (
-                <span className="ml-1 bg-purple-500 text-white text-[10px] font-bold px-1.5 rounded-full">{filterCount}</span>
+                <span className="ml-1 bg-purple-500 text-white text-xs font-bold px-1.5 rounded-full">{filterCount}</span>
               )}
             </Button>
           )}
@@ -197,9 +196,9 @@ export default function TalentNetwork() {
       <div className="px-6 pt-4 pb-2">
         <div className="flex items-center gap-2 text-purple-300">
           <Users className="w-4 h-4" />
-          <h1 className="text-sm font-bold uppercase tracking-wider">Talent Network</h1>
+          <h1 className="text-lg font-bold uppercase tracking-wide">Talent Network</h1>
         </div>
-        <p className="text-xs text-zinc-500 mt-1">
+        <p className="text-sm text-zinc-400 mt-1">
           Performers connecting with performers — separate from being hired.
         </p>
       </div>
@@ -234,7 +233,7 @@ export default function TalentNetwork() {
           <div className="flex flex-col items-center px-4 pt-6">
             {previewOpen ? (
               <div className="w-full max-w-sm">
-                <div className="flex items-center justify-center gap-2 mb-3 text-[11px] font-bold uppercase tracking-wider text-purple-300">
+                <div className="flex items-center justify-center gap-2 mb-3 text-sm font-bold uppercase tracking-wide text-purple-300">
                   <Eye className="w-4 h-4" /> Your card — how other talent sees you
                 </div>
                 <NetworkDeckCard
@@ -246,7 +245,7 @@ export default function TalentNetwork() {
                 />
                 <Button
                   onClick={() => setPreviewOpen(false)}
-                  className="mt-6 w-full bg-white text-black hover:bg-zinc-200 font-bold"
+                  className="mt-6 w-full h-12 text-base bg-white text-black hover:bg-zinc-200 font-bold"
                 >
                   Start browsing performers
                 </Button>
@@ -256,8 +255,8 @@ export default function TalentNetwork() {
                 <div className="w-20 h-20 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-4">
                   <Users className="w-9 h-9 text-zinc-600" />
                 </div>
-                <h2 className="text-lg font-bold mb-2">No performers to show</h2>
-                <p className="text-sm text-zinc-400 mb-6">
+                <h2 className="text-2xl font-bold mb-2">No performers to show</h2>
+                <p className="text-base text-zinc-400 mb-6">
                   Try another city or category — or check back as more talent joins the network.
                 </p>
                 <Button
@@ -290,7 +289,7 @@ export default function TalentNetwork() {
                     >
                       <X className="w-7 h-7 text-red-400" />
                     </button>
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Not now</span>
+                    <span className="text-sm font-semibold uppercase tracking-wide text-zinc-400">Not now</span>
                   </div>
                   <div className="flex flex-col items-center gap-1.5">
                     <button
@@ -301,11 +300,11 @@ export default function TalentNetwork() {
                     >
                       <Handshake className="w-8 h-8 text-black" />
                     </button>
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-300">Let's collab</span>
+                    <span className="text-sm font-semibold uppercase tracking-wide text-zinc-200">Let's collab</span>
                   </div>
                 </div>
 
-                <p className="text-xs text-zinc-600 mt-4">{index + 1} of {talents.length}</p>
+                <p className="text-sm text-zinc-400 mt-4">{index + 1} of {talents.length}</p>
               </>
             )}
           </div>

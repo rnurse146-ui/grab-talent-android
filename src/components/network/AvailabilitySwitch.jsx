@@ -10,8 +10,8 @@ export default function AvailabilitySwitch({ on, onChange, busy, label = 'Availa
       className="flex w-full items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-left transition-colors hover:border-zinc-700 disabled:opacity-60"
     >
       <span>
-        <span className="block text-sm font-semibold text-white">{label}</span>
-        <span className="block text-xs text-zinc-400">
+        <span className="block text-base font-semibold text-white">{label}</span>
+        <span className="block text-sm text-zinc-300">
           {on ? 'You appear in Talent Network and can request collabs' : 'You are hidden from other talent'}
         </span>
       </span>
