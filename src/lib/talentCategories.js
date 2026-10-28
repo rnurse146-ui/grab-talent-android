@@ -12,6 +12,7 @@ export const TALENT_CATEGORIES = [
   { value: 'guitarist', label: 'Guitarist' },
   { value: 'pianist', label: 'Pianist' },
   { value: 'saxophonist', label: 'Saxophonist' },
+  { value: 'flute_player', label: 'Flute Player' },
   { value: 'violinist', label: 'Violinist' },
   { value: 'rapper', label: 'Rapper' },
   { value: 'circus_performer', label: 'Circus Performer' },
