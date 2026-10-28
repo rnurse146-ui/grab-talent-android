@@ -1,0 +1,83 @@
+{
+  "name": "NetworkMatch",
+  "type": "object",
+  "properties": {
+    "user_a_id": {
+      "type": "string",
+      "description": "One side of the collab \u2014 written only by the networkSwipe backend function"
+    },
+    "user_b_id": {
+      "type": "string",
+      "description": "Other side of the collab"
+    },
+    "profile_a_id": {
+      "type": "string",
+      "description": "TalentProfile of user_a"
+    },
+    "profile_b_id": {
+      "type": "string",
+      "description": "TalentProfile of user_b"
+    },
+    "conversation_id": {
+      "type": "string",
+      "description": "Chat conversation created for this match"
+    },
+    "a_celebrated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user_a has seen the match celebration"
+    },
+    "b_celebrated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user_b has seen the match celebration"
+    }
+  },
+  "required": [
+    "user_a_id",
+    "user_b_id",
+    "conversation_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_a_id": "{{user.id}}"
+        },
+        {
+          "data.user_b_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_a_id": "{{user.id}}"
+        },
+        {
+          "data.user_b_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

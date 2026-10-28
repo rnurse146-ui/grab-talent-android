@@ -1,0 +1,64 @@
+{
+  "name": "NetworkSwipe",
+  "type": "object",
+  "properties": {
+    "swiper_user_id": {
+      "type": "string",
+      "description": "Talent who made the swipe \u2014 written only by the networkSwipe backend function"
+    },
+    "swiper_profile_id": {
+      "type": "string",
+      "description": "TalentProfile of the swiper"
+    },
+    "target_profile_id": {
+      "type": "string",
+      "description": "TalentProfile they swiped on"
+    },
+    "target_user_id": {
+      "type": "string",
+      "description": "User ID of the talent they swiped on"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "collab",
+        "pass"
+      ],
+      "description": "collab = wants to work with them, pass = not interested"
+    }
+  },
+  "required": [
+    "swiper_user_id",
+    "target_profile_id",
+    "action"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.swiper_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

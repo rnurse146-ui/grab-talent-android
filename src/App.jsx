@@ -30,6 +30,7 @@ const DiscoverPage = lazy(() => import('./pages/Discover'));
 const MaybeListPage = lazy(() => import('./pages/MaybeList'));
 const SettingsPage = lazy(() => import('./pages/Settings'));
 const TalentProfilePage = lazy(() => import('./pages/TalentProfile'));
+const TalentNetworkPage = lazy(() => import('./pages/TalentNetwork'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -158,7 +159,7 @@ const AppRoutes = ({ location }) => (
 
       {/* Authenticated app routes — gated by ProtectedRoute */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-        {Object.entries(Pages).filter(([path]) => path !== 'Discover' && path !== 'TalentProfile' && path !== 'MaybeList' && path !== 'Settings').map(([path, Page]) => (
+        {Object.entries(Pages).filter(([path]) => path !== 'Discover' && path !== 'TalentProfile' && path !== 'MaybeList' && path !== 'Settings' && path !== 'TalentNetwork').map(([path, Page]) => (
           <Route
             key={path}
             path={`/${path}`}
@@ -174,6 +175,7 @@ const AppRoutes = ({ location }) => (
         <Route path="/booking-history" element={<LayoutWrapper currentPageName="booking-history"><BookingHistoryPage /></LayoutWrapper>} />
         <Route path="/account-security" element={<LayoutWrapper currentPageName="account-security"><AccountSecurityPage /></LayoutWrapper>} />
         <Route path="/Notifications" element={<LayoutWrapper currentPageName="Notifications"><NotificationsPage /></LayoutWrapper>} />
+        <Route path="/TalentNetwork" element={<LayoutWrapper currentPageName="TalentNetwork"><TalentNetworkPage /></LayoutWrapper>} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

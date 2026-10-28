@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { categoryLabel } from '@/lib/categoryLabel';
+import { TALENT_CATEGORIES } from '@/lib/talentCategories';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -23,38 +24,7 @@ import { rankTalents } from '@/lib/discoveryRanking';
 import { normalizeCity, cityMatches, geocodeCityCached } from '@/lib/cityMatch';
 import { getGuestMaybes, addGuestMaybe } from '@/lib/guestMaybeList';
 
-const TALENT_CATEGORIES = [
-  { value: 'all', label: 'All Categories' },
-  { value: 'dj', label: 'DJ' },
-  { value: 'dancer', label: 'Dancer' },
-  { value: 'choreographer', label: 'Choreographer' },
-  { value: 'band', label: 'Band' },
-  { value: 'singer', label: 'Singer' },
-  { value: 'magician', label: 'Magician' },
-  { value: 'comedian', label: 'Comedian' },
-  { value: 'photographer', label: 'Photography / Filmmaker' },
-  { value: 'guitarist', label: 'Guitarist' },
-  { value: 'pianist', label: 'Pianist' },
-  { value: 'saxophonist', label: 'Saxophonist' },
-  { value: 'violinist', label: 'Violinist' },
-  { value: 'rapper', label: 'Rapper' },
-  { value: 'circus_performer', label: 'Circus Performer' },
-  { value: 'fortune_teller', label: 'Fortune Teller / Psychic' },
-  { value: 'juggler', label: 'Juggler' },
-  { value: 'caricature_artist', label: 'Caricature Artist' },
-  { value: 'face_painter', label: 'Face Painter' },
-  { value: 'mixing_mastering_engineer', label: 'Mixing & Mastering Engineer' },
-  { value: 'live_painter', label: 'Live Painter' },
-  { value: 'lighting_specialist', label: 'Lighting Specialist' },
-  { value: 'bagpiper', label: 'Bagpiper' },
-  { value: 'cellist', label: 'Cellist' },
-  { value: 'songwriter', label: 'Songwriter' },
-  { value: 'composer', label: 'Composer' },
-  { value: 'choir', label: 'Choir' },
-  { value: 'orchestra', label: 'Orchestra' },
-  { value: 'sound_engineer', label: 'Sound Engineer' },
-  { value: 'mc_entertainer', label: 'MC / Entertainer' },
-];
+// Categories live in @/lib/talentCategories so Discover and Talent Network stay in step.
 
 export default function Discover() {
   // Session deck memory: coming back from a talent profile resumes the deck

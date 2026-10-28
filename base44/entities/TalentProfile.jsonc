@@ -251,6 +251,11 @@
       "default": true,
       "description": "Currently accepting bookings"
     },
+    "network_open": {
+      "type": "boolean",
+      "default": false,
+      "description": "Talent Network: open to collab connections with other talent. When off, the profile is hidden from the network deck and cannot send or receive connection requests."
+    },
     "experience_years": {
       "type": "number",
       "description": "Years of experience"
