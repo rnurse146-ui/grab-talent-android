@@ -11,7 +11,7 @@ import {
   X, Heart, Star, MapPin, Banknote, CheckCircle2,
   Filter, ChevronRight, Loader2, List, Calendar, User, Zap, Undo2, Car, ArrowLeft
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from '@/components/Logo';
 import DeckVideo from '@/components/DeckVideo';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
@@ -60,6 +60,11 @@ export default function Discover() {
   const WELCOME_STEPS = 3;
   const dragX = useRef(0);
   const navigate = useNavigate();
+  const location = useLocation();
+  // Discover opened from the bottom tab bar is a root view — no back button,
+  // since there is no parent screen to return to. Any other entry (a link or
+  // an in-app push) keeps its back button.
+  const isTabRootView = Boolean(location.state?.fromBottomTab);
   const { isGuest } = useAuth();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [travelIds, setTravelIds] = useState(new Set());
@@ -400,13 +405,15 @@ export default function Discover() {
       {/* Header */}
       <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black">
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate(-1)}
-            aria-label="Back to dashboard"
-            className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full bg-white text-black active:scale-90 transition-transform"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
+          {!isTabRootView && (
+            <button
+              onClick={() => navigate(-1)}
+              aria-label="Back to dashboard"
+              className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full bg-white text-black active:scale-90 transition-transform"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+          )}
           <Link to={isGuest ? '/' : createPageUrl('Dashboard')}>
             <Logo className="h-12 w-auto" variant="light" />
           </Link>
@@ -667,13 +674,15 @@ export default function Discover() {
       <div className="min-h-[100dvh] pb-28 text-white">
       <div className="flex items-center justify-between px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] border-b border-zinc-800 bg-black sticky top-0 md:top-14 z-10">
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate(-1)}
-            aria-label="Back to dashboard"
-            className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full bg-white text-black active:scale-90 transition-transform"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
+          {!isTabRootView && (
+            <button
+              onClick={() => navigate(-1)}
+              aria-label="Back to dashboard"
+              className="p-3 min-h-[44px] min-w-[44px] -ml-2 rounded-full bg-white text-black active:scale-90 transition-transform"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+          )}
           <Link to={isGuest ? '/' : createPageUrl('Dashboard')}>
             <Logo className="h-12 w-auto" variant="light" />
           </Link>

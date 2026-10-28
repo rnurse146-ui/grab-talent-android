@@ -46,7 +46,7 @@ export default function MobileTabBar() {
         <div className="flex items-stretch justify-around px-2 h-16">
           <button
             type="button"
-            onClick={() => navigate('/Discover', { replace: true })}
+            onClick={() => navigate('/Discover', { replace: true, state: { fromBottomTab: true } })}
             className={`flex flex-col items-center justify-center gap-1 flex-1 text-[11px] font-medium ${activeTab === '/Discover' ? 'text-white' : 'text-zinc-500'}`}
           >
             <Compass className="w-5 h-5" />
@@ -79,14 +79,18 @@ export default function MobileTabBar() {
     if (to === activeTab) {
       // Re-tapping the active tab resets it to its clean base view
       if (location.pathname !== to || location.search || location.hash) {
-        navigate(to, { replace: true });
+        navigate(to, { replace: true, state: to === '/Discover' ? { fromBottomTab: true } : undefined });
       }
       return;
     }
 
-    // Switching tabs: resume the sub-page this tab was last on
+    // Switching tabs: resume the sub-page this tab was last on.
+    // Discover marks itself as a root tab view so it hides its back button.
     const target = getTabLocation(to);
-    navigate(target.pathname + target.search);
+    navigate(
+      target.pathname + target.search,
+      to === '/Discover' ? { state: { fromBottomTab: true } } : undefined
+    );
   };
 
   return (
