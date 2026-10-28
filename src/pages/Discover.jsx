@@ -63,6 +63,8 @@ export default function Discover() {
   const { isGuest } = useAuth();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [travelIds, setTravelIds] = useState(new Set());
+  // Talent on the Maybe List stays out of every deck load, city search included
+  const maybeIdsRef = useRef(new Set());
   const [travelInfo, setTravelInfo] = useState(null);
 
   const [filters, setFilters] = useState({
@@ -110,11 +112,13 @@ export default function Discover() {
         ...history.filter(h => h.action === 'pass').map(h => h.talent_profile_id),
         ...maybe.map(m => m.talent_profile_id)
       ]);
+      maybeIdsRef.current = new Set(maybe.map(m => m.talent_profile_id));
       setMaybeCount(maybe.length);
       setPassedCount(history.filter(h => h.action === 'pass').length);
     } else {
       // Guests: talent they've saved to the on-device Maybe List stays out too
       swipedSet = new Set(getGuestMaybes().map(m => m.talent_profile_id));
+      maybeIdsRef.current = new Set(swipedSet);
       setMaybeCount(getGuestMaybes().length);
     }
     setUser(currentUser);
@@ -136,9 +140,9 @@ export default function Discover() {
     
     const allTalents = await base44.entities.TalentProfile.filter(query, '-average_rating', 200);
     
-    // Talent already passed or saved to the Maybe List never re-enters the deck
+    // Saved to the Maybe List: never shown again, whatever the search
     let localIds = new Set();
-    let filtered = allTalents;
+    let filtered = allTalents.filter(t => !maybeIdsRef.current.has(t.id));
 
     if (filters.categories.length > 0) {
       filtered = filtered.filter(t => {
