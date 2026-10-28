@@ -27,6 +27,7 @@ export default function TalentNetwork() {
   const [index, setIndex] = useState(0);
   const [filters, setFilters] = useState({ categories: [], city: '' });
   const [showFilters, setShowFilters] = useState(false);
+  const [started, setStarted] = useState(false);
   const [swiping, setSwiping] = useState(null);
   const [busy, setBusy] = useState(false);
   const [celebration, setCelebration] = useState(null);
@@ -154,6 +155,20 @@ export default function TalentNetwork() {
     }, 280);
   };
 
+  // Everyone lands on the search step first — pick what you're after before the deck appears
+  const startBrowsing = async (activeFilters) => {
+    setPreviewOpen(false);
+    setShowFilters(false);
+    setStarted(true);
+    await loadDeck(profile, user, activeFilters);
+  };
+
+  const skipSearch = async () => {
+    const empty = { categories: [], city: '' };
+    setFilters(empty);
+    await startBrowsing(empty);
+  };
+
   const currentTalent = talents[index];
   const filterCount = filters.categories.length + (filters.city.trim() ? 1 : 0);
 
@@ -178,7 +193,7 @@ export default function TalentNetwork() {
               <MessageSquare className="w-5 h-5 mr-2" />Chats
             </Button>
           </Link>
-          {profile?.network_open && (
+          {profile?.network_open && started && (
             <Button
               variant="outline"
               onClick={() => setShowFilters(v => !v)}
@@ -218,6 +233,24 @@ export default function TalentNetwork() {
             <AvailabilitySwitch on={profile.network_open} onChange={toggleOpen} busy={busy} />
           </div>
 
+          {!started ? (
+            <div className="max-w-lg mx-auto">
+              <div className="px-6 pt-6 text-center">
+                <h2 className="text-2xl font-extrabold mb-1">Who are you looking for?</h2>
+                <p className="text-base text-zinc-400">
+                  Pick what you want to work with and where, then search.
+                </p>
+              </div>
+              <NetworkFilters
+                firstStep
+                filters={filters}
+                setFilters={setFilters}
+                onSearch={() => startBrowsing(filters)}
+                onSkip={skipSearch}
+              />
+            </div>
+          ) : (
+          <>
           {showFilters && (
             <NetworkFilters
               filters={filters}
@@ -308,6 +341,8 @@ export default function TalentNetwork() {
               </>
             )}
           </div>
+          </>
+          )}
         </>
       )}
 

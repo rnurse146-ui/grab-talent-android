@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { TALENT_CATEGORIES } from '@/lib/talentCategories';
 
 // Who are you looking to work with? Category(s) + a city, then search.
-export default function NetworkFilters({ filters, setFilters, onSearch, onClose }) {
+export default function NetworkFilters({ filters, setFilters, onSearch, onClose, onSkip, firstStep = false }) {
   const toggleCategory = (value) => setFilters(prev => ({
     ...prev,
     categories: prev.categories.includes(value)
@@ -50,17 +50,17 @@ export default function NetworkFilters({ filters, setFilters, onSearch, onClose 
         <div className="flex gap-3">
           <button
             type="button"
-            onClick={onClose}
+            onClick={firstStep ? onSkip : onClose}
             className="flex-1 py-3 rounded-2xl border border-zinc-700 text-base text-zinc-200 font-semibold hover:border-white hover:text-white transition-colors"
           >
-            Cancel
+            {firstStep ? 'Show everyone' : 'Cancel'}
           </button>
           <button
             type="button"
             onClick={onSearch}
             className="flex-1 py-3 rounded-2xl bg-white text-black text-base font-bold hover:bg-zinc-100 transition-colors"
           >
-            Show performers
+            {firstStep ? 'Search' : 'Show performers'}
           </button>
         </div>
       </div>
