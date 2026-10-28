@@ -20,7 +20,7 @@ import MobileSheetSelect from '@/components/MobileSheetSelect';
 import { toast } from '@/components/ui/use-toast';
 import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
 import { rankTalents } from '@/lib/discoveryRanking';
-import { normalizeCity, cityMatches, travelsTo, inSearchArea, haversineMiles, geocodeCityCached } from '@/lib/cityMatch';
+import { normalizeCity, cityMatches, geocodeCityCached } from '@/lib/cityMatch';
 import { getGuestMaybes, addGuestMaybe } from '@/lib/guestMaybeList';
 
 const TALENT_CATEGORIES = [
@@ -204,17 +204,35 @@ export default function Discover() {
     if (filters.city) {
       const raw = filters.city.trim();
       const geo = await geocodeCityCached(raw);
-      // Local = text match (city/town) or home coordinates inside the searched
-      // area (county/region); everyone else within their travel radius follows
-      const cityMatchesTalent = (t) => cityMatches(t, normalizeCity(raw), raw) || inSearchArea(t, geo);
-      const local = filtered.filter(cityMatchesTalent);
       const maxDist = filters.maxDistance !== 'any' ? parseFloat(filters.maxDistance) : null;
-      const travelers = filtered.filter(t =>
-        !local.includes(t) && travelsTo(t, geo) &&
+      // Talent coordinates are private, so the area and distance maths run on
+      // the server and only match flags come back to the browser.
+      let areaMatches = {};
+      if (geo && filtered.length > 0) {
+        try {
+          const areaRes = await base44.functions.invoke('matchTalentByArea', {
+            profile_ids: filtered.map(t => t.id),
+            geo,
+            max_distance: maxDist
+          });
+          (areaRes.data?.results || []).forEach(r => { areaMatches[r.id] = r; });
+        } catch {
+          areaMatches = {};
+        }
+      }
+      // Local = text match (city/town) or home inside the searched area
+      // (county/region); everyone else within their travel radius follows
+      const cityMatchesTalent = (t) => cityMatches(t, normalizeCity(raw), raw) || areaMatches[t.id]?.in_area === true;
+      const local = filtered.filter(cityMatchesTalent);
+      const travelers = filtered.filter(t => {
+        if (local.includes(t)) return false;
+        // No area resolved: keep the generous radius fallback
+        if (!geo) return (t.location_radius || 0) >= 30;
+        const match = areaMatches[t.id];
+        if (!match || match.travels_to !== true) return false;
         // Distance filter: only talent whose home is within the chosen distance
-        (maxDist == null || !geo || (t.lat != null && t.lng != null &&
-          haversineMiles(t.lat, t.lng, geo.lat, geo.lng) <= maxDist))
-      );
+        return maxDist == null || match.within_max_distance === true;
+      });
       filtered = [...local, ...travelers];
       localIds = new Set(local.map(t => t.id));
       setTravelIds(new Set(travelers.map(t => t.id)));

@@ -9,6 +9,13 @@ export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
 
+    // This function exists for the scheduled workflow that runs as an app admin.
+    // Its URL is public, so anonymous callers must be rejected before any email
+    // goes out — otherwise anyone could mail-bomb every user on repeat.
+    const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+
     // Reminders go out one day before the event (both sides) and one week before
     // (the client), computed in the app's home timezone (Europe/London).
     const ukToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());

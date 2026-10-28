@@ -17,6 +17,16 @@ export function sanitizeText(value, maxLength = 200) {
     .slice(0, maxLength);
 }
 
+// Escapes a value for safe interpolation into an HTML email body, so a
+// user-controlled field (stage name, event name, notes) can never inject
+// markup into a message sent under the platform's identity.
+export function escapeHtml(value) {
+  if (value == null) return '';
+  return String(value).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
 // Validates a seeker-supplied time string. Returns a canonical zero-padded
 // "HH:MM" (24h) string, or null when the value isn't a plain clock time —
 // callers must treat null as "not provided" and fall back to a fixed default.

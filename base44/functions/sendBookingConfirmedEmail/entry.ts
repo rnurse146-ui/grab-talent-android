@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
-import { sanitizeText, normalizeTime } from '../../shared/emailSanitize.ts';
+import { sanitizeText, normalizeTime, escapeHtml } from '../../shared/emailSanitize.ts';
 import { buildBookingIcs, toBase64Utf8 } from '../../shared/calendarInvite.ts';
 
 // Sends the "gig confirmed" email (with calendar invite) to the talent when a
@@ -80,7 +80,7 @@ export default async function(req) {
     <tr>
       <td style="padding:28px 24px 8px;">
         <h1 style="margin:0 0 10px;font-size:22px;line-height:1.3;color:#18181b;">You've been hired!</h1>
-        <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#71717a;">Hi ${booking.talent_stage_name || 'there'}, great news. ${clientName} has confirmed their booking with you.</p>
+        <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#71717a;">Hi ${escapeHtml(booking.talent_stage_name || 'there')}, great news. ${clientName} has confirmed their booking with you.</p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;color:#3f3f46;line-height:1.5;">
           ${row('Event', eventName)}
           ${row('Date', eventDateFormatted)}

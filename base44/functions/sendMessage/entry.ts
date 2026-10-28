@@ -61,21 +61,44 @@ export default async function(req) {
 
     // Contact-info block: only shareable once a booking between these two users
     // is confirmed or completed through the platform.
+    let bookingVerified = null;
+    const isVerified = async () => {
+      if (bookingVerified === null) {
+        const bookings = await base44.asServiceRole.entities.Booking.filter({
+          $or: [
+            { seeker_id: user.id, talent_user_id: receiverId },
+            { seeker_id: receiverId, talent_user_id: user.id }
+          ]
+        });
+        bookingVerified = (bookings || []).some(b => ['confirmed', 'completed'].includes(b.status));
+      }
+      return bookingVerified;
+    };
+    const blocked = (reasons) => Response.json({
+      error: `This message was blocked because it contains ${reasons.join(' and ')}. Contact details can only be shared once a booking is confirmed through Grab Talent.`,
+      blocked: true
+    }, { status: 400 });
+
     const reasons = content ? containsContactInfo(content) : [];
-    if (reasons.length > 0) {
-      const bookings = await base44.asServiceRole.entities.Booking.filter({
-        $or: [
-          { seeker_id: user.id, talent_user_id: receiverId },
-          { seeker_id: receiverId, talent_user_id: user.id }
-        ]
-      });
-      const verified = (bookings || []).some(b => ['confirmed', 'completed'].includes(b.status));
-      if (!verified) {
+    if (reasons.length > 0 && !(await isVerified())) return blocked(reasons);
+
+    // Voice notes obey the same rule: the audio is transcribed and checked
+    // exactly like typed text, so speaking a number or handle cannot bypass
+    // the pre-booking block. Audio that cannot be checked is refused.
+    if (audioUri && !(await isVerified())) {
+      let transcript = '';
+      try {
+        const signed = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: audioUri, expires_in: 120 });
+        const audioUrl = signed?.signed_url || signed;
+        transcript = String((await base44.asServiceRole.integrations.Core.TranscribeAudio({ audio_url: audioUrl })) || '');
+      } catch {
         return Response.json({
-          error: `This message was blocked because it contains ${reasons.join(' and ')}. Contact details can only be shared once a booking is confirmed through Grab Talent.`,
+          error: 'We could not check this voice note for contact details. Please send it as a text message instead.',
           blocked: true
         }, { status: 400 });
       }
+      const audioReasons = containsContactInfo(transcript);
+      if (audioReasons.length > 0) return blocked(audioReasons);
     }
 
     const created = await base44.asServiceRole.entities.Message.create({

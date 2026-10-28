@@ -103,11 +103,39 @@
     },
     "lat": {
       "type": "number",
-      "description": "Rough latitude of location_city \u2014 set by the geocodeCity function when the profile is saved"
+      "description": "Rough latitude of location_city \u2014 set by the geocodeCity function when the profile is saved. Private: discovery area matching happens server-side",
+      "rls": {
+        "read": {
+          "$or": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        }
+      }
     },
     "lng": {
       "type": "number",
-      "description": "Rough longitude of location_city \u2014 set by the geocodeCity function when the profile is saved"
+      "description": "Rough longitude of location_city \u2014 set by the geocodeCity function when the profile is saved. Private: discovery area matching happens server-side",
+      "rls": {
+        "read": {
+          "$or": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        }
+      }
     },
     "is_verified": {
       "type": "boolean",
