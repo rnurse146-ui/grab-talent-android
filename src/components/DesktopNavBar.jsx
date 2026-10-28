@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Compass, Calendar, MessageSquare, Settings as SettingsIcon, LayoutDashboard, LogIn, Users } from 'lucide-react';
+import { Compass, Calendar, MessageSquare, Settings as SettingsIcon, LayoutDashboard, LogIn } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { resolveTab } from '@/lib/tabNavigation';
 import Logo from '@/components/Logo';
@@ -8,7 +8,6 @@ import Logo from '@/components/Logo';
 const TABS = [
   { to: '/Dashboard', label: 'Dashboard', Icon: LayoutDashboard },
   { to: '/Discover', label: 'Discover', Icon: Compass },
-  { to: '/TalentNetwork', label: 'Network', Icon: Users },
   { to: '/Bookings', label: 'Bookings', Icon: Calendar },
   { to: '/Messages', label: 'Messages', Icon: MessageSquare },
   { to: '/Settings', label: 'Settings', Icon: SettingsIcon },

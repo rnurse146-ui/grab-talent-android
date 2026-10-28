@@ -7,7 +7,7 @@ import { categoryLabel } from '@/lib/categoryLabel';
 
 // One performer in the collab deck — same swipe feel as the hire deck, but the
 // card is about what they do rather than what they cost.
-export default function NetworkDeckCard({ talent, onSwipe, swiping, disabled }) {
+export default function NetworkDeckCard({ talent, onSwipe, swiping, disabled, footnote = 'Swipe right to invite them to collab' }) {
   const handleDragEnd = (event, info) => {
     if (disabled || swiping) return;
     if (info.offset.x > 90) onSwipe('right');
@@ -84,7 +84,7 @@ export default function NetworkDeckCard({ talent, onSwipe, swiping, disabled }) 
               </p>
             )}
             <p className="mt-3 text-[11px] text-zinc-500">
-              <Users className="inline w-3 h-3 mr-1" />Swipe right to invite them to collab
+              <Users className="inline w-3 h-3 mr-1" />{footnote}
             </p>
           </div>
         </div>

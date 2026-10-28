@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Loader2, X, Handshake, SlidersHorizontal, MessageSquare, Users } from 'lucide-react';
+import { ArrowLeft, Loader2, X, Handshake, SlidersHorizontal, MessageSquare, Users, Eye } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -30,6 +30,7 @@ export default function TalentNetwork() {
   const [swiping, setSwiping] = useState(null);
   const [busy, setBusy] = useState(false);
   const [celebration, setCelebration] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -82,6 +83,7 @@ export default function TalentNetwork() {
     const mine = await base44.entities.TalentProfile.filter({ user_id: currentUser.id });
     const myProfile = mine?.[0] || null;
     setProfile(myProfile);
+    setPreviewOpen(!!myProfile?.network_open);
     if (myProfile?.network_open) await loadDeck(myProfile, currentUser, filters);
     setLoading(false);
     await checkCelebrations(currentUser);
@@ -96,6 +98,7 @@ export default function TalentNetwork() {
       const updated = { ...profile, network_open: next };
       setProfile(updated);
       if (next) {
+        setPreviewOpen(true);
         await loadDeck(updated, user, filters);
         toast({ title: "You're in Talent Network", description: 'Other performers can now find you and request collabs.' });
       } else {
@@ -229,7 +232,26 @@ export default function TalentNetwork() {
           )}
 
           <div className="flex flex-col items-center px-4 pt-6">
-            {!currentTalent ? (
+            {previewOpen ? (
+              <div className="w-full max-w-sm">
+                <div className="flex items-center justify-center gap-2 mb-3 text-[11px] font-bold uppercase tracking-wider text-purple-300">
+                  <Eye className="w-4 h-4" /> Your card — how other talent sees you
+                </div>
+                <NetworkDeckCard
+                  talent={profile}
+                  onSwipe={() => setPreviewOpen(false)}
+                  swiping={null}
+                  disabled={false}
+                  footnote="This is your public talent card"
+                />
+                <Button
+                  onClick={() => setPreviewOpen(false)}
+                  className="mt-6 w-full bg-white text-black hover:bg-zinc-200 font-bold"
+                >
+                  Start browsing performers
+                </Button>
+              </div>
+            ) : !currentTalent ? (
               <div className="text-center max-w-sm py-10">
                 <div className="w-20 h-20 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-4">
                   <Users className="w-9 h-9 text-zinc-600" />

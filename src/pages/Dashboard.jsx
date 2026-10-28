@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Search, Star, Loader2, LogOut, Users } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import Logo from '@/components/Logo';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SeekerDashboard from '@/components/dashboard/SeekerDashboard';
 import TalentDashboard from '@/components/dashboard/TalentDashboard';
 import NotificationBell from '@/components/NotificationBell';
@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [guest, setGuest] = useState(false);
   const [showGuestWelcome, setShowGuestWelcome] = useState(() => !sessionStorage.getItem(GUEST_WELCOME_KEY));
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => { loadData(); }, []);
 
@@ -104,28 +105,35 @@ export default function Dashboard() {
               <Logo className="h-16 w-auto" variant="light" />
             </Link>
 
-            <div className="flex items-center bg-zinc-900 rounded-2xl p-1.5 border border-zinc-700 shadow-lg">
+            <div className="flex items-center bg-zinc-900 rounded-2xl p-1 border sm:p-1.5 border-zinc-700 shadow-lg">
               <button
                 onClick={() => setActiveView('seeker')}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-sm font-semibold transition-all duration-200 ${
                   activeView === 'seeker'
                     ? 'bg-white text-black shadow-md scale-105'
                     : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
                 }`}
               >
-                <Search className="w-4 h-4" />
+                <Search className="w-4 h-4 shrink-0" />
                 Grabbing Talent
               </button>
               <button
                 onClick={() => setActiveView('talent')}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-sm font-semibold transition-all duration-200 ${
                   activeView === 'talent'
                     ? 'bg-white text-black shadow-md scale-105'
                     : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
                 }`}
               >
-                <Star className="w-4 h-4" />
+                <Star className="w-4 h-4 shrink-0" />
                 I'm a Talent
+              </button>
+              <button
+                onClick={() => setShowLoginPrompt(true)}
+                className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-sm font-semibold text-purple-300 hover:text-white hover:bg-zinc-800 transition-all duration-200"
+              >
+                <Users className="w-4 h-4 shrink-0" />
+                Talent Network
               </button>
             </div>
           </div>
@@ -193,28 +201,35 @@ export default function Dashboard() {
           </Link>
 
           {/* Role switcher */}
-          <div className="flex items-center bg-zinc-900 rounded-2xl p-1.5 border border-zinc-700 shadow-lg">
+          <div className="flex items-center bg-zinc-900 rounded-2xl p-1 border sm:p-1.5 border-zinc-700 shadow-lg">
             <button
               onClick={() => setActiveView('seeker')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-sm font-semibold transition-all duration-200 ${
                 activeView === 'seeker'
                   ? 'bg-white text-black shadow-md scale-105'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
               }`}
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-4 h-4 shrink-0" />
               Grabbing Talent
             </button>
             <button
               onClick={() => setActiveView('talent')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-sm font-semibold transition-all duration-200 ${
                 activeView === 'talent'
                   ? 'bg-white text-black shadow-md scale-105'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
               }`}
             >
-              <Star className="w-4 h-4" />
+              <Star className="w-4 h-4 shrink-0" />
               I'm a Talent
+            </button>
+            <button
+              onClick={() => navigate('/TalentNetwork')}
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-sm font-semibold text-purple-300 hover:text-white hover:bg-zinc-800 transition-all duration-200"
+            >
+              <Users className="w-4 h-4 shrink-0" />
+              Talent Network
             </button>
           </div>
         </div>
