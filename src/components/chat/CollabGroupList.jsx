@@ -6,9 +6,12 @@ export default function CollabGroupList({ groups, activeGroupId, onOpen, onNew }
   return (
     <div className="border-b border-zinc-800 bg-zinc-950/40">
       <div className="flex items-center justify-between px-4 py-2.5">
-        <p className="text-xs font-bold uppercase tracking-wide text-purple-300 flex items-center gap-1.5">
-          <Users className="w-3.5 h-3.5" /> Collab groups
-        </p>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-purple-300 flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5" /> Collab chats
+          </p>
+          <p className="text-[10px] text-zinc-500 mt-0.5">Collaborations — separate from bookings</p>
+        </div>
         <button
           type="button"
           onClick={onNew}

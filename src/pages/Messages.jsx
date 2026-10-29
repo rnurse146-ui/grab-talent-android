@@ -50,6 +50,9 @@ export default function Messages() {
   const [conversations, setConversations] = useState([]);
   // other user id → 'collab' | 'talent' | 'seeker', shown as a coloured badge
   const [roleMap, setRoleMap] = useState({});
+  // User IDs this person has a booking with — their direct chat is a booking chat,
+  // kept apart from the collab chats above it
+  const [bookedIds, setBookedIds] = useState([]);
   // Talent Connect collab groups — group chats with performers you matched with
   const [groups, setGroups] = useState([]);
   const [showNewGroup, setShowNewGroup] = useState(false);
@@ -111,6 +114,14 @@ export default function Messages() {
     const partnerIds = convList.map(c => c.otherId);
     if (toUserId) partnerIds.push(toUserId);
     setRoleMap(await buildConversationRoleMap(partnerIds, currentUser.id));
+
+    // A booking between the two makes the direct chat a booking chat
+    const bookings = await base44.entities.Booking.filter({
+      $or: [{ seeker_id: currentUser.id }, { talent_user_id: currentUser.id }]
+    }, '', 200);
+    setBookedIds([...new Set((bookings.items || bookings || [])
+      .map(b => (b.seeker_id === currentUser.id ? b.talent_user_id : b.seeker_id))
+      .filter(Boolean))]);
 
     setGroups(await listCollabGroups().catch(() => []));
 
@@ -393,6 +404,14 @@ export default function Messages() {
   const activeConv = conversations.find(c => c.id === activeConvId);
   const totalUnread = conversations.reduce((sum, c) => sum + (c.unread || 0), 0);
 
+  // Direct chats are labelled by what they are: a booking, or the person's role.
+  // Collab planning lives in the collab chats section above, never here.
+  const roleFor = (otherId) => {
+    if (bookedIds.includes(otherId)) return 'booking';
+    const role = roleMap[otherId];
+    return role === 'collab' ? 'talent' : role;
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center">
       <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
@@ -434,14 +453,15 @@ export default function Messages() {
             >
           <div className="px-4 py-3 border-b border-zinc-800">
             <h2 className="font-semibold text-base flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-purple-400" />
-              Conversations
+              <MessageSquare className="w-4 h-4 text-emerald-400" />
+              Booking & direct chats
               {totalUnread > 0 && (
                 <span className="bg-purple-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                   {totalUnread}
                 </span>
               )}
             </h2>
+            <p className="text-[10px] text-zinc-500 mt-0.5">Bookings and one-to-one messages</p>
           </div>
 
           <CollabGroupList
@@ -478,7 +498,7 @@ export default function Messages() {
                             <p className={`text-sm truncate ${conv.unread > 0 ? 'font-semibold text-white' : 'font-medium text-slate-200'}`}>
                               {conv.otherName}
                             </p>
-                            <RoleBadge role={roleMap[conv.otherId]} />
+                            <RoleBadge role={roleFor(conv.otherId)} />
                           </div>
                           <p className="text-xs text-slate-500 shrink-0 ml-2">
                             {conv.lastMessage ? formatTime(conv.lastMessage.created_date) : ''}
@@ -541,7 +561,7 @@ export default function Messages() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <p className="font-semibold text-sm truncate">{activeConv.otherName}</p>
-                    <RoleBadge role={roleMap[activeConv.otherId]} />
+                    <RoleBadge role={roleFor(activeConv.otherId)} />
                   </div>
                   <p className="text-xs text-green-400">● Online</p>
                 </div>

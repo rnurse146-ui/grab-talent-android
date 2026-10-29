@@ -34,8 +34,8 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
     setEditingName(true);
   };
 
-  // Leave the collab for good — the backend removes the membership and, when the
-  // group is down to one performer, closes it and undoes the match.
+  // Leave the collab — the backend removes your membership, and in a two-person
+  // collab it disconnects the pair while keeping this chat and its history.
   const leave = async () => {
     if (leaving) return;
     setLeaving(true);
@@ -170,6 +170,8 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
             </div>
           )}
           <p className="text-xs text-zinc-500 truncate">
+            <span className="text-purple-300 font-semibold">Collab chat</span>
+            {' · '}
             {(group?.member_names || []).join(' · ') || 'Talent Network collab'}
           </p>
         </div>
