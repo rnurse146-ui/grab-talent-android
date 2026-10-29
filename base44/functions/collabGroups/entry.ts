@@ -94,6 +94,13 @@ export default async function(req) {
       return Response.json({ error: 'You are not in this group' }, { status: 403 });
     }
 
+    if (action === 'rename') {
+      const newName = String(body?.name || '').trim().slice(0, 60);
+      if (newName.length < 2) return Response.json({ error: 'Give the group a longer name' }, { status: 400 });
+      const updated = await base44.asServiceRole.entities.CollabGroup.update(groupId, { name: newName });
+      return Response.json({ group: updated });
+    }
+
     if (action === 'messages') {
       const messages = await base44.asServiceRole.entities.CollabGroupMessage.filter({ group_id: groupId }, 'created_date', 200);
       return Response.json({ group, messages });

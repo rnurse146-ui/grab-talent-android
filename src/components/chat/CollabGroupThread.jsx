@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { format, isToday } from 'date-fns';
-import { ArrowLeft, Loader2, Send, Users } from 'lucide-react';
+import { ArrowLeft, Loader2, Pencil, Send, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { loadCollabThread, sendCollabMessage } from '@/lib/collabGroups';
+import { loadCollabThread, renameCollabGroup, sendCollabMessage } from '@/lib/collabGroups';
 
 const initials = (name) => name?.charAt(0)?.toUpperCase() || '?';
 
@@ -16,7 +16,32 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack 
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [savingName, setSavingName] = useState(false);
   const endRef = useRef(null);
+
+  // Anyone in the group can rename it — the new name shows for every member.
+  const startRename = () => {
+    setNameDraft(group?.name || '');
+    setEditingName(true);
+  };
+
+  const saveName = async () => {
+    const name = nameDraft.trim();
+    if (!name || savingName) return;
+    setSavingName(true);
+    setError('');
+    try {
+      const updated = await renameCollabGroup(groupId, name);
+      setGroup(prev => ({ ...(prev || {}), ...(updated || { name }) }));
+      setEditingName(false);
+    } catch (e) {
+      setError(e?.response?.data?.error || 'Could not rename the group.');
+    } finally {
+      setSavingName(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -77,8 +102,50 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack 
         <div className="w-9 h-9 rounded-full bg-purple-600/20 border border-purple-700/60 flex items-center justify-center shrink-0">
           <Users className="w-4 h-4 text-purple-300" />
         </div>
-        <div className="min-w-0">
-          <p className="font-semibold text-sm truncate">{group?.name || 'Collab group'}</p>
+        <div className="min-w-0 flex-1">
+          {editingName ? (
+            <div className="flex items-center gap-2">
+              <Input
+                autoFocus
+                value={nameDraft}
+                maxLength={60}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') saveName();
+                  if (e.key === 'Escape') setEditingName(false);
+                }}
+                className="h-8 bg-zinc-900 border-zinc-700 text-sm px-2"
+              />
+              <button
+                type="button"
+                onClick={saveName}
+                disabled={savingName || !nameDraft.trim()}
+                className="text-xs font-semibold text-purple-300 hover:text-white disabled:opacity-50 shrink-0"
+              >
+                {savingName ? 'Saving…' : 'Save'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditingName(false)}
+                className="text-xs text-zinc-500 hover:text-white shrink-0"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 min-w-0">
+              <p className="font-semibold text-sm truncate">{group?.name || 'Collab group'}</p>
+              <button
+                type="button"
+                onClick={startRename}
+                aria-label="Rename group"
+                title="Rename group"
+                className="text-zinc-500 hover:text-white shrink-0"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
           <p className="text-xs text-zinc-500 truncate">
             {(group?.member_names || []).join(' · ') || 'Talent Network collab'}
           </p>

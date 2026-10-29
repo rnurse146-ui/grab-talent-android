@@ -19,6 +19,11 @@ export async function createCollabGroup({ name, memberIds }) {
   return res.data?.group;
 }
 
+export async function renameCollabGroup(groupId, name) {
+  const res = await invoke({ action: 'rename', group_id: groupId, name });
+  return res.data?.group;
+}
+
 export async function loadCollabThread(groupId) {
   const res = await invoke({ action: 'messages', group_id: groupId });
   return { group: res.data?.group || null, messages: res.data?.messages || [] };
