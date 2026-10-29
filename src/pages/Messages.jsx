@@ -16,6 +16,10 @@ import VoiceRecorder from '@/components/chat/VoiceRecorder';
 import VoiceNotePlayer from '@/components/chat/VoiceNotePlayer';
 import RoleBadge from '@/components/chat/RoleBadge';
 import { buildConversationRoleMap } from '@/lib/conversationRole';
+import CollabGroupList from '@/components/chat/CollabGroupList';
+import CollabGroupThread from '@/components/chat/CollabGroupThread';
+import NewCollabGroupDialog from '@/components/chat/NewCollabGroupDialog';
+import { listCollabGroups } from '@/lib/collabGroups';
 
 function formatTime(dateStr) {
   const d = new Date(dateStr);
@@ -38,13 +42,17 @@ function Avatar({ name, photo, size = 10 }) {
 export default function Messages() {
   const [searchParams, setSearchParams] = useSearchParams();
   const toUserId = searchParams.get('to');
-  // Mobile thread visibility is driven by the ?to= query param, so system back gestures work natively
-  const showList = !toUserId;
+  const groupIdParam = searchParams.get('group');
+  // Mobile thread visibility is driven by the ?to= / ?group= query param, so system back gestures work natively
+  const showList = !toUserId && !groupIdParam;
 
   const [user, setUser] = useState(null);
   const [conversations, setConversations] = useState([]);
   // other user id → 'collab' | 'talent' | 'seeker', shown as a coloured badge
   const [roleMap, setRoleMap] = useState({});
+  // Talent Connect collab groups — group chats with performers you matched with
+  const [groups, setGroups] = useState([]);
+  const [showNewGroup, setShowNewGroup] = useState(false);
   const [activeConvId, setActiveConvId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -103,6 +111,8 @@ export default function Messages() {
     const partnerIds = convList.map(c => c.otherId);
     if (toUserId) partnerIds.push(toUserId);
     setRoleMap(await buildConversationRoleMap(partnerIds, currentUser.id));
+
+    setGroups(await listCollabGroups().catch(() => []));
 
     let initialConv = null;
     if (toUserId) {
@@ -354,6 +364,11 @@ export default function Messages() {
     }
   };
 
+  const handleGroupCreated = async (group) => {
+    setGroups(await listCollabGroups().catch(() => []));
+    if (group?.id) setSearchParams({ group: group.id });
+  };
+
   const activeConv = conversations.find(c => c.id === activeConvId);
   const totalUnread = conversations.reduce((sum, c) => sum + (c.unread || 0), 0);
 
@@ -407,6 +422,13 @@ export default function Messages() {
               )}
             </h2>
           </div>
+
+          <CollabGroupList
+            groups={groups}
+            activeGroupId={groupIdParam}
+            onOpen={(group) => setSearchParams({ group: group.id })}
+            onNew={() => setShowNewGroup(true)}
+          />
 
           <PullToRefresh onRefresh={refreshMessages} className="flex-1 overflow-y-auto">
             {conversations.length === 0 ? (
@@ -475,7 +497,14 @@ export default function Messages() {
               transition={{ duration: 0.2, ease: 'easeOut' }}
               className="flex flex-col flex-1 min-h-0"
             >
-          {activeConv ? (
+          {groupIdParam ? (
+            <CollabGroupThread
+              groupId={groupIdParam}
+              user={user}
+              initialGroup={groups.find(g => g.id === groupIdParam)}
+              onBack={() => setSearchParams({})}
+            />
+          ) : activeConv ? (
             <>
               {/* Chat Header */}
               <div className="px-4 py-3 border-b border-zinc-800 flex items-center gap-3 shrink-0 bg-black/80 backdrop-blur-sm">
@@ -584,6 +613,12 @@ export default function Messages() {
         </div>
       </div>
     </div>
+
+    <NewCollabGroupDialog
+      open={showNewGroup}
+      onOpenChange={setShowNewGroup}
+      onCreated={handleGroupCreated}
+    />
     </>
   );
 }

@@ -1,0 +1,49 @@
+{
+  "name": "CollabGroupMessage",
+  "type": "object",
+  "properties": {
+    "group_id": {
+      "type": "string",
+      "description": "CollabGroup this message belongs to"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "User ID of the performer who sent it"
+    },
+    "sender_name": {
+      "type": "string",
+      "description": "Stage name shown beside the message"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message text"
+    }
+  },
+  "required": [
+    "group_id",
+    "sender_id",
+    "content"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
