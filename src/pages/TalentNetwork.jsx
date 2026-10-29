@@ -12,6 +12,7 @@ import NetworkGate from '@/components/network/NetworkGate';
 import NetworkFilters from '@/components/network/NetworkFilters';
 import NetworkDeckCard from '@/components/network/NetworkDeckCard';
 import NetworkMatchCelebration from '@/components/network/NetworkMatchCelebration';
+import CollabCelebration from '@/components/network/CollabCelebration';
 
 // Talent Network — performers connecting with performers for gigs and
 // collaborations. Completely separate from the hire deck on Discover.
@@ -55,27 +56,6 @@ export default function TalentNetwork() {
     setIndex(0);
   };
 
-  // A match made while they were away is celebrated the next time they open the tab
-  const checkCelebrations = async (currentUser) => {
-    const matches = await base44.entities.NetworkMatch.filter({
-      $or: [{ user_a_id: currentUser.id }, { user_b_id: currentUser.id }]
-    });
-    const unseen = (matches || []).find(m =>
-      m.user_a_id === currentUser.id ? !m.a_celebrated : !m.b_celebrated
-    );
-    if (!unseen) return;
-    const iAmA = unseen.user_a_id === currentUser.id;
-    const otherProfile = await base44.entities.TalentProfile
-      .get(iAmA ? unseen.profile_b_id : unseen.profile_a_id)
-      .catch(() => null);
-    setCelebration({
-      name: otherProfile?.stage_name || 'A performer',
-      matchId: unseen.id,
-      iAmA,
-      conversationId: unseen.conversation_id || [currentUser.id, iAmA ? unseen.user_b_id : unseen.user_a_id].sort().join('_'),
-      otherUserId: iAmA ? unseen.user_b_id : unseen.user_a_id
-    });
-  };
 
   const loadData = async () => {
     setLoading(true);
@@ -91,7 +71,6 @@ export default function TalentNetwork() {
     setPreviewOpen(!!myProfile?.network_open);
     if (myProfile?.network_open) await loadDeck(myProfile, currentUser, filters);
     setLoading(false);
-    await checkCelebrations(currentUser);
   };
 
   const toggleOpen = async () => {
@@ -356,6 +335,7 @@ export default function TalentNetwork() {
         </>
       )}
 
+      <CollabCelebration user={user} />
       <NetworkMatchCelebration
         name={celebration?.name}
         conversationId={celebration?.conversationId}

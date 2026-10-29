@@ -25,6 +25,11 @@
         "pass"
       ],
       "description": "collab = wants to work with them, pass = not interested"
+    },
+    "target_seen": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the person receiving a one-way collab request has already been shown the pop-up \u2014 written only by the collabPings backend function"
     }
   },
   "required": [

@@ -35,6 +35,10 @@ export default async function(req) {
     }
 
     // One answer per pair — re-swiping replaces the earlier one
+    const previous = await base44.asServiceRole.entities.NetworkSwipe.filter({
+      swiper_user_id: user.id,
+      target_profile_id: target.id
+    });
     await base44.asServiceRole.entities.NetworkSwipe.deleteMany({
       swiper_user_id: user.id,
       target_profile_id: target.id
@@ -47,6 +51,9 @@ export default async function(req) {
       action
     });
 
+    const myName = myProfile.stage_name || user.full_name || 'A performer';
+    const theirName = target.stage_name || 'A performer';
+
     if (action !== 'collab') return Response.json({ matched: false });
 
     const reciprocal = await base44.asServiceRole.entities.NetworkSwipe.filter({
@@ -54,7 +61,21 @@ export default async function(req) {
       target_profile_id: myProfile.id,
       action: 'collab'
     });
-    if (!reciprocal || reciprocal.length === 0) return Response.json({ matched: false });
+    if (!reciprocal || reciprocal.length === 0) {
+      // A one-way request — tell them straight away, without opening a chat yet
+      const alreadyAsked = (previous || []).some(s => s.action === 'collab');
+      if (!alreadyAsked) {
+        await base44.asServiceRole.entities.Notification.create({
+          user_id: target.user_id,
+          type: 'message',
+          title: `${myName} wants to collab with you`,
+          body: 'Open Talent Network to see their profile and say yes to a chat.',
+          link_url: '/TalentNetwork',
+          is_read: false
+        });
+      }
+      return Response.json({ matched: false });
+    }
 
     const conversationId = [user.id, target.user_id].sort().join('_');
     const existing = await base44.asServiceRole.entities.NetworkMatch.filter({ conversation_id: conversationId });
@@ -70,9 +91,6 @@ export default async function(req) {
         a_celebrated: false,
         b_celebrated: false
       });
-
-      const myName = myProfile.stage_name || user.full_name || 'A performer';
-      const theirName = target.stage_name || 'A performer';
 
       // Seeded so the conversation already exists on both sides
       await base44.asServiceRole.entities.Message.create({
