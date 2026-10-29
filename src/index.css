@@ -53,7 +53,7 @@
     --secondary: 240 6% 14%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 6% 14%;
-    --muted-foreground: 240 5% 65%;
+    --muted-foreground: 240 5% 76%;
     --accent: 240 6% 14%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 72% 51%;
@@ -92,7 +92,7 @@
     --secondary: 240 6% 14%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 6% 14%;
-    --muted-foreground: 240 5% 65%;
+    --muted-foreground: 240 5% 76%;
     --accent: 240 6% 14%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 72% 51%;
@@ -174,5 +174,32 @@
     .fab-panel-bottom {
       bottom: calc(9rem + env(safe-area-inset-bottom));
     }
+  }
+}
+
+/* Small helper text (captions, timestamps, labels) sits on the dark surface and
+   was too dim to read comfortably. Lift the muted greys whenever the dark theme
+   is active, so every screen gains contrast without touching each component. */
+@media (prefers-color-scheme: dark) {
+  .text-zinc-600 {
+    color: hsl(0 0% 70%);
+  }
+  .text-zinc-500 {
+    color: hsl(0 0% 76%);
+  }
+  .text-zinc-400 {
+    color: hsl(0 0% 82%);
+  }
+  .text-slate-500 {
+    color: hsl(215 18% 74%);
+  }
+  .text-slate-400 {
+    color: hsl(215 18% 82%);
+  }
+  .placeholder\:text-zinc-500::placeholder {
+    color: hsl(0 0% 70%);
+  }
+  .placeholder\:text-zinc-600::placeholder {
+    color: hsl(0 0% 66%);
   }
 }
