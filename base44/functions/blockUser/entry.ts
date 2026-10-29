@@ -18,8 +18,19 @@ export default async function(req) {
     }
 
     if (action === 'list') {
-      const rows = await base44.asServiceRole.entities.Block.filter({ blocker_id: user.id }, '-created_date', 100);
-      return Response.json({ blocks: rows || [] });
+      const rows = (await base44.asServiceRole.entities.Block.filter({ blocker_id: user.id }, '-created_date', 100)) || [];
+      // Attach each blocked member's profile photo so the block list shows a face
+      const ids = rows.map((r) => r.blocked_user_id).filter(Boolean);
+      const photos: Record<string, string> = {};
+      if (ids.length) {
+        const profiles = await base44.asServiceRole.entities.TalentProfile.filter({ user_id: { $in: ids } }, '', 200);
+        (profiles || []).forEach((p) => {
+          if (p?.profile_photo) photos[p.user_id] = p.profile_photo;
+        });
+      }
+      return Response.json({
+        blocks: rows.map((r) => ({ ...r, blocked_photo: photos[r.blocked_user_id] || '' }))
+      });
     }
 
     const targetId = String(body?.user_id || '');

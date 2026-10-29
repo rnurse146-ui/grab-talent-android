@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { format, isToday } from 'date-fns';
-import { ArrowLeft, Flag, Loader2, LogOut, Pencil, Send, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, Ban, Flag, Loader2, LogOut, Pencil, Send, UserPlus, Users } from 'lucide-react';
 import ReportDialog from '@/components/safety/ReportDialog';
+import { blockUser } from '@/lib/safety';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -127,6 +128,17 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
     }
   };
 
+  // Block straight from the flag menu — reversible from Settings
+  const blockMember = async (member) => {
+    try {
+      await blockUser(member.userId);
+      setError(`You blocked ${member.name} — they can no longer post here.`);
+      onGroupChange?.();
+    } catch (e) {
+      setError(e?.response?.data?.error || 'Could not block this member.');
+    }
+  };
+
   return (
     <>
       <div className="px-4 py-3 border-b border-zinc-800 flex items-center gap-3 shrink-0 bg-black/80 backdrop-blur-sm">
@@ -209,6 +221,16 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
                   >
                     <Flag className="w-4 h-4 mr-2" />
                     Report {m.name}
+                  </DropdownMenuItem>
+                ))}
+                {otherMembers.map(m => (
+                  <DropdownMenuItem
+                    key={`block_${m.userId}`}
+                    onClick={() => blockMember(m)}
+                    className="cursor-pointer text-red-400 focus:bg-zinc-800 focus:text-red-300"
+                  >
+                    <Ban className="w-4 h-4 mr-2" />
+                    Block {m.name}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Ban, Loader2, Undo2 } from 'lucide-react';
+import { Ban, Loader2, Undo2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { listMyBlocks, unblockUser } from '@/lib/safety';
 
@@ -37,8 +37,19 @@ export default function BlockedPeople() {
       </p>
       <div className="space-y-2">
         {blocks.map(block => (
-          <div key={block.id} className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800">
-            <span className="text-sm truncate">{block.blocked_name || 'Member'}</span>
+          <div key={block.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800">
+            <div className="w-11 h-11 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700 shrink-0 flex items-center justify-center">
+              {block.blocked_photo ? (
+                <img
+                  src={block.blocked_photo}
+                  alt={block.blocked_name || 'Blocked member'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-5 h-5 text-zinc-500" />
+              )}
+            </div>
+            <span className="text-sm font-medium truncate flex-1">{block.blocked_name || 'Member'}</span>
             <Button
               size="sm"
               variant="outline"
