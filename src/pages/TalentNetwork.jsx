@@ -25,7 +25,7 @@ export default function TalentNetwork() {
   const [profile, setProfile] = useState(null);
   const [talents, setTalents] = useState([]);
   const [index, setIndex] = useState(0);
-  const [filters, setFilters] = useState({ categories: [], city: '' });
+  const [filters, setFilters] = useState({ categories: [], cities: [] });
   const [showFilters, setShowFilters] = useState(false);
   const [started, setStarted] = useState(false);
   const [swiping, setSwiping] = useState(null);
@@ -49,8 +49,10 @@ export default function TalentNetwork() {
         return activeFilters.categories.some(c => cats.includes(c));
       });
     }
-    const city = activeFilters.city.trim();
-    if (city) list = list.filter(t => cityMatches(t, normalizeCity(city), city));
+    const cities = activeFilters.cities.map(c => c.trim()).filter(Boolean);
+    if (cities.length > 0) {
+      list = list.filter(t => cities.some(city => cityMatches(t, normalizeCity(city), city)));
+    }
 
     setTalents(list);
     setIndex(0);
@@ -164,13 +166,13 @@ export default function TalentNetwork() {
   };
 
   const skipSearch = async () => {
-    const empty = { categories: [], city: '' };
+    const empty = { categories: [], cities: [] };
     setFilters(empty);
     await startBrowsing(empty);
   };
 
   const currentTalent = talents[index];
-  const filterCount = filters.categories.length + (filters.city.trim() ? 1 : 0);
+  const filterCount = filters.categories.length + filters.cities.length;
 
   return (
     <div className="min-h-[100dvh] bg-black text-white pb-28 md:pb-10">
