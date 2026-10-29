@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { format, isToday } from 'date-fns';
 import { ArrowLeft, Flag, Loader2, LogOut, Pencil, Send, UserPlus, Users } from 'lucide-react';
-import SafetyMenu from '@/components/safety/SafetyMenu';
+import ReportDialog from '@/components/safety/ReportDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
@@ -27,7 +30,14 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
   const [savingName, setSavingName] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
+  const [reportOpen, setReportOpen] = useState(false);
   const endRef = useRef(null);
+
+  // Everyone else in the group is a possible report target
+  const otherMembers = (group?.member_ids || [])
+    .map((id, i) => ({ userId: id, name: (group?.member_names || [])[i] || 'Member' }))
+    .filter(m => m.userId !== user?.id);
 
   // Anyone in the group can rename it — the new name shows for every member.
   const startRename = () => {
@@ -178,49 +188,77 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
         </div>
 
         <div className="ml-auto flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            onClick={() => setShowAdd(true)}
-            aria-label="Add talent to this collab"
-            title="Add talent to this collab"
-            className="p-2 text-zinc-400 hover:text-white"
-          >
-            <UserPlus className="w-4 h-4" />
-          </button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button
-                type="button"
-                aria-label="Leave this collab"
-                title="Leave this collab"
-                className="p-2 text-zinc-400 hover:text-red-400"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="bg-zinc-950 border-zinc-800 text-white">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Leave this collab?</AlertDialogTitle>
-                <AlertDialogDescription className="text-zinc-400">
-                  With more than two performers you're taken out of the group. If it's just the two of you,
-                  you'll be disconnected on Talent Network — this chat and its history stay open.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="border-zinc-700 bg-transparent text-white hover:bg-zinc-900">
-                  Stay
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={leave}
-                  disabled={leaving}
-                  className="bg-red-600 text-white hover:bg-red-500"
+          {otherMembers.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Report a member"
+                  title="Report a member"
+                  className="p-2 text-zinc-400 hover:text-amber-400"
                 >
-                  {leaving ? 'Leaving…' : 'Leave collab'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  <Flag className="w-5 h-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-700 text-white w-56">
+                {otherMembers.map(m => (
+                  <DropdownMenuItem
+                    key={m.userId}
+                    onClick={() => { setReportTarget(m); setReportOpen(true); }}
+                    className="cursor-pointer focus:bg-zinc-800 focus:text-white"
+                  >
+                    <Flag className="w-4 h-4 mr-2" />
+                    Report {m.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
+      </div>
+
+      {/* Group actions, as full-width tabs */}
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-800 bg-zinc-950 shrink-0">
+        <button
+          type="button"
+          onClick={() => setShowAdd(true)}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-purple-700/60 bg-purple-600/15 text-sm font-semibold text-purple-200 hover:bg-purple-600/25 transition-colors"
+        >
+          <UserPlus className="w-4 h-4" />
+          Add talent
+        </button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button
+              type="button"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-red-800/70 bg-red-950/40 text-sm font-semibold text-red-300 hover:bg-red-900/40 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Leave collab
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="bg-zinc-950 border-zinc-800 text-white">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Leave this collab?</AlertDialogTitle>
+              <AlertDialogDescription className="text-zinc-400">
+                With more than two performers you're taken out of the group. If it's just the two of you,
+                you'll be disconnected on Talent Network — this chat and its history stay open.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-zinc-700 bg-transparent text-white hover:bg-zinc-900">
+                Stay
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={leave}
+                disabled={leaving}
+                className="bg-red-600 text-white hover:bg-red-500"
+              >
+                {leaving ? 'Leaving…' : 'Leave collab'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-3">
@@ -256,27 +294,6 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
                     {format(new Date(msg.created_date), isToday(new Date(msg.created_date)) ? 'HH:mm' : 'MMM d, HH:mm')}
                   </p>
                 </div>
-                {!isMe && (
-                  <SafetyMenu
-                    userId={msg.sender_id}
-                    currentUserId={user?.id}
-                    name={msg.sender_name}
-                    context="collab_chat"
-                    conversationId={groupId}
-                    excerpt={msg.content}
-                    onBlocked={() => setError('You blocked this member — they can no longer post here.')}
-                    trigger={
-                      <button
-                        type="button"
-                        aria-label={`Report or block ${msg.sender_name}`}
-                        title="Report or block"
-                        className="p-1 text-zinc-600 hover:text-amber-400 shrink-0"
-                      >
-                        <Flag className="w-3.5 h-3.5" />
-                      </button>
-                    }
-                  />
-                )}
               </div>
             );
           })
@@ -308,6 +325,17 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
           </Button>
         </div>
       </div>
+
+      <ReportDialog
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        target={reportTarget ? {
+          userId: reportTarget.userId,
+          name: reportTarget.name,
+          context: 'collab_chat',
+          conversationId: groupId
+        } : null}
+      />
 
       <AddCollabMembersDialog
         open={showAdd}
