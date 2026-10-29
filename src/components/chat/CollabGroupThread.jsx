@@ -1,15 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { format, isToday } from 'date-fns';
-import { ArrowLeft, Loader2, Pencil, Send, Users } from 'lucide-react';
+import { ArrowLeft, Loader2, LogOut, Pencil, Send, UserPlus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { loadCollabThread, renameCollabGroup, sendCollabMessage } from '@/lib/collabGroups';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
+import AddCollabMembersDialog from '@/components/chat/AddCollabMembersDialog';
+import { leaveCollabGroup, loadCollabThread, renameCollabGroup, sendCollabMessage } from '@/lib/collabGroups';
 
 const initials = (name) => name?.charAt(0)?.toUpperCase() || '?';
 
 // The group thread for a Talent Connect collab. Messages are read and written
 // through the collabGroups function, which checks membership server-side.
-export default function CollabGroupThread({ groupId, user, initialGroup, onBack }) {
+export default function CollabGroupThread({ groupId, user, initialGroup, onBack, onLeft, onGroupChange }) {
   const [group, setGroup] = useState(initialGroup || null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,12 +24,30 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack 
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [savingName, setSavingName] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const endRef = useRef(null);
 
   // Anyone in the group can rename it — the new name shows for every member.
   const startRename = () => {
     setNameDraft(group?.name || '');
     setEditingName(true);
+  };
+
+  // Leave the collab for good — the backend removes the membership and, when the
+  // group is down to one performer, closes it and undoes the match.
+  const leave = async () => {
+    if (leaving) return;
+    setLeaving(true);
+    setError('');
+    try {
+      await leaveCollabGroup(groupId);
+      onLeft?.();
+    } catch (e) {
+      setError(e?.response?.data?.error || 'Could not leave this collab.');
+    } finally {
+      setLeaving(false);
+    }
   };
 
   const saveName = async () => {
@@ -150,6 +173,51 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack 
             {(group?.member_names || []).join(' · ') || 'Talent Network collab'}
           </p>
         </div>
+
+        <div className="ml-auto flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowAdd(true)}
+            aria-label="Add talent to this collab"
+            title="Add talent to this collab"
+            className="p-2 text-zinc-400 hover:text-white"
+          >
+            <UserPlus className="w-4 h-4" />
+          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                type="button"
+                aria-label="Leave this collab"
+                title="Leave this collab"
+                className="p-2 text-zinc-400 hover:text-red-400"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-zinc-950 border-zinc-800 text-white">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Leave this collab?</AlertDialogTitle>
+                <AlertDialogDescription className="text-zinc-400">
+                  You'll be removed from the group. If it's just the two of you, the group closes and you're
+                  disconnected from them on Talent Network.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="border-zinc-700 bg-transparent text-white hover:bg-zinc-900">
+                  Stay
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={leave}
+                  disabled={leaving}
+                  className="bg-red-600 text-white hover:bg-red-500"
+                >
+                  {leaving ? 'Leaving…' : 'Leave collab'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-3">
@@ -216,6 +284,16 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack 
           </Button>
         </div>
       </div>
+
+      <AddCollabMembersDialog
+        open={showAdd}
+        onOpenChange={setShowAdd}
+        group={group}
+        onAdded={(updated) => {
+          if (updated) setGroup(prev => ({ ...(prev || {}), ...updated }));
+          onGroupChange?.();
+        }}
+      />
     </>
   );
 }

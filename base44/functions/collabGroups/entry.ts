@@ -94,6 +94,95 @@ export default async function(req) {
       return Response.json({ error: 'You are not in this group' }, { status: 403 });
     }
 
+    if (action === 'add') {
+      const requested = Array.isArray(body?.member_ids) ? body.member_ids.map(String) : [];
+      const existing = group.member_ids || [];
+      const toAdd = [...new Set(requested)].filter((id) => id && id !== user.id && !existing.includes(id));
+      if (toAdd.length === 0) return Response.json({ error: 'Pick at least one performer to add' }, { status: 400 });
+      if (existing.length + toAdd.length > MAX_MEMBERS) {
+        return Response.json({ error: 'Too many members for one group' }, { status: 400 });
+      }
+
+      const connected = await myConnectionIds();
+      if (toAdd.some((id) => !connected.has(id))) {
+        return Response.json({ error: 'Only performers you connected with on Talent Network can join' }, { status: 400 });
+      }
+
+      const names = await Promise.all(toAdd.map((id) => stageName(id)));
+      const updated = await base44.asServiceRole.entities.CollabGroup.update(groupId, {
+        member_ids: [...existing, ...toAdd],
+        member_names: [...(group.member_names || []), ...names]
+      });
+
+      const myName = await stageName(user.id, user.full_name);
+      await base44.asServiceRole.entities.CollabGroupMessage.create({
+        group_id: groupId,
+        sender_id: user.id,
+        sender_name: myName,
+        content: `${myName} added ${names.join(', ')} to the collab 🎉`
+      });
+      await base44.asServiceRole.entities.Notification.bulkCreate(toAdd.map((id) => ({
+        user_id: id,
+        type: 'message',
+        title: `${myName} added you to a collab group`,
+        body: group.name || 'Collab group',
+        link_url: '/Messages',
+        is_read: false
+      })));
+
+      return Response.json({ group: updated });
+    }
+
+    if (action === 'leave') {
+      const members = group.member_ids || [];
+      const names = group.member_names || [];
+      const idx = members.indexOf(user.id);
+      const remainingIds = members.filter((id) => id !== user.id);
+      const remainingNames = names.filter((_, i) => i !== idx);
+
+      // Down to one performer: the group has nothing left to plan, so it closes
+      // and the pair is disconnected on Talent Network.
+      if (remainingIds.length < 2) {
+        await base44.asServiceRole.entities.CollabGroupMessage.deleteMany({ group_id: groupId });
+        await base44.asServiceRole.entities.CollabGroup.delete(groupId);
+
+        if (remainingIds.length === 1) {
+          const otherId = remainingIds[0];
+          await base44.asServiceRole.entities.NetworkMatch.deleteMany({
+            conversation_id: [user.id, otherId].sort().join('_')
+          });
+          await base44.asServiceRole.entities.NetworkSwipe.deleteMany({ swiper_user_id: user.id, target_user_id: otherId });
+          await base44.asServiceRole.entities.NetworkSwipe.deleteMany({ swiper_user_id: otherId, target_user_id: user.id });
+
+          const myName = await stageName(user.id, user.full_name);
+          await base44.asServiceRole.entities.Notification.create({
+            user_id: otherId,
+            type: 'message',
+            title: `${myName} left your collab`,
+            body: 'You are no longer connected on Talent Network.',
+            link_url: '/TalentNetwork',
+            is_read: false
+          });
+        }
+
+        return Response.json({ left: true });
+      }
+
+      const updated = await base44.asServiceRole.entities.CollabGroup.update(groupId, {
+        member_ids: remainingIds,
+        member_names: remainingNames
+      });
+      const myName = await stageName(user.id, user.full_name);
+      await base44.asServiceRole.entities.CollabGroupMessage.create({
+        group_id: groupId,
+        sender_id: user.id,
+        sender_name: myName,
+        content: `${myName} left the collab`
+      });
+
+      return Response.json({ group: updated });
+    }
+
     if (action === 'rename') {
       const newName = String(body?.name || '').trim().slice(0, 60);
       if (newName.length < 2) return Response.json({ error: 'Give the group a longer name' }, { status: 400 });

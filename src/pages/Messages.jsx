@@ -364,6 +364,10 @@ export default function Messages() {
     }
   };
 
+  const refreshGroups = async () => {
+    setGroups(await listCollabGroups().catch(() => []));
+  };
+
   const handleGroupCreated = async (group) => {
     setGroups(await listCollabGroups().catch(() => []));
     if (group?.id) setSearchParams({ group: group.id });
@@ -503,6 +507,11 @@ export default function Messages() {
               user={user}
               initialGroup={groups.find(g => g.id === groupIdParam)}
               onBack={() => setSearchParams({})}
+              onGroupChange={refreshGroups}
+              onLeft={() => {
+                setSearchParams({});
+                refreshGroups();
+              }}
             />
           ) : activeConv ? (
             <>

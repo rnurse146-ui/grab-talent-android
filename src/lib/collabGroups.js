@@ -19,6 +19,16 @@ export async function createCollabGroup({ name, memberIds }) {
   return res.data?.group;
 }
 
+export async function addCollabMembers(groupId, memberIds) {
+  const res = await invoke({ action: 'add', group_id: groupId, member_ids: memberIds });
+  return res.data?.group;
+}
+
+export async function leaveCollabGroup(groupId) {
+  const res = await invoke({ action: 'leave', group_id: groupId });
+  return res.data;
+}
+
 export async function renameCollabGroup(groupId, name) {
   const res = await invoke({ action: 'rename', group_id: groupId, name });
   return res.data?.group;
