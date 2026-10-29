@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Loader2, X, Handshake, SlidersHorizontal, MessageSquare, Users, Eye } from 'lucide-react';
 import Logo from '@/components/Logo';
@@ -13,8 +12,6 @@ import NetworkGate from '@/components/network/NetworkGate';
 import NetworkFilters from '@/components/network/NetworkFilters';
 import NetworkDeckCard from '@/components/network/NetworkDeckCard';
 import NetworkMatchCelebration from '@/components/network/NetworkMatchCelebration';
-
-const burst = () => confetti({ particleCount: 140, spread: 80, origin: { y: 0.55 } });
 
 // Talent Network — performers connecting with performers for gigs and
 // collaborations. Completely separate from the hire deck on Discover.
@@ -71,8 +68,13 @@ export default function TalentNetwork() {
     const otherProfile = await base44.entities.TalentProfile
       .get(iAmA ? unseen.profile_b_id : unseen.profile_a_id)
       .catch(() => null);
-    setCelebration({ name: otherProfile?.stage_name || 'A performer', matchId: unseen.id, iAmA });
-    burst();
+    setCelebration({
+      name: otherProfile?.stage_name || 'A performer',
+      matchId: unseen.id,
+      iAmA,
+      conversationId: unseen.conversation_id || [currentUser.id, iAmA ? unseen.user_b_id : unseen.user_a_id].sort().join('_'),
+      otherUserId: iAmA ? unseen.user_b_id : unseen.user_a_id
+    });
   };
 
   const loadData = async () => {
@@ -134,8 +136,14 @@ export default function TalentNetwork() {
       });
       if (direction === 'right') {
         if (res.data?.matched) {
-          burst();
-          setCelebration({ name: talent.stage_name });
+          // The match is created with me as side A — the pop-up can be marked seen straight away
+          setCelebration({
+            name: talent.stage_name,
+            matchId: res.data.match_id,
+            iAmA: true,
+            conversationId: res.data.conversation_id,
+            otherUserId: talent.user_id
+          });
         } else {
           toast({ title: 'Request sent', description: `We'll let you know when ${talent.stage_name} wants to collab.` });
         }
@@ -348,7 +356,12 @@ export default function TalentNetwork() {
         </>
       )}
 
-      <NetworkMatchCelebration name={celebration?.name} onClose={closeCelebration} />
+      <NetworkMatchCelebration
+        name={celebration?.name}
+        conversationId={celebration?.conversationId}
+        otherUserId={celebration?.otherUserId}
+        onClose={closeCelebration}
+      />
     </div>
   );
 }
