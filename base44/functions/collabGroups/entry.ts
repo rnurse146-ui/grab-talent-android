@@ -139,32 +139,45 @@ export default async function(req) {
       const idx = members.indexOf(user.id);
       const remainingIds = members.filter((id) => id !== user.id);
       const remainingNames = names.filter((_, i) => i !== idx);
+      const myName = await stageName(user.id, user.full_name);
 
-      // Down to one performer: the group has nothing left to plan, so it closes
-      // and the pair is disconnected on Talent Network.
-      if (remainingIds.length < 2) {
-        await base44.asServiceRole.entities.CollabGroupMessage.deleteMany({ group_id: groupId });
-        await base44.asServiceRole.entities.CollabGroup.delete(groupId);
-
-        if (remainingIds.length === 1) {
-          const otherId = remainingIds[0];
-          await base44.asServiceRole.entities.NetworkMatch.deleteMany({
-            conversation_id: [user.id, otherId].sort().join('_')
-          });
-          await base44.asServiceRole.entities.NetworkSwipe.deleteMany({ swiper_user_id: user.id, target_user_id: otherId });
-          await base44.asServiceRole.entities.NetworkSwipe.deleteMany({ swiper_user_id: otherId, target_user_id: user.id });
-
-          const myName = await stageName(user.id, user.full_name);
-          await base44.asServiceRole.entities.Notification.create({
-            user_id: otherId,
-            type: 'message',
-            title: `${myName} left your collab`,
-            body: 'You are no longer connected on Talent Network.',
-            link_url: '/TalentNetwork',
-            is_read: false
-          });
+      // A pair's collab: leaving disconnects the two on Talent Network, but the
+      // chat and its whole history stay in Messages — nothing is ever erased.
+      if (remainingIds.length === 1) {
+        const otherId = remainingIds[0];
+        const conversationId = [user.id, otherId].sort().join('_');
+        const matches = await base44.asServiceRole.entities.NetworkMatch.filter({ conversation_id: conversationId });
+        if (!matches || matches.length === 0) {
+          return Response.json({ error: 'You are already disconnected from this performer' }, { status: 400 });
         }
 
+        await base44.asServiceRole.entities.NetworkMatch.deleteMany({ conversation_id: conversationId });
+        await base44.asServiceRole.entities.NetworkSwipe.deleteMany({ swiper_user_id: user.id, target_user_id: otherId });
+        await base44.asServiceRole.entities.NetworkSwipe.deleteMany({ swiper_user_id: otherId, target_user_id: user.id });
+
+        await base44.asServiceRole.entities.CollabGroupMessage.create({
+          group_id: groupId,
+          sender_id: user.id,
+          sender_name: myName,
+          content: `${myName} disconnected from Talent Network — this chat stays open`
+        });
+
+        await base44.asServiceRole.entities.Notification.create({
+          user_id: otherId,
+          type: 'message',
+          title: `${myName} disconnected from your collab`,
+          body: 'Your chat and its history are still in Messages.',
+          link_url: '/Messages',
+          is_read: false
+        });
+
+        return Response.json({ group });
+      }
+
+      // Only member left in a broken group — nothing to keep
+      if (remainingIds.length === 0) {
+        await base44.asServiceRole.entities.CollabGroupMessage.deleteMany({ group_id: groupId });
+        await base44.asServiceRole.entities.CollabGroup.delete(groupId);
         return Response.json({ left: true });
       }
 
@@ -172,7 +185,6 @@ export default async function(req) {
         member_ids: remainingIds,
         member_names: remainingNames
       });
-      const myName = await stageName(user.id, user.full_name);
       await base44.asServiceRole.entities.CollabGroupMessage.create({
         group_id: groupId,
         sender_id: user.id,

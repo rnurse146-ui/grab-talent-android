@@ -199,8 +199,8 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
               <AlertDialogHeader>
                 <AlertDialogTitle>Leave this collab?</AlertDialogTitle>
                 <AlertDialogDescription className="text-zinc-400">
-                  You'll be removed from the group. If it's just the two of you, the group closes and you're
-                  disconnected from them on Talent Network.
+                  With more than two performers you're taken out of the group. If it's just the two of you,
+                  you'll be disconnected on Talent Network — this chat and its history stay open.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
