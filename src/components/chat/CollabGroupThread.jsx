@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { format, isToday } from 'date-fns';
-import { ArrowLeft, Ban, Flag, Loader2, LogOut, Pencil, Send, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, Ban, Flag, Loader2, LogOut, Pencil, Send, Unlock, UserPlus, Users } from 'lucide-react';
 import ReportDialog from '@/components/safety/ReportDialog';
-import { blockUser } from '@/lib/safety';
+import { blockUser, listMyBlocks, unblockUser } from '@/lib/safety';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -33,6 +33,7 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
   const [leaving, setLeaving] = useState(false);
   const [reportTarget, setReportTarget] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
+  const [blockedIds, setBlockedIds] = useState([]);
   const endRef = useRef(null);
 
   // Everyone else in the group is a possible report target
@@ -128,14 +129,31 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
     }
   };
 
-  // Block straight from the flag menu — reversible from Settings
+  // Block or unblock straight from the flag menu
+  const loadBlocked = async () => {
+    const rows = await listMyBlocks();
+    setBlockedIds(rows.map(r => r.blocked_user_id));
+  };
+
   const blockMember = async (member) => {
     try {
       await blockUser(member.userId);
+      setBlockedIds(prev => [...prev, member.userId]);
       setError(`You blocked ${member.name} — they can no longer post here.`);
       onGroupChange?.();
     } catch (e) {
       setError(e?.response?.data?.error || 'Could not block this member.');
+    }
+  };
+
+  const unblockMember = async (member) => {
+    try {
+      await unblockUser(member.userId);
+      setBlockedIds(prev => prev.filter(id => id !== member.userId));
+      setError(`You unblocked ${member.name}.`);
+      onGroupChange?.();
+    } catch (e) {
+      setError(e?.response?.data?.error || 'Could not unblock this member.');
     }
   };
 
@@ -201,7 +219,7 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
 
         <div className="ml-auto flex items-center gap-1 shrink-0">
           {otherMembers.length > 0 && (
-            <DropdownMenu>
+            <DropdownMenu onOpenChange={(open) => open && loadBlocked()}>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
@@ -224,14 +242,25 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
                   </DropdownMenuItem>
                 ))}
                 {otherMembers.map(m => (
-                  <DropdownMenuItem
-                    key={`block_${m.userId}`}
-                    onClick={() => blockMember(m)}
-                    className="cursor-pointer text-red-400 focus:bg-zinc-800 focus:text-red-300"
-                  >
-                    <Ban className="w-4 h-4 mr-2" />
-                    Block {m.name}
-                  </DropdownMenuItem>
+                  blockedIds.includes(m.userId) ? (
+                    <DropdownMenuItem
+                      key={`unblock_${m.userId}`}
+                      onClick={() => unblockMember(m)}
+                      className="cursor-pointer focus:bg-zinc-800 focus:text-white"
+                    >
+                      <Unlock className="w-4 h-4 mr-2" />
+                      Unblock {m.name}
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem
+                      key={`block_${m.userId}`}
+                      onClick={() => blockMember(m)}
+                      className="cursor-pointer text-red-400 focus:bg-zinc-800 focus:text-red-300"
+                    >
+                      <Ban className="w-4 h-4 mr-2" />
+                      Block {m.name}
+                    </DropdownMenuItem>
+                  )
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
