@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Compass, Calendar, MessageSquare, Settings as SettingsIcon, LayoutDashboard, LogIn } from 'lucide-react';
+import { Compass, Calendar, MessageSquare, Settings as SettingsIcon, LayoutDashboard, LogIn, Users, Bookmark } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { trackLocation, getTabLocation } from '@/lib/tabNavigation';
 
 const TABS = [
-  { to: '/Dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+  { to: '/Dashboard', label: 'Home', Icon: LayoutDashboard },
   { to: '/Discover', label: 'Discover', Icon: Compass },
+  { to: '/TalentNetwork', label: 'Matches', Icon: Users },
+  { to: '/MaybeList', label: 'Maybe', Icon: Bookmark },
   { to: '/Bookings', label: 'Bookings', Icon: Calendar },
   { to: '/Messages', label: 'Messages', Icon: MessageSquare },
   { to: '/Settings', label: 'Settings', Icon: SettingsIcon },
@@ -103,9 +105,9 @@ export default function MobileTabBar() {
               key={to}
               type="button"
               onClick={(e) => handleTabTap(e, to)}
-              className={`flex flex-col items-center justify-center gap-1 flex-1 text-[11px] font-medium transition-colors ${isActive ? 'text-white' : 'text-zinc-500'}`}
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 px-0.5 text-[10px] leading-tight font-medium transition-colors ${isActive ? 'text-white' : 'text-zinc-500'}`}
             >
-              <Icon className={`w-5 h-5 ${isActive ? 'text-purple-400' : ''}`} />
+              <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-purple-400' : ''}`} />
               <span>{label}</span>
             </button>
           );
