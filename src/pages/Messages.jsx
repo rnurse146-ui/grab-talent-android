@@ -569,6 +569,7 @@ export default function Messages() {
                 <div className="ml-auto">
                   <SafetyMenu
                     userId={activeConv.otherId}
+                    currentUserId={user?.id}
                     name={activeConv.otherName}
                     context="direct_chat"
                     conversationId={activeConvId}

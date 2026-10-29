@@ -9,11 +9,12 @@ import { blockUser, unblockUser } from '@/lib/safety';
 
 // Report / block control for a member, used on their profile and in a chat.
 export default function SafetyMenu({
-  userId, name, profileId, context, conversationId, excerpt = '', className = '', trigger = null, onBlocked
+  userId, currentUserId, name, profileId, context, conversationId, excerpt = '', className = '', trigger = null, onBlocked
 }) {
   const [reportOpen, setReportOpen] = useState(false);
   const [isBlocked, setIsBlocked] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
 
   // Know whether this member is already blocked, so the menu offers Unblock
   const checkBlocked = async () => {
@@ -30,6 +31,7 @@ export default function SafetyMenu({
   const toggleBlock = async () => {
     if (busy) return;
     setBusy(true);
+    setError('');
     try {
       if (isBlocked) {
         await unblockUser(userId);
@@ -39,12 +41,15 @@ export default function SafetyMenu({
         setIsBlocked(true);
         onBlocked?.();
       }
+    } catch (e) {
+      setError(e?.response?.data?.error || e?.data?.error || 'Could not update this block. Please try again.');
     } finally {
       setBusy(false);
     }
   };
 
-  if (!userId) return null;
+  // Never offer block or report on your own account
+  if (!userId || userId === currentUserId) return null;
 
   return (
     <>
@@ -73,6 +78,11 @@ export default function SafetyMenu({
             {isBlocked ? <Undo2 className="w-4 h-4 mr-2" /> : <Ban className="w-4 h-4 mr-2" />}
             {isBlocked ? 'Unblock' : 'Block'}
           </DropdownMenuItem>
+          {error && (
+            <DropdownMenuItem disabled className="text-xs text-red-400 focus:bg-transparent whitespace-normal">
+              {error}
+            </DropdownMenuItem>
+          )}
           {isBlocked && (
             <DropdownMenuItem disabled className="text-xs text-zinc-500 focus:bg-transparent">
               <ShieldCheck className="w-3.5 h-3.5 mr-2" />

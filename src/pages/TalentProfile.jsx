@@ -206,6 +206,7 @@ export default function TalentProfile() {
                     <Link to={createPageUrl('Messages') + `?to=${profile.user_id}`}><Button size="lg" variant="outline" className="border-zinc-700 bg-transparent"><MessageSquare className="w-5 h-5 mr-2" />Message</Button></Link>
                     <SafetyMenu
                       userId={profile.user_id}
+                      currentUserId={user?.id}
                       name={profile.stage_name}
                       profileId={profile.id}
                       context="profile"

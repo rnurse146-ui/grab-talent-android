@@ -259,6 +259,7 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
                 {!isMe && (
                   <SafetyMenu
                     userId={msg.sender_id}
+                    currentUserId={user?.id}
                     name={msg.sender_name}
                     context="collab_chat"
                     conversationId={groupId}
