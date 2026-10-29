@@ -368,6 +368,23 @@ export default function Messages() {
     setGroups(await listCollabGroups().catch(() => []));
   };
 
+  // Groups are loaded once on mount — refresh them while the page is open so a
+  // new collab group shows up on both performers' accounts without a reload.
+  useEffect(() => {
+    const pull = () => listCollabGroups().then(setGroups).catch(() => {});
+    const timer = setInterval(pull, 15000);
+    window.addEventListener('focus', pull);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('focus', pull);
+    };
+  }, []);
+
+  const refreshAll = async () => {
+    await refreshMessages();
+    await refreshGroups();
+  };
+
   const handleGroupCreated = async (group) => {
     setGroups(await listCollabGroups().catch(() => []));
     if (group?.id) setSearchParams({ group: group.id });
@@ -434,7 +451,7 @@ export default function Messages() {
             onNew={() => setShowNewGroup(true)}
           />
 
-          <PullToRefresh onRefresh={refreshMessages} className="flex-1 overflow-y-auto">
+          <PullToRefresh onRefresh={refreshAll} className="flex-1 overflow-y-auto">
             {conversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-3 p-8">
                 <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center">
