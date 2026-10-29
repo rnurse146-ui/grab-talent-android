@@ -11,6 +11,8 @@ import {
   MessageSquare, Star, User, Phone, CalendarX, ShieldCheck, CalendarPlus, CalendarClock
 } from 'lucide-react';
 import AmendDateDialog from '@/components/booking/AmendDateDialog';
+import ReviewRequestCard from '@/components/booking/ReviewRequestCard';
+import { hasEventPassed } from '@/lib/eventDate';
 import { downloadBookingIcs } from '@/lib/calendarInvite';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
@@ -43,6 +45,7 @@ export default function BookingDetails() {
   const [submittingRating, setSubmittingRating] = useState(false);
   const [talentProfile, setTalentProfile] = useState(null);
   const [showAmendDate, setShowAmendDate] = useState(false);
+  const [hasReview, setHasReview] = useState(false);
 
   useEffect(() => { loadData(); }, [bookingId]);
 
@@ -53,6 +56,8 @@ export default function BookingDetails() {
       const bookings = await base44.entities.Booking.filter({ id: bookingId });
       if (bookings.length > 0) {
         setBooking(bookings[0]);
+        const reviews = await base44.entities.Review.filter({ booking_id: bookings[0].id });
+        setHasReview((reviews || []).length > 0);
         if (bookings[0].talent_profile_id) {
           const profiles = await base44.entities.TalentProfile.filter({ id: bookings[0].talent_profile_id });
           if (profiles.length > 0) setTalentProfile(profiles[0]);
@@ -87,6 +92,7 @@ export default function BookingDetails() {
     // Review validation and the talent's rating aggregates are handled server-side
     await base44.functions.invoke('submitReview', { booking_id: booking.id, rating: quickRating });
     setRatingSubmitted(true);
+    setHasReview(true);
     setSubmittingRating(false);
   };
 
@@ -124,6 +130,13 @@ export default function BookingDetails() {
   const isSeeker = booking.seeker_id === user?.id;
   const isTalent = booking.talent_user_id === user?.id;
   const otherUserId = isSeeker ? booking.talent_user_id : booking.seeker_id;
+
+  // Ask for a review once the event is behind us (the daily reminder also nudges
+  // the seeker in their notifications with a link back to this booking)
+  const showReviewRequest = isSeeker && !hasReview && (
+    booking.status === 'completed' ||
+    (booking.status === 'confirmed' && hasEventPassed(booking.event_date))
+  );
 
   // Show payment release when: seeker + booking is confirmed + payment not yet released
   const showPaymentRelease = isSeeker &&
@@ -293,13 +306,8 @@ export default function BookingDetails() {
             </div>
           )}
 
-          {isSeeker && booking.status === 'completed' && (
-            <Link to={createPageUrl('WriteReview') + `?booking_id=${booking.id}`}>
-              <Button className="w-full bg-white text-black hover:bg-zinc-100">
-                <Star className="w-4 h-4 mr-2" />
-                Leave a Review
-              </Button>
-            </Link>
+          {showReviewRequest && (
+            <ReviewRequestCard booking={booking} onSubmitted={() => setHasReview(true)} />
           )}
 
           {['accepted', 'confirmed', 'completed'].includes(booking.status) && (

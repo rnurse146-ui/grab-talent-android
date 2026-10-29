@@ -27,7 +27,14 @@ export default async function(req) {
     if (!booking) return Response.json({ error: 'Booking not found' }, { status: 404 });
 
     if (booking.seeker_id !== user.id) return Response.json({ error: 'Only the seeker can review this booking' }, { status: 403 });
-    if (booking.status !== 'completed') return Response.json({ error: 'Only completed bookings can be reviewed' }, { status: 403 });
+
+    // Reviewable once the event has taken place: completed bookings, or confirmed
+    // bookings whose event date is now behind us (the daily reminder nudges those).
+    const ukToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+    const eventPassed = booking.event_date && String(booking.event_date).slice(0, 10) < ukToday;
+    if (booking.status !== 'completed' && !(booking.status === 'confirmed' && eventPassed)) {
+      return Response.json({ error: 'You can leave a review once the event has taken place' }, { status: 403 });
+    }
 
     const existing = await base44.asServiceRole.entities.Review.filter({ booking_id: bookingId });
     if (existing && existing.length > 0) return Response.json({ error: 'A review was already submitted for this booking' }, { status: 409 });

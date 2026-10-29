@@ -161,6 +161,18 @@
     },
     "talent_category": {
       "type": "string"
+    },
+    "review_reminder_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by the sendReviewReminders scheduled function once the seeker has been nudged to review a past event",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
     }
   },
   "required": [
