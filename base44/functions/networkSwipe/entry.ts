@@ -103,6 +103,22 @@ export default async function(req) {
         is_read: false
       });
 
+      // A group chat is opened for the pair automatically, so more performers can
+      // be pulled into the collab later. The one-to-one chat stays as it is.
+      const group = await base44.asServiceRole.entities.CollabGroup.create({
+        name: `${myName} & ${theirName}`,
+        owner_id: user.id,
+        member_ids: [user.id, target.user_id],
+        member_names: [myName, theirName]
+      });
+
+      await base44.asServiceRole.entities.CollabGroupMessage.create({
+        group_id: group.id,
+        sender_id: user.id,
+        sender_name: myName,
+        content: `🎉 ${myName} and ${theirName} matched — plan your collab here!`
+      });
+
       await base44.asServiceRole.entities.Notification.bulkCreate([
         {
           user_id: user.id,
