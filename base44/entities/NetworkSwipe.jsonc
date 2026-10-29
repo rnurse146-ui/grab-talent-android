@@ -30,6 +30,18 @@
       "type": "boolean",
       "default": false,
       "description": "Whether the person receiving a one-way collab request has already been shown the pop-up \u2014 written only by the collabPings backend function"
+    },
+    "reminder_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the pending-request reminder (in-app and email) has already gone out for this request \u2014 written only by the sendPendingRequestReminders backend function",
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
     }
   },
   "required": [

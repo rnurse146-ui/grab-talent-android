@@ -1,0 +1,44 @@
+{
+  "name": "Pending Request Reminders",
+  "description": "Every day at midday, nudges performers by notification and email when a collab request is still waiting for their reply",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 12 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/London",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "pending_request_reminders",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "send_pending_request_reminders": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendPendingRequestReminders"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Remind waiting requests",
+            "description": "Unanswered collab requests by notification and email"
+          }
+        }
+      }
+    ]
+  }
+}
