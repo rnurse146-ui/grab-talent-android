@@ -22,7 +22,7 @@ import { toast } from '@/components/ui/use-toast';
 import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
 import { rankTalents } from '@/lib/discoveryRanking';
 import { normalizeCity, cityMatches, geocodeCityCached } from '@/lib/cityMatch';
-import { getGuestMaybes, addGuestMaybe } from '@/lib/guestMaybeList';
+import { getGuestMaybes, addGuestMaybe, mergeGuestMaybes } from '@/lib/guestMaybeList';
 
 // Categories live in @/lib/talentCategories so Discover and Talent Network stay in step.
 
@@ -108,6 +108,8 @@ export default function Discover() {
     let swipedSet = new Set();
     if (authed) {
       currentUser = await base44.auth.me();
+      // Anything saved on this device while browsing as a guest belongs to the account
+      await mergeGuestMaybes(currentUser.id);
       const [history, maybe] = await Promise.all([
         base44.entities.SwipeHistory.filter({ seeker_id: currentUser.id }),
         base44.entities.MaybeList.filter({ seeker_id: currentUser.id })

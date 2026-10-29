@@ -11,7 +11,7 @@ import CompareView from '@/components/maybe/CompareView';
 import PageHeader from '@/components/PageHeader';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
 import { toast } from '@/components/ui/use-toast';
-import { getGuestMaybes, removeGuestMaybe, clearGuestMaybes } from '@/lib/guestMaybeList';
+import { getGuestMaybes, removeGuestMaybe, mergeGuestMaybes } from '@/lib/guestMaybeList';
 
 export default function MaybeList() {
   const [isGuest, setIsGuest] = useState(false);
@@ -37,19 +37,6 @@ export default function MaybeList() {
 
   useEffect(() => { loadData(); }, []);
 
-  // Move any guest-saved talents into the signed-in user's Maybe List
-  const mergeGuestMaybes = async (currentUser) => {
-    const guestItems = getGuestMaybes();
-    if (guestItems.length === 0) return;
-    const existing = await base44.entities.MaybeList.filter({ seeker_id: currentUser.id });
-    const existingIds = new Set(existing.map(item => item.talent_profile_id));
-    const toCreate = guestItems
-      .filter(item => !existingIds.has(item.talent_profile_id))
-      .map(({ id, ...rest }) => ({ ...rest, seeker_id: currentUser.id }));
-    if (toCreate.length > 0) await base44.entities.MaybeList.bulkCreate(toCreate);
-    clearGuestMaybes();
-  };
-
   const loadData = async () => {
     let currentUser = null;
     try {
@@ -59,7 +46,7 @@ export default function MaybeList() {
     }
     if (currentUser) {
       setCurrentUser(currentUser);
-      await mergeGuestMaybes(currentUser);
+      await mergeGuestMaybes(currentUser.id);
       const page = await base44.entities.MaybeList.filter({ seeker_id: currentUser.id }, { sort: '-created_date' });
       setMaybeList(page.items);
     } else {

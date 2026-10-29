@@ -1,5 +1,7 @@
 // Guest Maybe List — saved on this device only until the guest signs in,
-// then merged into their real Maybe List by the MaybeList page.
+// then merged into their real Maybe List so the account shows it everywhere.
+import { base44 } from '@/api/base44Client';
+
 const KEY = 'gt_guest_maybes';
 
 export function getGuestMaybes() {
@@ -36,4 +38,19 @@ export function removeGuestMaybe(id) {
 
 export function clearGuestMaybes() {
   try { localStorage.removeItem(KEY); } catch { /* storage unavailable */ }
+}
+
+// Move anything saved on this device into the signed-in account, so a list
+// built while browsing as a guest on the phone also appears on the web.
+export async function mergeGuestMaybes(userId) {
+  const guestItems = getGuestMaybes();
+  if (!userId || guestItems.length === 0) return 0;
+  const existing = await base44.entities.MaybeList.filter({ seeker_id: userId });
+  const existingIds = new Set(existing.map(item => item.talent_profile_id));
+  const toCreate = guestItems
+    .filter(item => !existingIds.has(item.talent_profile_id))
+    .map(({ id, ...rest }) => ({ ...rest, seeker_id: userId }));
+  if (toCreate.length > 0) await base44.entities.MaybeList.bulkCreate(toCreate);
+  clearGuestMaybes();
+  return toCreate.length;
 }
