@@ -20,6 +20,7 @@ import CollabGroupList from '@/components/chat/CollabGroupList';
 import CollabGroupThread from '@/components/chat/CollabGroupThread';
 import NewCollabGroupDialog from '@/components/chat/NewCollabGroupDialog';
 import { listCollabGroups } from '@/lib/collabGroups';
+import SafetyMenu from '@/components/safety/SafetyMenu';
 
 function formatTime(dateStr) {
   const d = new Date(dateStr);
@@ -564,6 +565,15 @@ export default function Messages() {
                     <RoleBadge role={roleFor(activeConv.otherId)} />
                   </div>
                   <p className="text-xs text-green-400">● Online</p>
+                </div>
+                <div className="ml-auto">
+                  <SafetyMenu
+                    userId={activeConv.otherId}
+                    name={activeConv.otherName}
+                    context="direct_chat"
+                    conversationId={activeConvId}
+                    onBlocked={() => setBlockedWarning('You blocked this member — messages are closed both ways.')}
+                  />
                 </div>
               </div>
 

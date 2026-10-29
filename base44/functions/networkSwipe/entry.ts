@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { blockBetween } from '../../shared/blocking.ts';
 
 // Opening message both sides find in Messages as soon as a collab match happens.
 const OPENING_MESSAGE = '🎉 We matched on Talent Network — let\'s talk about working together!';
@@ -32,6 +33,9 @@ export default async function(req) {
     }
     if (target.network_open !== true) {
       return Response.json({ error: 'That performer is not open to collabs' }, { status: 400 });
+    }
+    if (await blockBetween(base44, user.id, target.user_id)) {
+      return Response.json({ error: 'You cannot connect with this performer.' }, { status: 403 });
     }
 
     // One answer per pair — re-swiping replaces the earlier one

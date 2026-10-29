@@ -31,6 +31,7 @@ const MaybeListPage = lazy(() => import('./pages/MaybeList'));
 const SettingsPage = lazy(() => import('./pages/Settings'));
 const TalentProfilePage = lazy(() => import('./pages/TalentProfile'));
 const TalentNetworkPage = lazy(() => import('./pages/TalentNetwork'));
+const AdminReportsPage = lazy(() => import('./pages/AdminReports'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -175,6 +176,7 @@ const AppRoutes = ({ location }) => (
         <Route path="/booking-history" element={<LayoutWrapper currentPageName="booking-history"><BookingHistoryPage /></LayoutWrapper>} />
         <Route path="/account-security" element={<LayoutWrapper currentPageName="account-security"><AccountSecurityPage /></LayoutWrapper>} />
         <Route path="/Notifications" element={<LayoutWrapper currentPageName="Notifications"><NotificationsPage /></LayoutWrapper>} />
+        <Route path="/AdminReports" element={<LayoutWrapper currentPageName="AdminReports"><AdminReportsPage /></LayoutWrapper>} />
         <Route path="/TalentNetwork" element={<LayoutWrapper currentPageName="TalentNetwork"><TalentNetworkPage /></LayoutWrapper>} />
       </Route>
 

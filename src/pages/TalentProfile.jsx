@@ -16,6 +16,9 @@ import AvailabilityManager from '@/components/talent/AvailabilityManager';
 import ShareProfile from '@/components/talent/ShareProfile';
 import PageHeader from '@/components/PageHeader';
 import Logo from '@/components/Logo';
+import SafetyMenu from '@/components/safety/SafetyMenu';
+import { getHiddenUserIds } from '@/lib/safety';
+import { Ban } from 'lucide-react';
 
 export default function TalentProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -33,6 +36,8 @@ export default function TalentProfile() {
   const [isOwner, setIsOwner] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
+  // Hidden because of a block in either direction — the profile is unavailable
+  const [blocked, setBlocked] = useState(false);
 
   useEffect(() => { loadData(); }, [profileId]);
 
@@ -44,6 +49,10 @@ export default function TalentProfile() {
       let currentUser = null;
       try { currentUser = await base44.auth.me(); setUser(currentUser); } catch {}
       setIsOwner(currentUser ? profileData.user_id === currentUser.id : false);
+      if (currentUser && profileData.user_id !== currentUser.id) {
+        const hidden = await getHiddenUserIds();
+        setBlocked(hidden.includes(profileData.user_id));
+      }
       const profileReviews = await base44.entities.Review.filter({ talent_profile_id: profileId }, '-created_date', 10);
       setReviews(profileReviews);
     } catch (e) {
@@ -54,6 +63,17 @@ export default function TalentProfile() {
 
   if (loading) return (<div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>);
   if (!profile) return (<div className="min-h-screen bg-black text-white flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold mb-4">Profile not found</h1><Link to={createPageUrl('Dashboard')}><Button>Go to Dashboard</Button></Link></div></div>);
+
+  if (blocked) return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
+      <div className="text-center max-w-sm">
+        <Ban className="w-10 h-10 text-zinc-600 mx-auto mb-4" />
+        <h1 className="text-xl font-bold mb-2">This profile isn't available</h1>
+        <p className="text-zinc-400 mb-6">You can't view or book this performer.</p>
+        <Button onClick={() => navigate(-1)} className="bg-white text-black hover:bg-zinc-200">Go back</Button>
+      </div>
+    </div>
+  );
 
   const socialLinks = [
     { key: 'instagram', url: profile.social_links?.instagram, Icon: Instagram },
@@ -184,6 +204,13 @@ export default function TalentProfile() {
                   <>
                     <Link to={createPageUrl('BookTalent') + `?talent_id=${profile.id}${eventDate ? '&event_date=' + eventDate : ''}${eventName ? '&event_name=' + encodeURIComponent(eventName) : ''}`}><Button size="lg" className="bg-white text-black hover:bg-zinc-100"><Calendar className="w-5 h-5 mr-2" />Book Now</Button></Link>
                     <Link to={createPageUrl('Messages') + `?to=${profile.user_id}`}><Button size="lg" variant="outline" className="border-zinc-700 bg-transparent"><MessageSquare className="w-5 h-5 mr-2" />Message</Button></Link>
+                    <SafetyMenu
+                      userId={profile.user_id}
+                      name={profile.stage_name}
+                      profileId={profile.id}
+                      context="profile"
+                      className="border border-zinc-700 h-10 w-10"
+                    />
                   </>
                 )}
               </div>

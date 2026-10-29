@@ -13,6 +13,7 @@ import BookingCalendar from '@/components/settings/BookingCalendar';
 import HiredTalentList from '@/components/settings/HiredTalentList';
 import BookingMessages from '@/components/settings/BookingMessages';
 import HelpSection from '@/components/settings/HelpSection';
+import BlockedPeople from '@/components/settings/BlockedPeople';
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel,
@@ -91,6 +92,7 @@ export default function Settings() {
           <BookingCalendar bookings={roleBookings} />
           <BookingMessages user={user} />
           {user?.user_type !== 'talent' && <HiredTalentList user={user} bookings={bookings} />}
+          <BlockedPeople />
           <HelpSection />
         </div>
 

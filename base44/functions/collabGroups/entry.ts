@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { hiddenUserIds } from '../../shared/blocking.ts';
 
 const MAX_MEMBERS = 20;
 const MAX_MESSAGE = 2000;
@@ -210,6 +211,14 @@ export default async function(req) {
     if (action === 'send') {
       const content = String(body?.content || '').trim().slice(0, MAX_MESSAGE);
       if (!content) return Response.json({ error: 'Message cannot be empty' }, { status: 400 });
+
+      // Someone blocked in this group cannot post into it — the block applies
+      // to shared collab chats too, not just direct messages.
+      const hidden = new Set(await hiddenUserIds(base44, user.id));
+      if ((group.member_ids || []).some((id) => id !== user.id && hidden.has(id))) {
+        return Response.json({ error: 'You can no longer post in this collab.' }, { status: 403 });
+      }
+
       const myName = await stageName(user.id, user.full_name);
       const message = await base44.asServiceRole.entities.CollabGroupMessage.create({
         group_id: groupId,

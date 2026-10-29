@@ -23,6 +23,7 @@ import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talent
 import { rankTalents } from '@/lib/discoveryRanking';
 import { normalizeCity, cityMatches, geocodeCityCached } from '@/lib/cityMatch';
 import { getGuestMaybes, addGuestMaybe, mergeGuestMaybes } from '@/lib/guestMaybeList';
+import { getHiddenUserIds } from '@/lib/safety';
 
 // Categories live in @/lib/talentCategories so Discover and Talent Network stay in step.
 
@@ -44,6 +45,8 @@ export default function Discover() {
   })();
   const resume = returningFromProfile ? savedDeck : null;
   const resumeTalentIdRef = useRef(resume?.currentTalentId || null);
+  // Members hidden by a block in either direction never reach the deck
+  const hiddenIdsRef = useRef(new Set());
   const [user, setUser] = useState(null);
   const [talents, setTalents] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -110,6 +113,7 @@ export default function Discover() {
       currentUser = await base44.auth.me();
       // Anything saved on this device while browsing as a guest belongs to the account
       await mergeGuestMaybes(currentUser.id);
+      hiddenIdsRef.current = new Set(await getHiddenUserIds());
       const [history, maybe] = await Promise.all([
         base44.entities.SwipeHistory.filter({ seeker_id: currentUser.id }),
         base44.entities.MaybeList.filter({ seeker_id: currentUser.id })
@@ -148,8 +152,10 @@ export default function Discover() {
     const allTalents = await base44.entities.TalentProfile.filter(query, '-average_rating', 200);
     
     // Saved to the Maybe List: never shown again, whatever the search
+    const visibleTalents = allTalents.filter(t => !hiddenIdsRef.current.has(t.user_id));
+
     let localIds = new Set();
-    let filtered = allTalents.filter(t => !maybeIdsRef.current.has(t.id));
+    let filtered = visibleTalents.filter(t => !maybeIdsRef.current.has(t.id));
 
     if (filters.categories.length > 0) {
       filtered = filtered.filter(t => {

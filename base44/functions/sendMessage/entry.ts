@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { blockBetween } from '../../shared/blocking.ts';
 
 // Server-side copy of the off-platform contact filter (see src/lib/messageFilter.js).
 // Messages are created ONLY here, so a direct SDK/API call cannot bypass the block.
@@ -49,6 +50,11 @@ export default async function(req) {
     }
     if (receiverId === user.id) {
       return Response.json({ error: 'You cannot message yourself' }, { status: 400 });
+    }
+
+    // A block stops messages in both directions
+    if (await blockBetween(base44, user.id, receiverId)) {
+      return Response.json({ error: 'This conversation is closed — you can no longer message this person.' }, { status: 403 });
     }
 
     // Identity is server-resolved, never taken from the request body — a caller

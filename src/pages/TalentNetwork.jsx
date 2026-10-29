@@ -13,6 +13,7 @@ import NetworkFilters from '@/components/network/NetworkFilters';
 import NetworkDeckCard from '@/components/network/NetworkDeckCard';
 import NetworkMatchCelebration from '@/components/network/NetworkMatchCelebration';
 import CollabCelebration from '@/components/network/CollabCelebration';
+import { getHiddenUserIds } from '@/lib/safety';
 
 // Talent Network — performers connecting with performers for gigs and
 // collaborations. Completely separate from the hire deck on Discover.
@@ -39,7 +40,8 @@ export default function TalentNetwork() {
       base44.entities.TalentProfile.filter({ network_open: true }, '-average_rating', 200)
     ]);
     const answered = new Set((swipes || []).map(s => s.target_profile_id));
-    let list = (all || []).filter(t => t.id !== myProfile.id && !answered.has(t.id));
+    const hidden = new Set(await getHiddenUserIds());
+    let list = (all || []).filter(t => t.id !== myProfile.id && !answered.has(t.id) && !hidden.has(t.user_id));
 
     if (activeFilters.categories.length > 0) {
       list = list.filter(t => {

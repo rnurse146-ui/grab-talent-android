@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { format, isToday } from 'date-fns';
-import { ArrowLeft, Loader2, LogOut, Pencil, Send, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, Flag, Loader2, LogOut, Pencil, Send, UserPlus, Users } from 'lucide-react';
+import SafetyMenu from '@/components/safety/SafetyMenu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -255,6 +256,26 @@ export default function CollabGroupThread({ groupId, user, initialGroup, onBack,
                     {format(new Date(msg.created_date), isToday(new Date(msg.created_date)) ? 'HH:mm' : 'MMM d, HH:mm')}
                   </p>
                 </div>
+                {!isMe && (
+                  <SafetyMenu
+                    userId={msg.sender_id}
+                    name={msg.sender_name}
+                    context="collab_chat"
+                    conversationId={groupId}
+                    excerpt={msg.content}
+                    onBlocked={() => setError('You blocked this member — they can no longer post here.')}
+                    trigger={
+                      <button
+                        type="button"
+                        aria-label={`Report or block ${msg.sender_name}`}
+                        title="Report or block"
+                        className="p-1 text-zinc-600 hover:text-amber-400 shrink-0"
+                      >
+                        <Flag className="w-3.5 h-3.5" />
+                      </button>
+                    }
+                  />
+                )}
               </div>
             );
           })

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
-import { Search, Star, Loader2, LogOut, Users } from 'lucide-react';
+import { Search, Star, Loader2, LogOut, Users, ShieldAlert } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import Logo from '@/components/Logo';
 import { Link, useNavigate } from 'react-router-dom';
@@ -190,6 +190,12 @@ export default function Dashboard() {
                   <Users className="w-4 h-4 mr-2" />
                   Switch account
                 </DropdownMenuItem>
+                {user?.role === 'admin' && (
+                  <DropdownMenuItem onClick={() => navigate('/AdminReports')} className="cursor-pointer focus:bg-zinc-800 focus:text-white">
+                    <ShieldAlert className="w-4 h-4 mr-2" />
+                    Reported content
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer focus:bg-zinc-800 focus:text-white">
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign out
