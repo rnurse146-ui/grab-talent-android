@@ -28,22 +28,13 @@ import { getHiddenUserIds } from '@/lib/safety';
 // Categories live in @/lib/talentCategories so Discover and Talent Network stay in step.
 
 export default function Discover() {
-  // Session deck memory: coming back from a talent profile resumes the deck
-  // instead of restarting the "what are you looking for" wizard
+  // Session deck memory: coming back to Discover from a talent profile (or any
+  // other detour) resumes the deck where it was left, instead of restarting the
+  // "what are you looking for" wizard. The wizard only opens a fresh search.
   const savedDeck = (() => {
     try { return JSON.parse(sessionStorage.getItem('gt_discover_state') || 'null'); } catch { return null; }
   })();
-  // Only resume the deck (and its previous search) when we're coming straight
-  // back from a talent profile. Opening Discover any other way starts a fresh
-  // search at the "what are you looking for" step.
-  const returningFromProfile = (() => {
-    try {
-      const flag = sessionStorage.getItem('gt_resume_deck') === '1';
-      sessionStorage.removeItem('gt_resume_deck');
-      return flag;
-    } catch { return false; }
-  })();
-  const resume = returningFromProfile ? savedDeck : null;
+  const resume = savedDeck?.done ? savedDeck : null;
   const resumeTalentIdRef = useRef(resume?.currentTalentId || null);
   // Members hidden by a block in either direction never reach the deck
   const hiddenIdsRef = useRef(new Set());
@@ -58,7 +49,7 @@ export default function Discover() {
   const [eventDate, setEventDate] = useState(savedDeck?.eventDate || '');
   const [lastPass, setLastPass] = useState(null);
   const [passedCount, setPassedCount] = useState(0);
-  const [showWelcome, setShowWelcome] = useState(!(resume && resume.done));
+  const [showWelcome, setShowWelcome] = useState(!resume);
   const [welcomeStep, setWelcomeStep] = useState(1);
   const WELCOME_STEPS = 3;
   const dragX = useRef(0);
@@ -1046,10 +1037,7 @@ export default function Discover() {
                       {currentTalent.bio && (<p className="text-sm text-slate-300 line-clamp-2">{currentTalent.bio}</p>)}
                       <Link
                         to={`/TalentProfile?id=${currentTalent.id}${eventDate ? '&event_date=' + eventDate : ''}`}
-                        onClick={e => {
-                          e.stopPropagation();
-                          try { sessionStorage.setItem('gt_resume_deck', '1'); } catch { /* ignore */ }
-                        }}
+                        onClick={e => e.stopPropagation()}
                         className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-black bg-white hover:bg-zinc-200 rounded-full px-5 py-2.5 shadow-lg transition-colors"
                       >
                         <User className="w-4 h-4" /> View full profile

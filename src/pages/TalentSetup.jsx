@@ -80,6 +80,11 @@ const TALENT_CATEGORIES = [
   { value: 'mc_entertainer', label: 'MC / Entertainer', icon: '🎙️' },
 ];
 
+const EMPTY_FORM = { stage_name: '', talent_category: '', talent_categories: [], bio: '', hourly_rate: '', evening_rate: '', day_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [], last_minute_available: false, social_links: { instagram: '', tiktok: '', facebook: '', youtube: '', website: '' } };
+
+// Unfinished wizard answers live on this device, keyed to the person filling it in
+const draftKey = (userId) => `gt_talentsetup_draft_${userId}`;
+
 export default function TalentSetup() {
   const urlParams = new URLSearchParams(window.location.search);
   const isEdit = urlParams.get('edit') === 'true';
@@ -92,7 +97,7 @@ export default function TalentSetup() {
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profileVideo, setProfileVideo] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState({ stage_name: '', talent_category: '', talent_categories: [], bio: '', hourly_rate: '', evening_rate: '', day_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [], last_minute_available: false, social_links: { instagram: '', tiktok: '', facebook: '', youtube: '', website: '' } });
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [specialtyInput, setSpecialtyInput] = useState('');
 
   useEffect(() => { loadUser(); }, []);
@@ -110,8 +115,25 @@ export default function TalentSetup() {
     } else if (currentUser.preferred_city) {
       setFormData(prev => ({ ...prev, location_city: currentUser.preferred_city }));
     }
+    // Restore an unfinished draft — a reload or a detour must not wipe the wizard
+    let draft = null;
+    try { draft = JSON.parse(sessionStorage.getItem(draftKey(currentUser.id)) || 'null'); } catch { /* ignore */ }
+    if (draft && draft.step > 1 && draft.formData) {
+      setFormData(prev => ({ ...prev, ...draft.formData }));
+      if (draft.profilePhoto) setProfilePhoto(draft.profilePhoto);
+      if (draft.profileVideo) setProfileVideo(draft.profileVideo);
+      setStep(draft.step);
+    }
     setInitialLoading(false);
   };
+
+  // Keep the wizard's answers on this device so nothing typed is ever lost
+  useEffect(() => {
+    if (initialLoading || !user) return;
+    try {
+      sessionStorage.setItem(draftKey(user.id), JSON.stringify({ step, formData, profilePhoto, profileVideo }));
+    } catch { /* storage unavailable — the wizard still works in memory */ }
+  }, [initialLoading, user, step, formData, profilePhoto, profileVideo]);
 
   const [showCamera, setShowCamera] = useState(null); // null | 'video' | 'photo'
 
@@ -221,6 +243,7 @@ export default function TalentSetup() {
       savedProfile = await base44.entities.TalentProfile.create(profileData);
     }
     const profileId = savedProfile?.id || existingProfile?.id;
+    try { sessionStorage.removeItem(draftKey(user.id)); } catch { /* ignore */ }
     window.location.href = profileId ? `/TalentProfile?id=${profileId}` : createPageUrl('Dashboard');
   };
 
