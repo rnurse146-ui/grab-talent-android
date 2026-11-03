@@ -8,6 +8,7 @@ export const TALENT_CATEGORIES = [
   { value: 'singer', label: 'Singer' },
   { value: 'magician', label: 'Magician' },
   { value: 'comedian', label: 'Comedian' },
+  { value: 'impersonator', label: 'Tribute / Impersonator' },
   { value: 'photographer', label: 'Photography / Filmmaker' },
   { value: 'guitarist', label: 'Guitarist' },
   { value: 'pianist', label: 'Pianist' },
