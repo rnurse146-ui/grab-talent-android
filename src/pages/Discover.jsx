@@ -15,13 +15,11 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from '@/components/Logo';
 import DeckVideo from '@/components/DeckVideo';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
-import TalentAZList from '@/components/talent/TalentAZList';
 import { useAuth } from '@/lib/AuthContext';
 import PullToRefresh from '@/components/PullToRefresh';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
 import { toast } from '@/components/ui/use-toast';
 import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
-import { rankTalents } from '@/lib/discoveryRanking';
 import { normalizeCity, cityMatches, geocodeCityCached } from '@/lib/cityMatch';
 import { getGuestMaybes, addGuestMaybe, mergeGuestMaybes } from '@/lib/guestMaybeList';
 import { getHiddenUserIds } from '@/lib/safety';
@@ -96,8 +94,6 @@ export default function Discover() {
   // Read-only alias — the screen keeps reading `filters`, while a reset can hand
   // loadTalents the fresh values immediately (state updates a tick later)
   const filters = filtersState;
-  // Deck by default; the A–Z list can be shown in its place without leaving the screen
-  const [showList, setShowList] = useState(false);
   // How many filters differ from the default — shown as a badge on the Filters button
   const activeFilterCount =
     (filters.categories.length > 0 ? 1 : 0) +
@@ -166,7 +162,6 @@ export default function Discover() {
     // Saved to the Maybe List: never shown again, whatever the search
     const visibleTalents = allTalents.filter(t => !hiddenIdsRef.current.has(t.user_id));
 
-    let localIds = new Set();
     let filtered = visibleTalents.filter(t => !maybeIdsRef.current.has(t.id));
 
     if (filters.categories.length > 0) {
@@ -233,7 +228,6 @@ export default function Discover() {
         return maxDist == null || match.within_max_distance === true;
       });
       filtered = [...local, ...travelers];
-      localIds = new Set(local.map(t => t.id));
       setTravelIds(new Set(travelers.map(t => t.id)));
       setTravelInfo(travelers.length > 0 ? { city: raw, count: travelers.length, fallback: local.length === 0 } : null);
     } else {
@@ -250,14 +244,10 @@ export default function Discover() {
       );
     }
 
-    // Rank the deck: quality score (rating, reviews, verification, profile
-    // video, completeness), local talent first when no city filter is set,
-    // last-minute boost for urgent events, plus a light per-session shuffle
-    const eventCity = filters.city || seekerCityOverride || user?.preferred_city || '';
-    const daysUntil = activeDate
-      ? Math.ceil((new Date(activeDate + 'T12:00:00') - new Date(new Date().toDateString())) / (1000 * 60 * 60 * 24))
-      : null;
-    filtered = rankTalents(filtered, { eventCity, daysUntilEvent: daysUntil, topIds: [...localIds] });
+    // The deck runs in alphabetical order, A to Z, by stage name
+    filtered = [...filtered].sort((a, b) =>
+      (a.stage_name || '').localeCompare(b.stage_name || '', undefined, { sensitivity: 'base' })
+    );
 
     // Ticked "last minute": only performers open to short-notice bookings are shown
     if (filters.lastMinuteOnly) {
@@ -762,23 +752,11 @@ export default function Discover() {
         }
       </div>
 
-      <div className="flex items-center gap-2 px-6 py-2 border-b border-zinc-800 bg-black">
-        <button
-          onClick={() => setShowList(false)}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
-            showList ? 'text-zinc-400 border border-zinc-700' : 'bg-white text-black'
-          }`}
-        >
-          Swipe deck
-        </button>
-        <button
-          onClick={() => setShowList(true)}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
-            showList ? 'bg-white text-black' : 'text-zinc-400 border border-zinc-700'
-          }`}
-        >
-          A–Z list
-        </button>
+      <div className="flex items-center justify-between px-6 py-2 border-b border-zinc-800 bg-black">
+        <span className="text-xs text-zinc-400">Prefer browsing to swiping?</span>
+        <Link to={createPageUrl('TalentList')} className="text-xs font-semibold text-purple-400 hover:text-purple-300">
+          See every talent A–Z →
+        </Link>
       </div>
 
       {filters.lastMinuteOnly && (
@@ -970,9 +948,6 @@ export default function Discover() {
         )}
       </AnimatePresence>
 
-      {showList ? (
-        <TalentAZList className="px-4 pt-4 pb-8" eventDate={eventDate} />
-      ) : (
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         {!eventDate ? (
           <div className="text-center max-w-xs">
@@ -1166,7 +1141,6 @@ export default function Discover() {
           </>
         )}
       </div>
-      )}
       </div>
       <GuestLoginPrompt open={showLoginPrompt} onOpenChange={setShowLoginPrompt} />
     </PullToRefresh>
