@@ -22,6 +22,7 @@ import { toast } from '@/components/ui/use-toast';
 import { effectiveHourlyRate, typicalTotalRate, rateSummary } from '@/lib/talentPricing';
 import { normalizeCity, cityMatches, geocodeCityCached } from '@/lib/cityMatch';
 import { getGuestMaybes, addGuestMaybe, mergeGuestMaybes } from '@/lib/guestMaybeList';
+import { rankTalents } from '@/lib/discoveryRanking';
 import { getHiddenUserIds } from '@/lib/safety';
 
 // Categories live in @/lib/talentCategories so Discover and Talent Network stay in step.
@@ -162,6 +163,7 @@ export default function Discover() {
     // Saved to the Maybe List: never shown again, whatever the search
     const visibleTalents = allTalents.filter(t => !hiddenIdsRef.current.has(t.user_id));
 
+    let localIds = new Set();
     let filtered = visibleTalents.filter(t => !maybeIdsRef.current.has(t.id));
 
     if (filters.categories.length > 0) {
@@ -228,6 +230,7 @@ export default function Discover() {
         return maxDist == null || match.within_max_distance === true;
       });
       filtered = [...local, ...travelers];
+      localIds = new Set(local.map(t => t.id));
       setTravelIds(new Set(travelers.map(t => t.id)));
       setTravelInfo(travelers.length > 0 ? { city: raw, count: travelers.length, fallback: local.length === 0 } : null);
     } else {
@@ -244,10 +247,14 @@ export default function Discover() {
       );
     }
 
-    // The deck runs in alphabetical order, A to Z, by stage name
-    filtered = [...filtered].sort((a, b) =>
-      (a.stage_name || '').localeCompare(b.stage_name || '', undefined, { sensitivity: 'base' })
-    );
+    // Rank the deck: quality score (rating, reviews, verification, profile
+    // video, completeness), local talent first when no city filter is set,
+    // last-minute boost for urgent events, plus a light per-session shuffle
+    const eventCity = filters.city || seekerCityOverride || user?.preferred_city || '';
+    const daysUntil = activeDate
+      ? Math.ceil((new Date(activeDate + 'T12:00:00') - new Date(new Date().toDateString())) / (1000 * 60 * 60 * 24))
+      : null;
+    filtered = rankTalents(filtered, { eventCity, daysUntilEvent: daysUntil, topIds: [...localIds] });
 
     // Ticked "last minute": only performers open to short-notice bookings are shown
     if (filters.lastMinuteOnly) {
