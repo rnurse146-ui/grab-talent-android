@@ -759,6 +759,13 @@ export default function Discover() {
         }
       </div>
 
+      <div className="flex items-center justify-between px-6 py-2 border-b border-zinc-800 bg-black">
+        <span className="text-xs text-zinc-400">Prefer browsing to swiping?</span>
+        <Link to={createPageUrl('TalentList')} className="text-xs font-semibold text-purple-400 hover:text-purple-300">
+          See every talent A–Z →
+        </Link>
+      </div>
+
       {filters.lastMinuteOnly && (
         <div className="flex items-center gap-2 mx-6 mt-2 rounded-xl border border-orange-500/40 bg-orange-500/10 px-4 py-2.5 text-xs text-orange-200">
           <Zap className="w-4 h-4 shrink-0 fill-orange-300" />
