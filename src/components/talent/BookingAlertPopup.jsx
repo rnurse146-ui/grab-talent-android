@@ -76,6 +76,11 @@ export default function BookingAlertPopup({ user, notificationTitle, heading, hi
           </div>
         )}
 
+        <p className="text-sm text-amber-200/90 leading-relaxed mb-5">
+          📩 Booking emails can land in your junk folder — check it, and add
+          <strong className="text-white"> grab-talent-limited@hotmail.com</strong> to your contacts so none are missed.
+        </p>
+
         <div className="flex flex-col gap-2">
           <Button onClick={openBooking} className="w-full h-11 bg-white text-black hover:bg-zinc-100 text-base font-semibold">
             {ctaLabel || 'View the booking'}

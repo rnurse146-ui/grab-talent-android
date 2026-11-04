@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import TalentCalendar from './TalentCalendar';
 import ProfileVisibilityToggle from '@/components/talent/ProfileVisibilityToggle';
+import JunkFolderReminder from '@/components/talent/JunkFolderReminder';
 
 export default function TalentDashboard({ user, talentProfile, recentBookings }) {
   const [decided, setDecided] = useState({});
@@ -59,6 +60,9 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
           </div>
         </Link>
       )}
+
+      {/* Bookings and reminders arrive by email — keep them out of the junk folder */}
+      <JunkFolderReminder className="mb-8" />
 
       {/* Hero Banner */}
       <div className="relative rounded-3xl overflow-hidden mb-8 bg-zinc-900 border border-zinc-700 p-8">

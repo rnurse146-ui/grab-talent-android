@@ -8,5 +8,6 @@ export function categoryLabel(category) {
   if (category === 'mixing_mastering_engineer') return 'mixing & mastering engineer';
   if (category === 'bagpiper') return 'bagpiper';
   if (category === 'impersonator') return 'tribute / impersonator';
+  if (category === 'drag_performer') return 'drag performer';
   return category.replace(/_/g, ' ');
 }

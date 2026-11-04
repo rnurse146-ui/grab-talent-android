@@ -45,6 +45,7 @@ function compressImage(file) {
 const TALENT_CATEGORIES = [
   { value: 'dj', label: 'DJ', icon: '🎧' },
   { value: 'dancer', label: 'Dancer / Fire Dancer', icon: '💃' },
+  { value: 'drag_performer', label: 'Drag Performer', icon: '👑' },
   { value: 'band', label: 'Band', icon: '🎸' },
   { value: 'guitarist', label: 'Guitarist', icon: '🎸' },
   { value: 'singer', label: 'Singer', icon: '🎤' },

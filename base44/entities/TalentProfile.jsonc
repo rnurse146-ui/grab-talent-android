@@ -15,6 +15,7 @@
       "enum": [
         "dj",
         "dancer",
+        "drag_performer",
         "choreographer",
         "band",
         "guitarist",

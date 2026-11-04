@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Logo from '@/components/Logo';
 
 export const GUEST_WELCOME_KEY = 'gt_guest_welcome_seen';
@@ -44,12 +45,21 @@ export default function GuestWelcomePopup({ open, onClose }) {
             <p className="mt-4 text-sm font-semibold text-zinc-300">
               Grab Talent - Talent at your fingertips
             </p>
-            <button
-              onClick={onClose}
-              className="mt-10 w-full bg-white text-black font-semibold rounded-xl py-4 min-h-[44px] active:scale-[0.98] transition-transform"
-            >
-              Get Started
-            </button>
+            <div className="mt-10 space-y-3">
+              <Link
+                to="/login"
+                onClick={onClose}
+                className="block w-full bg-white text-black font-bold rounded-xl py-4 min-h-[44px] text-center active:scale-[0.98] transition-transform"
+              >
+                Sign In
+              </Link>
+              <button
+                onClick={onClose}
+                className="w-full border-2 border-white/40 text-white font-semibold rounded-xl py-4 min-h-[44px] active:scale-[0.98] transition-transform hover:border-white"
+              >
+                Browse Talents
+              </button>
+            </div>
           </motion.div>
         </motion.div>
       )}

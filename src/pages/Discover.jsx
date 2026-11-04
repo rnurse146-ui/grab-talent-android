@@ -27,6 +27,19 @@ import { getHiddenUserIds } from '@/lib/safety';
 
 // Categories live in @/lib/talentCategories so Discover and Talent Network stay in step.
 
+const EMPTY_FILTERS = {
+  categories: [],
+  maxPrice: '',
+  minPrice: '',
+  budgetBasis: 'hourly',
+  city: '',
+  minRating: '',
+  verifiedOnly: false,
+  lastMinuteOnly: false,
+  equipment: [],
+  maxDistance: 'any'
+};
+
 export default function Discover() {
   // Session deck memory: coming back to Discover from a talent profile (or any
   // other detour) resumes the deck where it was left, instead of restarting the
@@ -66,7 +79,7 @@ export default function Discover() {
   const maybeIdsRef = useRef(new Set());
   const [travelInfo, setTravelInfo] = useState(null);
 
-  const [filters, setFilters] = useState({
+  const [filtersState, setFilters] = useState({
     categories: [],
     maxPrice: '',
     minPrice: '',
@@ -79,6 +92,9 @@ export default function Discover() {
     maxDistance: 'any',
     ...(resume?.filters || {})
   });
+  // Read-only alias — the screen keeps reading `filters`, while a reset can hand
+  // loadTalents the fresh values immediately (state updates a tick later)
+  const filters = filtersState;
   // How many filters differ from the default — shown as a badge on the Filters button
   const activeFilterCount =
     (filters.categories.length > 0 ? 1 : 0) +
@@ -134,7 +150,9 @@ export default function Discover() {
     }
   };
 
-  const loadTalents = async (alreadySwiped = swipedIds, dateOverride = undefined, seekerCityOverride = '') => {
+  const loadTalents = async (alreadySwiped = swipedIds, dateOverride = undefined, seekerCityOverride = '', filtersOverride = null) => {
+    // A reset passes its fresh filters straight in, so the new search runs now
+    const filters = filtersOverride || filtersState;
     setLoading(true);
     const activeDate = dateOverride !== undefined ? dateOverride : eventDate;
     
@@ -392,6 +410,21 @@ export default function Discover() {
   const applyFilters = () => {
     loadTalents();
     setShowFilters(false);
+  };
+
+  // Wipe every filter and refilter the deck in place — same screen, same scroll
+  // position, nothing restarts.
+  const resetFiltersAndRefilter = () => {
+    setFilters(EMPTY_FILTERS);
+    setShowFilters(false);
+    loadTalents(swipedIds, undefined, '', EMPTY_FILTERS);
+  };
+
+  // The deck ran out: open the filters at the top of this screen so the search
+  // can be changed and re-run right here.
+  const lookForSomethingDifferent = () => {
+    setShowFilters(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleWelcomeStart = () => {
@@ -903,11 +936,7 @@ export default function Discover() {
               <div className="flex gap-3">
                 <Button onClick={applyFilters} className="flex-1 bg-purple-600 hover:bg-purple-500">Apply Filters</Button>
                 <Button
-                  onClick={() => {
-                    setFilters({ categories: [], maxPrice: '', minPrice: '', budgetBasis: 'hourly', city: '', minRating: '', verifiedOnly: false, lastMinuteOnly: false, equipment: [], maxDistance: 'any' });
-                    setShowFilters(false);
-                    loadTalents(swipedIds);
-                  }}
+                  onClick={resetFiltersAndRefilter}
                   variant="outline"
                   className="border-slate-700 text-slate-400"
                 >
@@ -935,45 +964,57 @@ export default function Discover() {
             <p className="text-slate-400">Finding talent...</p>
           </div>
         ) : !currentTalent ? (
-          <div className="text-center">
+          <div className="text-center max-w-sm">
             <div className="w-24 h-24 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4">
               <Star className="w-10 h-10 text-slate-600" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">No more talent to show</h2>
-            <p className="text-slate-400 mb-6">Check back later or adjust your filters</p>
-            <div className="flex gap-3 justify-center">
-              <Button onClick={() => setShowFilters(true)} variant="outline" className="border-slate-700 bg-transparent text-white hover:bg-zinc-800">Change Filters</Button>
-              <Link to={createPageUrl('MaybeList')}><Button className="bg-purple-600 hover:bg-purple-500">View Maybe List</Button></Link>
+            <h2 className="text-xl font-semibold mb-2">Sorry — that's all we have for now</h2>
+            <p className="text-slate-400 mb-6">
+              More talent is being added all the time. Try looking for something different and we'll refilter this deck right here — no need to start again.
+            </p>
+            <Button onClick={lookForSomethingDifferent} className="w-full bg-purple-600 hover:bg-purple-500">
+              <Filter className="w-4 h-4 mr-2" />
+              Look for something different
+            </Button>
+            <div className="flex gap-3 justify-center mt-3">
+              <Button onClick={resetFiltersAndRefilter} variant="outline" className="border-slate-700 bg-transparent text-white hover:bg-zinc-800">
+                Show me everyone
+              </Button>
+              <Link to={createPageUrl('MaybeList')}>
+                <Button className="bg-green-500 hover:bg-green-400 text-black font-bold">Maybe List</Button>
+              </Link>
             </div>
-            {isGuest && talents.length > 0 && (
-              <Button
-                onClick={() => setCurrentIndex(0)}
-                variant="outline"
-                className="mt-3 border-zinc-700 bg-transparent text-white hover:bg-zinc-800"
-              >
-                Start Over
-              </Button>
-            )}
-            {talents.length > 0 && (
-              <Button
-                onClick={() => setCurrentIndex(Math.max(0, talents.length - 3))}
-                variant="outline"
-                className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800"
-              >
-                <Undo2 className="w-4 h-4 mr-2" />
-                Go back and review last 3
-              </Button>
-            )}
-            {passedCount > 0 && (
-              <Button
-                onClick={handleRestorePassed}
-                variant="outline"
-                className="mt-3 border-zinc-700 bg-transparent text-white hover:bg-zinc-800"
-              >
-                <Undo2 className="w-4 h-4 mr-2" />
-                Bring back rejected talent ({passedCount})
-              </Button>
-            )}
+            <div className="flex flex-col items-center gap-2 mt-4">
+              {talents.length > 0 && (
+                <Button
+                  onClick={() => setCurrentIndex(Math.max(0, talents.length - 3))}
+                  variant="outline"
+                  className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800"
+                >
+                  <Undo2 className="w-4 h-4 mr-2" />
+                  Go back and review last 3
+                </Button>
+              )}
+              {passedCount > 0 && (
+                <Button
+                  onClick={handleRestorePassed}
+                  variant="outline"
+                  className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800"
+                >
+                  <Undo2 className="w-4 h-4 mr-2" />
+                  Bring back rejected talent ({passedCount})
+                </Button>
+              )}
+              {isGuest && talents.length > 0 && (
+                <Button
+                  onClick={() => setCurrentIndex(0)}
+                  variant="outline"
+                  className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800"
+                >
+                  Start Over
+                </Button>
+              )}
+            </div>
           </div>
         ) : (
           <>

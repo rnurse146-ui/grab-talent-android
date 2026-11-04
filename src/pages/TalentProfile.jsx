@@ -14,6 +14,7 @@ import { isVideoUrl, isAudioUrl } from '@/lib/mediaType';
 import AvailabilityMiniCalendar from '@/components/talent/AvailabilityMiniCalendar';
 import AvailabilityManager from '@/components/talent/AvailabilityManager';
 import ShareProfile from '@/components/talent/ShareProfile';
+import JunkFolderReminder from '@/components/talent/JunkFolderReminder';
 import PageHeader from '@/components/PageHeader';
 import Logo from '@/components/Logo';
 import SafetyMenu from '@/components/safety/SafetyMenu';
@@ -113,6 +114,12 @@ export default function TalentProfile() {
               </Button>
             </Link>
           </div>
+        </div>
+      )}
+
+      {isOwner && (
+        <div className="max-w-4xl mx-auto px-6 pt-6">
+          <JunkFolderReminder />
         </div>
       )}
 
