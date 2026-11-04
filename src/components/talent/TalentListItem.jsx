@@ -5,7 +5,7 @@ import { Star, MapPin, Banknote, CheckCircle2 } from 'lucide-react';
 import { categoryLabel } from '@/lib/categoryLabel';
 
 // One row in the A–Z talent list
-export default function TalentListItem({ profile }) {
+export default function TalentListItem({ profile, eventDate = '' }) {
   const photo = profile.profile_photo || profile.media_gallery?.[0];
   const categories = profile.talent_categories?.length ? profile.talent_categories : [profile.talent_category];
   const price = profile.hourly_rate
@@ -18,7 +18,7 @@ export default function TalentListItem({ profile }) {
 
   return (
     <Link
-      to={createPageUrl('TalentProfile') + `?id=${profile.id}`}
+      to={createPageUrl('TalentProfile') + `?id=${profile.id}${eventDate ? '&event_date=' + eventDate : ''}`}
       className="flex items-center gap-3 px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-600 transition-colors"
     >
       <div className="w-14 h-14 rounded-lg overflow-hidden bg-zinc-800 shrink-0">

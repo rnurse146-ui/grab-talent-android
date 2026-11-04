@@ -15,6 +15,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from '@/components/Logo';
 import DeckVideo from '@/components/DeckVideo';
 import GuestLoginPrompt from '@/components/GuestLoginPrompt';
+import TalentAZList from '@/components/talent/TalentAZList';
 import { useAuth } from '@/lib/AuthContext';
 import PullToRefresh from '@/components/PullToRefresh';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
@@ -95,6 +96,8 @@ export default function Discover() {
   // Read-only alias — the screen keeps reading `filters`, while a reset can hand
   // loadTalents the fresh values immediately (state updates a tick later)
   const filters = filtersState;
+  // Deck by default; the A–Z list can be shown in its place without leaving the screen
+  const [showList, setShowList] = useState(false);
   // How many filters differ from the default — shown as a badge on the Filters button
   const activeFilterCount =
     (filters.categories.length > 0 ? 1 : 0) +
@@ -759,11 +762,23 @@ export default function Discover() {
         }
       </div>
 
-      <div className="flex items-center justify-between px-6 py-2 border-b border-zinc-800 bg-black">
-        <span className="text-xs text-zinc-400">Prefer browsing to swiping?</span>
-        <Link to={createPageUrl('TalentList')} className="text-xs font-semibold text-purple-400 hover:text-purple-300">
-          See every talent A–Z →
-        </Link>
+      <div className="flex items-center gap-2 px-6 py-2 border-b border-zinc-800 bg-black">
+        <button
+          onClick={() => setShowList(false)}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+            showList ? 'text-zinc-400 border border-zinc-700' : 'bg-white text-black'
+          }`}
+        >
+          Swipe deck
+        </button>
+        <button
+          onClick={() => setShowList(true)}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+            showList ? 'bg-white text-black' : 'text-zinc-400 border border-zinc-700'
+          }`}
+        >
+          A–Z list
+        </button>
       </div>
 
       {filters.lastMinuteOnly && (
@@ -955,6 +970,9 @@ export default function Discover() {
         )}
       </AnimatePresence>
 
+      {showList ? (
+        <TalentAZList className="px-4 pt-4 pb-8" eventDate={eventDate} />
+      ) : (
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         {!eventDate ? (
           <div className="text-center max-w-xs">
@@ -1148,6 +1166,7 @@ export default function Discover() {
           </>
         )}
       </div>
+      )}
       </div>
       <GuestLoginPrompt open={showLoginPrompt} onOpenChange={setShowLoginPrompt} />
     </PullToRefresh>
