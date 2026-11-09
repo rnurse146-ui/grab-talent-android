@@ -129,12 +129,19 @@ export default function Register() {
             "Verify"
           )}
         </Button>
-        <p className="text-center text-sm text-muted-foreground mt-4">
-          Didn't receive the code? Check your junk or spam folder.{" "}
-          <button onClick={handleResend} className="text-primary font-medium hover:underline">
-            Resend
-          </button>
-        </p>
+        <div className="mt-4 space-y-2 text-center">
+          <p className="text-sm text-foreground">
+            Code not in your inbox? Please check your <span className="font-semibold">junk / spam</span> folder.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Add <span className="font-medium text-foreground">no-reply@base44-apps.com</span> to your safe senders and the code arrives every time. The code expires after 10 minutes.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            <button onClick={handleResend} className="text-primary font-semibold hover:underline">
+              Resend code
+            </button>
+          </p>
+        </div>
       </AuthLayout>
     );
   }
