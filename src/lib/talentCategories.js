@@ -5,7 +5,7 @@ export const TALENT_CATEGORIES = [
   { value: 'dancer', label: 'Dancer / Fire Dancer' },
   { value: 'drag_performer', label: 'Drag Performer' },
   { value: 'choreographer', label: 'Choreographer' },
-  { value: 'band', label: 'Band' },
+  { value: 'band', label: 'Band / Quartet' },
   { value: 'singer', label: 'Singer' },
   { value: 'magician', label: 'Magician' },
   { value: 'comedian', label: 'Comedian' },
