@@ -50,7 +50,7 @@ const TALENT_CATEGORIES = [
   { value: 'band', label: 'Band / Quartet', icon: '🎸' },
   { value: 'guitarist', label: 'Guitarist', icon: '🎸' },
   { value: 'singer', label: 'Singer', icon: '🎤' },
-  { value: 'pianist', label: 'Pianist', icon: '🎹' },
+  { value: 'pianist', label: 'Pianist / Organ Player', icon: '🎹' },
   { value: 'harpist', label: 'Harpist', icon: '🎵' },
   { value: 'saxophonist', label: 'Saxophonist', icon: '🎷' },
   { value: 'flute_player', label: 'Flute Player', icon: '🎶' },

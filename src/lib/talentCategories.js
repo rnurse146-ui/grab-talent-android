@@ -13,7 +13,7 @@ export const TALENT_CATEGORIES = [
   { value: 'impersonator', label: 'Impersonator' },
   { value: 'photographer', label: 'Photography / Filmmaker' },
   { value: 'guitarist', label: 'Guitarist' },
-  { value: 'pianist', label: 'Pianist' },
+  { value: 'pianist', label: 'Pianist / Organ Player' },
   { value: 'saxophonist', label: 'Saxophonist' },
   { value: 'flute_player', label: 'Flute Player' },
   { value: 'violinist', label: 'Violinist' },
