@@ -12,6 +12,7 @@ import Logo from '@/components/Logo';
 import MobileSheetSelect from '@/components/MobileSheetSelect';
 import CameraCapture from '@/components/CameraCapture';
 import { isVideoUrl, isAudioUrl } from '@/lib/mediaType';
+import { CURRENCIES, currencySymbol, money } from '@/lib/currency';
 
 // Downscale large photos before upload — keeps setup uploads fast on mobile data
 function compressImage(file) {
@@ -84,7 +85,7 @@ const TALENT_CATEGORIES = [
   { value: 'mc_entertainer', label: 'MC / Entertainer', icon: '🎙️' },
 ];
 
-const EMPTY_FORM = { stage_name: '', talent_category: '', talent_categories: [], bio: '', hourly_rate: '', evening_rate: '', day_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [], last_minute_available: false, social_links: { instagram: '', tiktok: '', facebook: '', youtube: '', website: '' } };
+const EMPTY_FORM = { stage_name: '', talent_category: '', talent_categories: [], bio: '', currency: 'GBP', hourly_rate: '', evening_rate: '', day_rate: '', minimum_hours: '1', location_city: '', location_radius: '25', experience_years: '', specialties: [], profile_photo: '', media_gallery: [], equipment_provided: [], last_minute_available: false, social_links: { instagram: '', tiktok: '', facebook: '', youtube: '', website: '' } };
 
 // Unfinished wizard answers live on this device, keyed to the person filling it in
 const draftKey = (userId) => `gt_talentsetup_draft_${userId}`;
@@ -113,7 +114,7 @@ export default function TalentSetup() {
     if (profiles.length > 0) {
       const profile = profiles[0];
       setExistingProfile(profile);
-      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', talent_categories: profile.talent_categories?.length ? profile.talent_categories : (profile.talent_category ? [profile.talent_category] : []), bio: profile.bio || '', hourly_rate: profile.hourly_rate?.toString() || '', evening_rate: profile.evening_rate?.toString() || '', day_rate: profile.day_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', profile_video: profile.profile_video || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [], last_minute_available: profile.last_minute_available || false, social_links: { instagram: profile.social_links?.instagram || '', tiktok: profile.social_links?.tiktok || '', facebook: profile.social_links?.facebook || '', youtube: profile.social_links?.youtube || '', website: profile.social_links?.website || '' } });
+      setFormData({ stage_name: profile.stage_name || '', talent_category: profile.talent_category || '', talent_categories: profile.talent_categories?.length ? profile.talent_categories : (profile.talent_category ? [profile.talent_category] : []), bio: profile.bio || '', currency: profile.currency || 'GBP', hourly_rate: profile.hourly_rate?.toString() || '', evening_rate: profile.evening_rate?.toString() || '', day_rate: profile.day_rate?.toString() || '', minimum_hours: profile.minimum_hours?.toString() || '1', location_city: profile.location_city || '', location_radius: profile.location_radius?.toString() || '25', experience_years: profile.experience_years?.toString() || '', specialties: profile.specialties || [], profile_photo: profile.profile_photo || '', profile_video: profile.profile_video || '', media_gallery: profile.media_gallery || [], equipment_provided: profile.equipment_provided || [], last_minute_available: profile.last_minute_available || false, social_links: { instagram: profile.social_links?.instagram || '', tiktok: profile.social_links?.tiktok || '', facebook: profile.social_links?.facebook || '', youtube: profile.social_links?.youtube || '', website: profile.social_links?.website || '' } });
       setProfileVideo(profile.profile_video || null);
       setProfilePhoto(profile.profile_photo);
     } else if (currentUser.preferred_city) {
@@ -230,7 +231,7 @@ export default function TalentSetup() {
 
   const handleSubmit = async () => {
     setLoading(true);
-    const profileData = { ...formData, talent_category: formData.talent_categories[0] || '', user_id: user.id, hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null, evening_rate: formData.evening_rate ? parseFloat(formData.evening_rate) : null, day_rate: formData.day_rate ? parseFloat(formData.day_rate) : null, minimum_hours: parseInt(formData.minimum_hours), location_radius: parseInt(formData.location_radius), experience_years: formData.experience_years ? parseInt(formData.experience_years) : null, last_minute_available: !!formData.last_minute_available, is_available: true };
+    const profileData = { ...formData, talent_category: formData.talent_categories[0] || '', user_id: user.id, currency: formData.currency || 'GBP', hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null, evening_rate: formData.evening_rate ? parseFloat(formData.evening_rate) : null, day_rate: formData.day_rate ? parseFloat(formData.day_rate) : null, minimum_hours: parseInt(formData.minimum_hours), location_radius: parseInt(formData.location_radius), experience_years: formData.experience_years ? parseInt(formData.experience_years) : null, last_minute_available: !!formData.last_minute_available, is_available: true };
     // Best-effort geocoding — lets the talent show up for nearby event-city searches
     const needsGeo = formData.location_city && (!existingProfile || existingProfile.location_city !== formData.location_city || existingProfile.lat == null);
     if (needsGeo) {
@@ -386,8 +387,12 @@ export default function TalentSetup() {
             <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
               <div className="text-center mb-6"><Banknote className="w-10 h-10 text-green-400 mx-auto mb-3" /><h2 className="text-xl font-semibold">Pricing & Location</h2></div>
               <div>
-                <Label className="text-slate-400">Your Rates (£)</Label>
+                <Label className="text-slate-400">Your Rates ({currencySymbol(formData.currency)})</Label>
                 <p className="text-xs text-slate-500 mt-1 mb-3">Fill in whichever ways you charge — at least one is needed.</p>
+                <div className="mb-4">
+                  <Label className="text-xs text-slate-400">Currency</Label>
+                  <MobileSheetSelect value={formData.currency || 'GBP'} onChange={(value) => setFormData({ ...formData, currency: value })} options={CURRENCIES.map(c => ({ value: c.code, label: c.label }))} title="Currency" triggerClassName="bg-slate-900 border-slate-800 h-12 mt-2" contentClassName="bg-slate-900 border-slate-800" />
+                </div>
                 <div className="grid sm:grid-cols-3 gap-4">
                   <div><Label className="text-xs text-slate-400">Per Hour</Label><Input type="number" value={formData.hourly_rate} onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })} placeholder="e.g. 150" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
                   <div><Label className="text-xs text-slate-400">Evening Rate</Label><Input type="number" value={formData.evening_rate} onChange={(e) => setFormData({ ...formData, evening_rate: e.target.value })} placeholder="e.g. 400" className="bg-slate-900 border-slate-800 h-12 mt-2" /></div>
@@ -499,7 +504,7 @@ export default function TalentSetup() {
                   {formData.media_gallery.length < 25 && (<label className="aspect-square rounded-lg bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center cursor-pointer hover:border-slate-600"><input type="file" accept="image/*,video/*,audio/*" multiple onChange={handleGalleryUpload} className="hidden" /><Upload className="w-6 h-6 text-slate-600" /></label>)}
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800"><h3 className="font-medium mb-3 flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />Summary</h3><div className="text-sm text-slate-400 space-y-1"><p><span className="text-white">{formData.stage_name}</span> • {formData.talent_categories.map(v => TALENT_CATEGORIES.find(c => c.value === v)?.label || v).join(', ')}</p><p>📍 {formData.location_city} • 💷 {[formData.hourly_rate && `£${formData.hourly_rate}/hr`, formData.evening_rate && `£${formData.evening_rate} evening`, formData.day_rate && `£${formData.day_rate} day`].filter(Boolean).join(' • ') || 'No rates set'}</p></div></div>
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800"><h3 className="font-medium mb-3 flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />Summary</h3><div className="text-sm text-slate-400 space-y-1"><p><span className="text-white">{formData.stage_name}</span> • {formData.talent_categories.map(v => TALENT_CATEGORIES.find(c => c.value === v)?.label || v).join(', ')}</p><p>📍 {formData.location_city} • 💷 {[formData.hourly_rate && `${money(formData.hourly_rate, formData.currency)}/hr`, formData.evening_rate && `${money(formData.evening_rate, formData.currency)} evening`, formData.day_rate && `${money(formData.day_rate, formData.currency)} day`].filter(Boolean).join(' • ') || 'No rates set'}</p></div></div>
               <div className="flex gap-3 pt-4"><Button variant="outline" onClick={() => setStep(3)} className="flex-1 bg-transparent border-slate-700"><ChevronLeft className="w-4 h-4 mr-2" />Back</Button><Button onClick={() => setStep(5)} disabled={!formData.profile_photo && !profileVideo} className="flex-1 bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600">Continue<ChevronRight className="w-4 h-4 ml-2" /></Button></div>
             </motion.div>
           )}

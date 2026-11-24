@@ -66,17 +66,39 @@
       "type": "string",
       "description": "About the talent"
     },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "GBP",
+        "EUR",
+        "USD",
+        "AUD",
+        "CAD",
+        "NZD",
+        "CHF",
+        "SEK",
+        "NOK",
+        "DKK",
+        "AED",
+        "ZAR",
+        "INR",
+        "JPY",
+        "SGD"
+      ],
+      "default": "GBP",
+      "description": "Currency the rates below are set in"
+    },
     "hourly_rate": {
       "type": "number",
-      "description": "Price per hour in GBP (optional if a day or evening rate is set)"
+      "description": "Price per hour (in the profile's currency; optional if a day or evening rate is set)"
     },
     "day_rate": {
       "type": "number",
-      "description": "Flat day rate in GBP (optional)"
+      "description": "Flat day rate (in the profile's currency; optional)"
     },
     "evening_rate": {
       "type": "number",
-      "description": "Flat evening rate in GBP (optional)"
+      "description": "Flat evening rate (in the profile's currency; optional)"
     },
     "minimum_hours": {
       "type": "number",

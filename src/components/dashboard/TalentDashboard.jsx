@@ -13,6 +13,7 @@ import {
 import TalentCalendar from './TalentCalendar';
 import ProfileVisibilityToggle from '@/components/talent/ProfileVisibilityToggle';
 import JunkFolderReminder from '@/components/talent/JunkFolderReminder';
+import { money } from '@/lib/currency';
 
 export default function TalentDashboard({ user, talentProfile, recentBookings }) {
   const [decided, setDecided] = useState({});
@@ -267,7 +268,7 @@ export default function TalentDashboard({ user, talentProfile, recentBookings })
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-zinc-500">Rate</span>
-                  <span className="font-semibold text-white">£{talentProfile.hourly_rate}/hr</span>
+                  <span className="font-semibold text-white">{money(talentProfile.hourly_rate, talentProfile.currency)}/hr</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-zinc-500">Verified</span>

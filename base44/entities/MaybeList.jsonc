@@ -22,6 +22,10 @@
     "talent_hourly_rate": {
       "type": "number"
     },
+    "talent_currency": {
+      "type": "string",
+      "description": "Currency the saved rate is in (copied from the talent's profile)"
+    },
     "talent_rating": {
       "type": "number"
     },

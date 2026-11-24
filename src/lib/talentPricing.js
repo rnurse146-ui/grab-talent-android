@@ -1,5 +1,6 @@
 // Shared pricing helpers — talents can charge hourly, a flat evening rate, a flat
 // day rate, or any combination. Used across discovery, profiles and booking.
+import { money } from '@/lib/currency';
 
 // Best comparable hourly figure: hourly rate, else evening rate, else day rate.
 export function effectiveHourlyRate(talent) {
@@ -17,9 +18,9 @@ export function typicalTotalRate(talent) {
 // Human-readable summary of whatever rates a talent has set, e.g. "£150/hr • £400 evening".
 export function rateSummary(talent) {
   const parts = [];
-  if (talent?.hourly_rate) parts.push(`£${talent.hourly_rate}/hr`);
-  if (talent?.evening_rate) parts.push(`£${talent.evening_rate} evening`);
-  if (talent?.day_rate) parts.push(`£${talent.day_rate} day`);
+  if (talent?.hourly_rate) parts.push(`${money(talent.hourly_rate, talent.currency)}/hr`);
+  if (talent?.evening_rate) parts.push(`${money(talent.evening_rate, talent.currency)} evening`);
+  if (talent?.day_rate) parts.push(`${money(talent.day_rate, talent.currency)} day`);
   return parts.join(' • ');
 }
 

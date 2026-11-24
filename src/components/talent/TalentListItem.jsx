@@ -3,17 +3,18 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Star, MapPin, Banknote, CheckCircle2 } from 'lucide-react';
 import { categoryLabel } from '@/lib/categoryLabel';
+import { money } from '@/lib/currency';
 
 // One row in the A–Z talent list
 export default function TalentListItem({ profile, eventDate = '' }) {
   const photo = profile.profile_photo || profile.media_gallery?.[0];
   const categories = profile.talent_categories?.length ? profile.talent_categories : [profile.talent_category];
   const price = profile.hourly_rate
-    ? `£${profile.hourly_rate}/hr`
+    ? `${money(profile.hourly_rate, profile.currency)}/hr`
     : profile.day_rate
-      ? `£${profile.day_rate}/day`
+      ? `${money(profile.day_rate, profile.currency)}/day`
       : profile.evening_rate
-        ? `£${profile.evening_rate}/evening`
+        ? `${money(profile.evening_rate, profile.currency)}/evening`
         : null;
 
   return (

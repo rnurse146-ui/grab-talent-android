@@ -23,6 +23,7 @@ export function addGuestMaybe(talent) {
     talent_category: talent.talent_category,
     talent_photo: talent.profile_photo,
     talent_hourly_rate: talent.hourly_rate,
+    talent_currency: talent.currency || 'GBP',
     talent_rating: talent.average_rating,
     talent_city: talent.location_city,
   });

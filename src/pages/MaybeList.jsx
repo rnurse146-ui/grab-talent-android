@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { categoryLabel } from '@/lib/categoryLabel';
+import { money } from '@/lib/currency';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart, Star, MapPin, Banknote, Trash2, Calendar, Loader2, Scale } from 'lucide-react';
@@ -162,7 +163,7 @@ export default function MaybeList() {
                   <p className="text-zinc-400 text-sm capitalize mb-3">{categoryLabel(item.talent_category)}</p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {item.talent_city && (<Badge variant="secondary" className="bg-zinc-800 text-zinc-300 text-xs"><MapPin className="w-3 h-3 mr-1" />{item.talent_city}</Badge>)}
-                    {item.talent_hourly_rate && (<Badge variant="secondary" className="bg-zinc-800 text-zinc-300 text-xs"><Banknote className="w-3 h-3 mr-1" />from £{item.talent_hourly_rate}</Badge>)}
+                    {item.talent_hourly_rate && (<Badge variant="secondary" className="bg-zinc-800 text-zinc-300 text-xs"><Banknote className="w-3 h-3 mr-1" />from {money(item.talent_hourly_rate, item.talent_currency)}</Badge>)}
                     {item.talent_rating && (<Badge variant="secondary" className="bg-zinc-800 text-zinc-300 text-xs"><Star className="w-3 h-3 mr-1" />{item.talent_rating.toFixed(1)}</Badge>)}
                   </div>
                   <div className="flex gap-2">

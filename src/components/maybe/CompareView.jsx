@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { categoryLabel } from '@/lib/categoryLabel';
+import { money } from '@/lib/currency';
 import { Button } from '@/components/ui/button';
 import { Star, MapPin, Banknote, Calendar, X, Trophy } from 'lucide-react';
 
@@ -68,7 +69,7 @@ export default function CompareView({ items, onExit, isGuest, onLoginPrompt, onD
               )}
               <h3 className="font-semibold truncate">{item.talent_stage_name}</h3>
               <Row label="Price">
-                <span className="flex items-center gap-1"><Banknote className="w-3 h-3 text-zinc-500" />{item.talent_hourly_rate ? `from £${item.talent_hourly_rate}/hr` : 'Not set'}</span>
+                <span className="flex items-center gap-1"><Banknote className="w-3 h-3 text-zinc-500" />{item.talent_hourly_rate ? `from ${money(item.talent_hourly_rate, item.talent_currency)}/hr` : 'Not set'}</span>
               </Row>
               <Row label="Rating">
                 <span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-400" />{item.talent_rating ? item.talent_rating.toFixed(1) : 'No reviews'}</span>
