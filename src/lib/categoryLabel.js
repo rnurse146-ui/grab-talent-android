@@ -10,6 +10,7 @@ export function categoryLabel(category) {
   if (category === 'harmonica_player') return 'harmonica player';
   if (category === 'band') return 'band / quartet';
   if (category === 'pianist') return 'pianist / organ player';
+  if (category === 'magician') return 'magician / mentalist';
   if (category === 'tribute_act') return 'tribute act';
   if (category === 'impersonator') return 'impersonator';
   if (category === 'drag_performer') return 'drag performer';
