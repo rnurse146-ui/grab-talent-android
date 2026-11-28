@@ -71,7 +71,7 @@ const TALENT_CATEGORIES = [
   { value: 'comedian', label: 'Comedian', icon: '😂' },
   { value: 'tribute_act', label: 'Tribute Act', icon: '🎤' },
   { value: 'impersonator', label: 'Impersonator', icon: '🎭' },
-  { value: 'pyrotechnics', label: 'Pyrotechnics', icon: '🎆' },
+  { value: 'pyrotechnics', label: 'Pyrotechnics / Drone Display', icon: '🎆' },
   { value: 'live_painter', label: 'Live Painter', icon: '🖼️' },
   { value: 'photographer', label: 'Photography / Filmmaker', icon: '📸' },
   { value: 'lighting_specialist', label: 'Lighting Specialist', icon: '💡' },
